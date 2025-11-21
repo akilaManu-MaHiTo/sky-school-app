@@ -174,6 +174,7 @@ function ChemicalRequestTable({
           marginY: 2,
           borderRadius: 1,
           overflowX: "hidden",
+          backgroundColor: "#fff",
         }}
       >
         <PageTitle title="Chemical Management" />
@@ -214,7 +215,7 @@ function ChemicalRequestTable({
             <LinearProgress sx={{ width: "100%" }} />
           )}
           <Table aria-label="simple table">
-            <TableHead sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}>
+            <TableHead sx={{ backgroundColor: "#f3f3f3ff" }}>
               <TableRow>
                 <TableCell>Reference Number</TableCell>
                 <TableCell align="right">Request Date</TableCell>

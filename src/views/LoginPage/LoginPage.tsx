@@ -6,9 +6,8 @@ import LoginForm from "./LoginForm";
 import useCurrentUser from "../../hooks/useCurrentUser";
 import PageLoader from "../../components/PageLoader";
 import { useNavigate } from "react-router";
-import index1 from "../../assets/new1.png";
-import index2 from "../../assets/new2.png";
-import index3 from "../../assets/new3.png";
+import index1 from "../../assets/pic1.png";
+import index2 from "../../assets/pic2.png";
 
 function LoginPage() {
   const theme = useTheme();
@@ -51,7 +50,6 @@ function LoginPage() {
             images={[
               { src: index1, alt: "Welcome" },
               { src: index2, alt: "Health & Safety" },
-              { src: index3, alt: "Employee Engagement" },
             ]}
           />
           <Typography
@@ -66,17 +64,6 @@ function LoginPage() {
             }}
           >
             Welcome Back
-          </Typography>
-          <Typography
-            variant="subtitle2"
-            sx={{
-              fontWeight: "600",
-              color: "#525252",
-              margin: "1rem",
-              textAlign: "center",
-            }}
-          >
-            copyright © 2025 Sky Smart Technology, All Rights Reserved
           </Typography>
           <Typography
             variant="subtitle2"

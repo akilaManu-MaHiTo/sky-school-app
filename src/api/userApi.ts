@@ -37,6 +37,7 @@ export const userSchema = z.object({
   email: z.string(),
   userTypeId: z.number(),
   name: z.string(),
+  userName: z.string(),
   mobile: z.string(),
   emailVerifiedAt: z.string().nullable(),
   role: z.string(),
@@ -72,14 +73,14 @@ export const passwordResetSchema = z.object({
 export type PasswordReset = z.infer<typeof passwordResetSchema>;
 
 export async function login({
-  email,
+  userName,
   password,
 }: {
-  email: string;
+  userName: string;
   password: string;
 }) {
   const res = await axios.post("/api/login", {
-    email,
+    userName,
     password,
   });
   return res.data;

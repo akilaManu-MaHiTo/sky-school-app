@@ -44,7 +44,7 @@ import { useQuery } from "@tanstack/react-query";
 // import { getOrganization } from "../../api/OrganizationSettings/organizationSettingsApi";
 import logoUrl from "../../assets/company-logo1.jpg";
 
-const drawerWidth = 265;
+const drawerWidth = 275;
 
 const openedMixin = (theme: Theme): CSSObject => ({
   width: drawerWidth,
@@ -348,7 +348,7 @@ export default function MainLayout({ children }: Props) {
           open={open}
           PaperProps={{
             sx: {
-              backgroundColor: "#010f24",
+              backgroundColor: "#ffffffff",
               color: "#fff",
               elevation: 2,
             },
@@ -357,7 +357,15 @@ export default function MainLayout({ children }: Props) {
           <DrawerContent handleDrawerClose={handleDrawerClose} />
         </Drawer>
       )}
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          backgroundColor: "#f3f3f3ff",
+          minHeight: "100vh",
+        }}
+      >
         <DrawerHeader />
         {children}
       </Box>
@@ -427,7 +435,7 @@ const DrawerContent = ({
                 key={item.headline}
                 variant="body2"
                 sx={{
-                  color: "#7db0ff",
+                  color: "var(--pallet-blue)",
                   padding: "0.5rem 1rem",
                   fontWeight: 600,
                   textTransform: "uppercase",
@@ -563,7 +571,7 @@ const NestedItem = React.memo(
             fontSize: "0.8rem",
             paddingY: "0.2rem",
             alignItems: "center",
-            marginY: "0.1rem",
+            marginY: "0.4rem",
           }}
           disabled={item.disabled}
         >
@@ -571,7 +579,7 @@ const NestedItem = React.memo(
             style={{
               marginRight: "0.5rem",
               marginBottom: -4,
-              color: item.disabled ? "grey" : "#fff",
+              color: item.disabled ? "grey" : "#000000ff",
             }}
           >
             {item.icon}
@@ -580,7 +588,7 @@ const NestedItem = React.memo(
             variant="body2"
             sx={{
               textTransform: "capitalize",
-              color: item.disabled ? "grey" : "#fff",
+              color: item.disabled ? "grey" : "#000000ff",
             }}
           >
             {item.title}
@@ -658,19 +666,18 @@ export const LinkButton = React.memo(
             fontSize: "0.8rem",
             paddingY: "0.2rem",
             alignItems: "center",
-            borderLeft: isMatch ? "4px solid var(--pallet-orange)" : "none",
+            backgroundColor: isMatch ? "#dbe6f5ff" : "none",
+            borderLeft: isMatch ? "4px solid black" : "none",
+            marginY: "0.1rem",
           }}
           disabled={disabled}
         >
           <div
             style={{
               marginRight: "0.4rem",
+
               marginBottom: -5,
-              color: disabled
-                ? "grey"
-                : isMatch
-                ? "var(--pallet-orange)"
-                : "#fff",
+              color: disabled ? "grey" : isMatch ? "#070707ff" : "#070707ff",
             }}
           >
             {icon}
@@ -679,11 +686,7 @@ export const LinkButton = React.memo(
             variant="body2"
             sx={{
               textTransform: "capitalize",
-              color: disabled
-                ? "grey"
-                : isMatch
-                ? "var(--pallet-orange)"
-                : "#fff",
+              color: disabled ? "grey" : isMatch ? "#070707ff" : "#000000ff",
             }}
           >
             {title}

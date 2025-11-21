@@ -39,7 +39,7 @@ function LoginForm() {
   } = useForm({
     mode: "all",
     defaultValues: {
-      email: "",
+      userName: "",
       password: "",
     },
   });
@@ -52,14 +52,13 @@ function LoginForm() {
       enqueueSnackbar("Welcome Back!", { variant: "success" });
       navigate("/home");
     },
-    onError: () => {
-      enqueueSnackbar(`Login Failed`, {
-        variant: "error",
-      });
+    onError: (error: any) => {
+      const message = error?.data?.message || "Login Failed";
+      enqueueSnackbar(message, { variant: "error" });
     },
   });
 
-  const onLoginSubmit = (data: { email: string; password: string }) => {
+  const onLoginSubmit = (data: { userName: string; password: string }) => {
     loginMutation(data);
   };
 
@@ -97,33 +96,29 @@ function LoginForm() {
       <form onSubmit={handleSubmit(onLoginSubmit)}>
         <TextField
           required
-          id="email"
-          label="Email Address"
-          placeholder="sample@company.com"
-          error={!!errors.email}
+          id="userName"
+          label="User Name"
+          placeholder="Ex-JohnSmith"
+          error={!!errors.userName}
           fullWidth
-          type="email"
+          type="text"
           size="small"
           sx={{ marginTop: "0.5rem" }}
-          {...register("email", {
+          {...register("userName", {
             required: {
               value: true,
-              message: "Email is required",
+              message: "User Name is required",
             },
             minLength: {
               value: 5,
-              message: "Email must be at least 5 characters long",
+              message: "User Name must be at least 5 characters long",
             },
             maxLength: {
               value: 320,
-              message: "Email cannot exceed 320 characters long",
-            },
-            pattern: {
-              value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-              message: "Invalid email format",
+              message: "User Name cannot exceed 320 characters long",
             },
           })}
-          helperText={errors.email ? errors.email.message : ""}
+          helperText={errors.userName ? errors.userName.message : ""}
         />
 
         <TextField
