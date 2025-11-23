@@ -82,3 +82,8 @@ export const updateOrganization = async (organization: Organization) => {
     throw error;
   }
 };
+
+export async function getGradesData() {
+  const res = await axios.get(`/api/grade`);
+  return res.data;
+}
