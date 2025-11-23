@@ -429,22 +429,30 @@ const DrawerContent = ({
           if (item?.accessKey && !userPermissionObject[`${item?.accessKey}`])
             return null;
 
-          if (item?.headline) {
-            return (
-              <Typography
-                key={item.headline}
-                variant="body2"
-                sx={{
-                  color: "var(--pallet-blue)",
-                  padding: "0.5rem 1rem",
-                  fontWeight: 600,
-                  textTransform: "uppercase",
-                  marginTop: "0.5rem",
-                }}
-              >
-                {item.headline}
-              </Typography>
+          if (item.headline && item.accessKeys) {
+            const canShowHeadline = item.accessKeys.some(
+              (key) => userPermissionObject[key]
             );
+
+            if (canShowHeadline) {
+              return (
+                <Typography
+                  key={item.headline}
+                  variant="body2"
+                  sx={{
+                    color: "var(--pallet-blue)",
+                    padding: "0.5rem 1rem",
+                    fontWeight: 600,
+                    textTransform: "uppercase",
+                    marginTop: "0.5rem",
+                  }}
+                >
+                  {item.headline}
+                </Typography>
+              );
+            }
+
+            return null;
           }
 
           if (item.nestedItems) {
