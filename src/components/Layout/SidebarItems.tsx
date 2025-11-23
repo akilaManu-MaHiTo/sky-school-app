@@ -1,18 +1,13 @@
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import HomeIcon from "@mui/icons-material/Home";
-import LayersIcon from "@mui/icons-material/Layers";
-import ScienceIcon from "@mui/icons-material/Science";
-import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import KeyIcon from "@mui/icons-material/Key";
 import SchoolIcon from "@mui/icons-material/School";
-import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
 import Groups3Icon from "@mui/icons-material/Groups3";
 import LocalLibraryIcon from "@mui/icons-material/LocalLibrary";
 import BookmarkAddedIcon from "@mui/icons-material/BookmarkAdded";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import AssessmentOutlinedIcon from "@mui/icons-material/Assessment";
-import AddTaskIcon from '@mui/icons-material/AddTask';
+import AddTaskIcon from "@mui/icons-material/AddTask";
 import { PermissionKeys } from "../../views/Administration/SectionList";
 
 export interface SidebarItem {
@@ -23,6 +18,7 @@ export interface SidebarItem {
   href?: string;
   disabled?: boolean;
   accessKey?: string;
+  accessKeys?: string[];
   nestedItems?: {
     title: string;
     href: string;
@@ -43,27 +39,39 @@ export interface SidebarItem {
 export const sidebarItems: Array<SidebarItem> = [
   {
     headline: "Dashboard",
+    accessKeys: [
+      PermissionKeys.STUDENT_PARENT_DASHBOARD_VIEW,
+      PermissionKeys.TEACHERS_DASHBOARD_VIEW,
+      PermissionKeys.MANAGEMENT_DASHBOARD_VIEW,
+    ],
   },
   {
     title: "Student/Parent Dashboard",
     href: "/home",
     icon: <DashboardIcon fontSize="small" />,
-    accessKey: PermissionKeys.INSIGHT_VIEW,
+    accessKey: PermissionKeys.STUDENT_PARENT_DASHBOARD_VIEW,
   },
   {
     title: "Teachers Dashboard",
     href: "/student-dashboard",
     icon: <DashboardIcon fontSize="small" />,
-    accessKey: PermissionKeys.INSIGHT_VIEW,
+    accessKey: PermissionKeys.TEACHERS_DASHBOARD_VIEW,
   },
   {
     title: "Management Dashboard",
     href: "/management-dashboard",
     icon: <DashboardIcon fontSize="small" />,
-    accessKey: PermissionKeys.INSIGHT_VIEW,
+    accessKey: PermissionKeys.MANAGEMENT_DASHBOARD_VIEW,
   },
   {
     headline: "Administration",
+    accessKeys: [
+      PermissionKeys.ADMIN_USERS_VIEW,
+      PermissionKeys.ADMIN_ACCESS_MNG_VIEW,
+      PermissionKeys.SCHOOL_SETTINGS_VIEW,
+      PermissionKeys.ADD_CLASS_TEACHER_VIEW,
+      PermissionKeys.STUDENT_PROMOTION_VIEW,
+    ],
   },
   {
     title: "User Management",
@@ -93,7 +101,7 @@ export const sidebarItems: Array<SidebarItem> = [
         title: "School Settings",
         href: "/admin/school-management",
         icon: <SchoolIcon fontSize="small" />,
-        accessKey: PermissionKeys.ADMIN_USERS_VIEW,
+        accessKey: PermissionKeys.SCHOOL_SETTINGS_VIEW,
       },
     ],
   },
@@ -106,7 +114,7 @@ export const sidebarItems: Array<SidebarItem> = [
         title: "Add Class Teacher",
         href: "/admin/add-class-teacher",
         icon: <BookmarkAddedIcon fontSize="small" />,
-        accessKey: PermissionKeys.ADMIN_USERS_VIEW,
+        accessKey: PermissionKeys.ADD_CLASS_TEACHER_VIEW,
       },
     ],
   },
@@ -119,12 +127,19 @@ export const sidebarItems: Array<SidebarItem> = [
         title: "Student Promotion",
         href: "/admin/student-promotion",
         icon: <FileUploadIcon fontSize="small" />,
-        accessKey: PermissionKeys.ADMIN_USERS_VIEW,
+        accessKey: PermissionKeys.STUDENT_PROMOTION_VIEW,
       },
     ],
   },
   {
     headline: "Reports",
+    accessKeys: [
+      PermissionKeys.STUDENT_PARENT_PARENT_REPORTS_VIEW,
+      PermissionKeys.TEACHER_ClASS_REPORTS_VIEW,
+      PermissionKeys.TEACHER_STUDENT_REPORTS_VIEW,
+      PermissionKeys.MARKS_ENTRY_MONITORING_REPORTS_VIEW,
+      PermissionKeys.MANAGEMENT_STAFF_STUDENT_REPORTS_VIEW,
+    ],
   },
   {
     title: "Student/Parent Report",
@@ -135,7 +150,7 @@ export const sidebarItems: Array<SidebarItem> = [
         title: "Parent Report",
         href: "/admin/parent-report",
         icon: <DashboardIcon fontSize="small" />,
-        accessKey: PermissionKeys.ADMIN_USERS_VIEW,
+        accessKey: PermissionKeys.STUDENT_PARENT_PARENT_REPORTS_VIEW,
       },
     ],
   },
@@ -148,13 +163,13 @@ export const sidebarItems: Array<SidebarItem> = [
         title: "Class Report",
         href: "/admin/class-report",
         icon: <DashboardIcon fontSize="small" />,
-        accessKey: PermissionKeys.ADMIN_USERS_VIEW,
+        accessKey: PermissionKeys.TEACHER_ClASS_REPORTS_VIEW,
       },
       {
         title: "Student Report",
         href: "/admin/student-report",
         icon: <DashboardIcon fontSize="small" />,
-        accessKey: PermissionKeys.ADMIN_USERS_VIEW,
+        accessKey: PermissionKeys.TEACHER_STUDENT_REPORTS_VIEW,
       },
     ],
   },
@@ -167,23 +182,24 @@ export const sidebarItems: Array<SidebarItem> = [
         title: "Marks Entry Monitoring",
         href: "/admin/class-report",
         icon: <DashboardIcon fontSize="small" />,
-        accessKey: PermissionKeys.ADMIN_USERS_VIEW,
+        accessKey: PermissionKeys.MARKS_ENTRY_MONITORING_REPORTS_VIEW,
       },
       {
         title: "Student Report",
         href: "/admin/student-report",
         icon: <DashboardIcon fontSize="small" />,
-        accessKey: PermissionKeys.ADMIN_USERS_VIEW,
+        accessKey: PermissionKeys.MANAGEMENT_STAFF_STUDENT_REPORTS_VIEW,
       },
     ],
   },
   {
     headline: "Academics",
+    accessKeys: [PermissionKeys.ADD_MARKS_VIEW],
   },
   {
     title: "Add Marks",
     icon: <AddTaskIcon fontSize="small" />,
     href: "/",
-    accessKey: PermissionKeys.INSIGHT_VIEW,
+    accessKey: PermissionKeys.ADD_MARKS_VIEW,
   },
 ];

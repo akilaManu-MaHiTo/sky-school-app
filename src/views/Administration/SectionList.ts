@@ -123,8 +123,12 @@ export const PermissionSectionsMap: PermissionSection[] = [
     mainSection: "Reports",
     subSections: [
       {
+        break: true,
         name: "Student/Parent Reports",
-        key: "STUDENT_PARENT_REPORTS",
+      },
+      {
+        name: "Parent Reports",
+        key: "STUDENT_PARENT_PARENT_REPORTS",
         permissionsExists: {
           VIEW: true,
           CREATE: false,
@@ -133,8 +137,12 @@ export const PermissionSectionsMap: PermissionSection[] = [
         },
       },
       {
+        break: true,
         name: "Teacher Reports",
-        key: "TEACHER_REPORTS",
+      },
+      {
+        name: "Class Reports",
+        key: "TEACHER_ClASS_REPORTS",
         permissionsExists: {
           VIEW: true,
           CREATE: false,
@@ -143,8 +151,32 @@ export const PermissionSectionsMap: PermissionSection[] = [
         },
       },
       {
+        name: "Student Reports",
+        key: "TEACHER_STUDENT_REPORTS",
+        permissionsExists: {
+          VIEW: true,
+          CREATE: false,
+          EDIT: false,
+          DELETE: false,
+        },
+      },
+      {
+        break: true,
         name: "Management Staff Reports",
-        key: "MANAGEMENT_STAFF_REPORTS",
+      },
+      {
+        name: "Marks Entry Monitoring",
+        key: "MARKS_ENTRY_MONITORING_REPORTS",
+        permissionsExists: {
+          VIEW: true,
+          CREATE: false,
+          EDIT: false,
+          DELETE: false,
+        },
+      },
+      {
+        name: "Student Reports",
+        key: "MANAGEMENT_STAFF_STUDENT_REPORTS",
         permissionsExists: {
           VIEW: true,
           CREATE: false,
@@ -227,10 +259,17 @@ export enum PermissionKeys {
   STUDENT_PROMOTION_CREATE = "STUDENT_PROMOTION_CREATE",
   STUDENT_PROMOTION_EDIT = "STUDENT_PROMOTION_EDIT",
   STUDENT_PROMOTION_DELETE = "STUDENT_PROMOTION_DELETE",
-  // Reports
-  STUDENT_PARENT_REPORTS_VIEW = "STUDENT_PARENT_REPORTS_VIEW",
-  TEACHER_REPORTS_VIEW = "TEACHER_REPORTS_VIEW",
-  MANAGEMENT_STAFF_REPORTS_VIEW = "MANAGEMENT_STAFF_REPORTS_VIEW",
+  // Reports > Student/Parent Reports > Parent Reports
+  STUDENT_PARENT_PARENT_REPORTS_VIEW = "STUDENT_PARENT_PARENT_REPORTS_VIEW",
+  // Reports > Teacher Reports > Class Reports
+  TEACHER_ClASS_REPORTS_VIEW = "TEACHER_ClASS_REPORTS_VIEW",
+  // Reports > Teacher Reports > Student Reports
+  TEACHER_STUDENT_REPORTS_VIEW = "TEACHER_STUDENT_REPORTS_VIEW",
+  // Reports > Management Staff Reports > Marks Entry Monitoring
+  MARKS_ENTRY_MONITORING_REPORTS_VIEW = "MARKS_ENTRY_MONITORING_REPORTS_VIEW",
+  // Reports > Management Staff Reports > Student Reports
+  MANAGEMENT_STAFF_STUDENT_REPORTS_VIEW = "MANAGEMENT_STAFF_STUDENT_REPORTS_VIEW",
+  
   // Academics
   ADD_MARKS_VIEW = "ADD_MARKS_VIEW",
   ADD_MARKS_CREATE = "ADD_MARKS_CREATE",
@@ -288,14 +327,19 @@ export const defaultViewerPermissions: PermissionKeysObject = {
   STUDENT_PROMOTION_CREATE: true,
   STUDENT_PROMOTION_EDIT: true,
   STUDENT_PROMOTION_DELETE: true,
-  // Reports
-  STUDENT_PARENT_REPORTS_VIEW: true,
-  TEACHER_REPORTS_VIEW: true,
-  MANAGEMENT_STAFF_REPORTS_VIEW: true,
+  // Reports > Student/Parent Reports > Parent Reports
+  STUDENT_PARENT_PARENT_REPORTS_VIEW: true,
+  // Reports > Teacher Reports > Class Reports
+  TEACHER_ClASS_REPORTS_VIEW: true,
+  // Reports > Teacher Reports > Student Reports
+  TEACHER_STUDENT_REPORTS_VIEW: true,
+  // Reports > Management Staff Reports > Marks Entry Monitoring
+  MARKS_ENTRY_MONITORING_REPORTS_VIEW: true,
+  // Reports > Management Staff Reports > Student Reports
+  MANAGEMENT_STAFF_STUDENT_REPORTS_VIEW: true,
   // Academics
   ADD_MARKS_VIEW: true,
   ADD_MARKS_CREATE: true,
   ADD_MARKS_EDIT: true,
   ADD_MARKS_DELETE: true,
-
 };
