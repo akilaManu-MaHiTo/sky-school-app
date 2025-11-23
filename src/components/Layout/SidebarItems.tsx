@@ -47,13 +47,13 @@ export const sidebarItems: Array<SidebarItem> = [
   },
   {
     title: "Student/Parent Dashboard",
-    href: "/home",
+    href: "/student-parent-dashboard",
     icon: <DashboardIcon fontSize="small" />,
     accessKey: PermissionKeys.STUDENT_PARENT_DASHBOARD_VIEW,
   },
   {
     title: "Teachers Dashboard",
-    href: "/student-dashboard",
+    href: "/teacher-dashboard",
     icon: <DashboardIcon fontSize="small" />,
     accessKey: PermissionKeys.TEACHERS_DASHBOARD_VIEW,
   },
@@ -99,7 +99,7 @@ export const sidebarItems: Array<SidebarItem> = [
     nestedItems: [
       {
         title: "School Settings",
-        href: "/admin/school-management",
+        href: "/admin/school-settings",
         icon: <SchoolIcon fontSize="small" />,
         accessKey: PermissionKeys.SCHOOL_SETTINGS_VIEW,
       },
@@ -148,7 +148,7 @@ export const sidebarItems: Array<SidebarItem> = [
     nestedItems: [
       {
         title: "Parent Report",
-        href: "/admin/parent-report",
+        href: "/reports/parent-report",
         icon: <DashboardIcon fontSize="small" />,
         accessKey: PermissionKeys.STUDENT_PARENT_PARENT_REPORTS_VIEW,
       },
@@ -161,13 +161,13 @@ export const sidebarItems: Array<SidebarItem> = [
     nestedItems: [
       {
         title: "Class Report",
-        href: "/admin/class-report",
+        href: "/reports/teacher-class-report",
         icon: <DashboardIcon fontSize="small" />,
         accessKey: PermissionKeys.TEACHER_ClASS_REPORTS_VIEW,
       },
       {
         title: "Student Report",
-        href: "/admin/student-report",
+        href: "/reports/teacher-student-report",
         icon: <DashboardIcon fontSize="small" />,
         accessKey: PermissionKeys.TEACHER_STUDENT_REPORTS_VIEW,
       },
@@ -180,13 +180,13 @@ export const sidebarItems: Array<SidebarItem> = [
     nestedItems: [
       {
         title: "Marks Entry Monitoring",
-        href: "/admin/class-report",
+        href: "/reports/marks-entry-monitor",
         icon: <DashboardIcon fontSize="small" />,
         accessKey: PermissionKeys.MARKS_ENTRY_MONITORING_REPORTS_VIEW,
       },
       {
         title: "Student Report",
-        href: "/admin/student-report",
+        href: "/reports/management-student-report",
         icon: <DashboardIcon fontSize="small" />,
         accessKey: PermissionKeys.MANAGEMENT_STAFF_STUDENT_REPORTS_VIEW,
       },
@@ -199,7 +199,7 @@ export const sidebarItems: Array<SidebarItem> = [
   {
     title: "Add Marks",
     icon: <AddTaskIcon fontSize="small" />,
-    href: "/",
+    href: "/academics/add-marks",
     accessKey: PermissionKeys.ADD_MARKS_VIEW,
   },
 ];

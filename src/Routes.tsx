@@ -8,57 +8,66 @@ import PermissionDenied from "./components/PermissionDenied";
 import { useQuery } from "@tanstack/react-query";
 import { User, validateUser } from "./api/userApi";
 
-//Login Page
+// Login Page
 const LoginPage = React.lazy(() => import("./views/LoginPage/LoginPage"));
-
-//Register Page
+// Register Page
 const RegistrationPage = React.lazy(
   () => import("./views/RegistrationPage/RegistrationPage")
 );
-
-//Insight Page
+// Insight Page
 const InsightsPage = React.lazy(() => import("./views/Insights/Insight"));
 
-//Administration
-const UserTable = React.lazy(() => import("./views/Administration/UserTable"));
-const AccessManagementTable = React.lazy(
-  () => import("./views/Administration/AccessManagementTable")
+// Dashboards
+const StudentParentDashboard = React.lazy(
+  () => import("./components/UnderDevelopment")
 );
-
-//Design - Components
-const AccordionAndDividers = React.lazy(
-  () => import("./views/Components/AccordionAndDividers")
+const TeacherDashboard = React.lazy(
+  () => import("./components/UnderDevelopment")
 );
-const ImageDesigns = React.lazy(
-  () => import("./views/Components/ImageDesigns")
-);
-const TabPanel = React.lazy(() => import("./views/Components/TabPanel"));
-const UnderDevelopment = React.lazy(
+const ManagementDashboard = React.lazy(
   () => import("./components/UnderDevelopment")
 );
 
-//Design - Input Fields
-const TextField = React.lazy(() => import("./views/Components/TextField"));
-const DatePickers = React.lazy(() => import("./views/Components/DatePickers"));
-const OtherInputs = React.lazy(() => import("./views/Components/OtherInputs"));
+// Administration > User Management > All Users
+const UserTable = React.lazy(() => import("./views/Administration/UserTable"));
+// Administration > User Management > Access Management
+const AccessManagementTable = React.lazy(
+  () => import("./views/Administration/AccessManagementTable")
+);
+// Administration > School Management > School Settings
+const SchoolSettings = React.lazy(
+  () => import("./components/UnderDevelopment")
+);
+// Administration > Staff Management > Add Class Teacher
+const AddClassTeacher = React.lazy(
+  () => import("./components/UnderDevelopment")
+);
+// Administration > Student Management > Student Promotion
+const StudentPromotion = React.lazy(
+  () => import("./components/UnderDevelopment")
+);
 
-//Sample CRUD - Chemical management
-const ChemicalRequestTable = React.lazy(
-  () => import("./views/ChemicalMng/ChemicalRequestTable")
+// Reports > Student/Parent Reports > Parent Report
+const ParentReport = React.lazy(() => import("./components/UnderDevelopment"));
+// Reports > Teacher Reports > Class Report
+const TeacherClassReport = React.lazy(
+  () => import("./components/UnderDevelopment")
 );
-const ChemicalPurchaseInventoryTable = React.lazy(
-  () => import("./views/ChemicalMng/ChemicalPurchaseInventoryTable")
+// Reports > Teacher Reports > Student Report
+const TeacherStudentReport = React.lazy(
+  () => import("./components/UnderDevelopment")
 );
-const ChemicalTransactionTable = React.lazy(
-  () => import("./views/ChemicalMng/TransactionTable")
+// Reports > Management Staff Reports > Marks Entry Report
+const MarksEntryReport = React.lazy(
+  () => import("./components/UnderDevelopment")
 );
-const ChemicalDashboard = React.lazy(
-  () => import("./views/ChemicalMng/Dashboard")
+// Reports > Management Staff Reports > Student Report
+const ManagementStudentReport = React.lazy(
+  () => import("./components/UnderDevelopment")
 );
 
-const Autocomplete = React.lazy(
-  () => import("./views/Components/Autocomplete")
-);
+// Academics
+const AddMarks = React.lazy(() => import("./components/UnderDevelopment"));
 
 function withLayout(Layout: any, Component: any, restrictAccess = false) {
   return (
@@ -131,7 +140,37 @@ const AppRoutes = () => {
           )}
         />
 
-        {/* Admin Controller */}
+        {/* Dashboard > Student/Parent Dashboard */}
+        <Route
+          path="/student-parent-dashboard"
+          element={withLayout(
+            MainLayout,
+            StudentParentDashboard,
+            !userPermissionObject?.[
+              PermissionKeys.STUDENT_PARENT_DASHBOARD_VIEW
+            ]
+          )}
+        />
+        {/* Dashboard > Teacher Dashboard */}
+        <Route
+          path="/teacher-dashboard"
+          element={withLayout(
+            MainLayout,
+            TeacherDashboard,
+            !userPermissionObject?.[PermissionKeys.TEACHERS_DASHBOARD_VIEW]
+          )}
+        />
+        {/* Dashboard > Management Dashboard */}
+        <Route
+          path="/management-dashboard"
+          element={withLayout(
+            MainLayout,
+            ManagementDashboard,
+            !userPermissionObject?.[PermissionKeys.MANAGEMENT_DASHBOARD_VIEW]
+          )}
+        />
+
+        {/* Administration > User Management > All Users */}
         <Route
           path="/admin/users"
           element={withLayout(
@@ -140,6 +179,7 @@ const AppRoutes = () => {
             !userPermissionObject?.[PermissionKeys.INSIGHT_VIEW]
           )}
         />
+        {/* Administration > User Management > Access Management */}
         <Route
           path="/admin/access-management"
           element={withLayout(
@@ -148,138 +188,92 @@ const AppRoutes = () => {
             !userPermissionObject?.[PermissionKeys.ADMIN_USERS_VIEW]
           )}
         />
-
-        {/* Design - Components */}
+        {/* Administration > School Management > School Settings */}
         <Route
-          path="/components/accordion-divider"
+          path="/admin/school-settings"
           element={withLayout(
             MainLayout,
-            AccordionAndDividers,
-            !userPermissionObject?.[
-              PermissionKeys.COMPONENTS_ACCORDION_DIVIDER_VIEW
-            ]
+            SchoolSettings,
+            !userPermissionObject?.[PermissionKeys.SCHOOL_SETTINGS_VIEW]
           )}
         />
+        {/* Administration > Staff Management > Add Class Teacher */}
         <Route
-          path="/components/image-designs"
+          path="/admin/add-class-teacher"
           element={withLayout(
             MainLayout,
-            ImageDesigns,
-            !userPermissionObject?.[
-              PermissionKeys.COMPONENTS_IMAGE_DESIGNS_VIEW
-            ]
+            AddClassTeacher,
+            !userPermissionObject?.[PermissionKeys.ADD_CLASS_TEACHER_VIEW]
           )}
         />
+        {/* Administration > Student Management > Student Promotion */}
         <Route
-          path="/components/tab-panels"
+          path="/admin/student-promotion"
           element={withLayout(
             MainLayout,
-            TabPanel,
-            !userPermissionObject?.[PermissionKeys.COMPONENTS_TAB_PANEL_VIEW]
-          )}
-        />
-        <Route
-          path="/components/under-development"
-          element={withLayout(
-            MainLayout,
-            UnderDevelopment,
-            !userPermissionObject?.[
-              PermissionKeys.COMPONENTS_UNDER_DEVELOPMENT_VIEW
-            ]
+            StudentPromotion,
+            !userPermissionObject?.[PermissionKeys.STUDENT_PROMOTION_VIEW]
           )}
         />
 
-        {/* Design - Input Fields */}
+        {/* Reports > Student/Parent Reports > Parent Report */}
         <Route
-          path="/input-fields/autocomplete"
+          path="/reports/parent-report"
           element={withLayout(
             MainLayout,
-            Autocomplete,
+            ParentReport,
             !userPermissionObject?.[
-              PermissionKeys.INPUT_FIELDS_AUTOCOMPLETE_VIEW
+              PermissionKeys.STUDENT_PARENT_PARENT_REPORTS_VIEW
             ]
           )}
         />
+        {/* Reports > Teacher Reports > Class Report */}
         <Route
-          path="/input-fields/textfield"
+          path="/reports/teacher-class-report"
           element={withLayout(
             MainLayout,
-            TextField,
+            TeacherClassReport,
+            !userPermissionObject?.[PermissionKeys.TEACHER_ClASS_REPORTS_VIEW]
+          )}
+        />
+        {/* Reports > Teacher Reports > Student Report */}
+        <Route
+          path="/reports/teacher-student-report"
+          element={withLayout(
+            MainLayout,
+            TeacherStudentReport,
+            !userPermissionObject?.[PermissionKeys.TEACHER_STUDENT_REPORTS_VIEW]
+          )}
+        />
+        {/* Reports > Management Staff Reports > Marks Entry Report */}
+        <Route
+          path="/reports/marks-entry-monitor"
+          element={withLayout(
+            MainLayout,
+            MarksEntryReport,
             !userPermissionObject?.[
-              PermissionKeys.INPUT_FIELDS_TEXT_FIELDS_VIEW
+              PermissionKeys.MARKS_ENTRY_MONITORING_REPORTS_VIEW
             ]
           )}
         />
+        {/* Reports > Management Staff Reports > Student Report */}
         <Route
-          path="/input-fields/date-pickers"
+          path="/reports/management-student-report"
           element={withLayout(
             MainLayout,
-            DatePickers,
+            ManagementStudentReport,
             !userPermissionObject?.[
-              PermissionKeys.INPUT_FIELDS_DATE_PICKERS_VIEW
+              PermissionKeys.MANAGEMENT_STAFF_STUDENT_REPORTS_VIEW
             ]
           )}
         />
+        {/* Academics > Add Marks */}
         <Route
-          path="/input-fields/other-inputs"
+          path="/academics/add-marks"
           element={withLayout(
             MainLayout,
-            OtherInputs,
-            !userPermissionObject?.[
-              PermissionKeys.INPUT_FIELDS_OTHER_INPUTS_VIEW
-            ]
-          )}
-        />
-
-        {/* chemical management */}
-        <Route
-          path="/chemical-mng/dashboard"
-          element={withLayout(
-            MainLayout,
-            ChemicalDashboard,
-            !userPermissionObject?.[PermissionKeys.CHEMICAL_MNG_DASHBOARD_VIEW]
-          )}
-        />
-        <Route
-          path="/chemical-mng/chemical-requests"
-          element={withLayout(
-            MainLayout,
-            ChemicalRequestTable,
-            !userPermissionObject?.[
-              PermissionKeys.CHEMICAL_MNG_REQUEST_REGISTER_VIEW
-            ]
-          )}
-        />
-        <Route
-          path="/chemical-mng/purchase-inventory"
-          element={withLayout(
-            MainLayout,
-            ChemicalPurchaseInventoryTable,
-            !userPermissionObject?.[
-              PermissionKeys.CHEMICAL_MNG_PURCHASE_INVENTORY_VIEW
-            ]
-          )}
-        />
-        <Route
-          path="/chemical-mng/transaction"
-          element={withLayout(
-            MainLayout,
-            ChemicalTransactionTable,
-            !userPermissionObject?.[
-              PermissionKeys.CHEMICAL_MNG_TRANSACTION_VIEW
-            ]
-          )}
-        />
-        <Route
-          path="/chemical-mng/assigned-tasks"
-          element={withLayout(
-            MainLayout,
-            () => {
-              return <ChemicalRequestTable isAssignedTasks={true} />;
-            },
-            !userPermissionObject?.[
-              PermissionKeys.CHEMICAL_MNG_ASSIGNED_TASKS_VIEW
-            ]
+            AddMarks,
+            !userPermissionObject?.[PermissionKeys.ADD_MARKS_VIEW]
           )}
         />
       </Route>
