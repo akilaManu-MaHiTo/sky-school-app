@@ -28,6 +28,7 @@ import theme from "../../../theme";
 import EditIcon from "@mui/icons-material/Edit";
 import {
   getGradesData,
+  getOrganization,
   Organization,
 } from "../../../api/OrganizationSettings/organizationSettingsApi";
 import PageTitle from "../../../components/PageTitle";
@@ -36,6 +37,13 @@ import { useQuery } from "@tanstack/react-query";
 import CustomButton from "../../../components/CustomButton";
 import AddIcon from "@mui/icons-material/Add";
 import { AddOrEditAcademicGrade } from "./AddOrEditAcademicGrade";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import Filter1Icon from "@mui/icons-material/Filter1";
+import SubjectIcon from "@mui/icons-material/Subject";
+import ClassIcon from "@mui/icons-material/Class";
+import { DrawerContentItem } from "../../../components/ViewDataDrawer";
+import { hasSignedUrl } from "./schoolUtils";
+import EditOrganizationDialog from "./AddOrEditSchoolDialog";
 interface TabPanelProps {
   children?: React.ReactNode;
   dir?: string;
@@ -69,6 +77,8 @@ function a11yProps(index: number) {
 function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
   const [activeTab, setActiveTab] = useState(0);
   const [openAcademicGradeDialog, setOpenAcademicGradeDialog] = useState(false);
+  const [openEditOrganizationDialog, setOpenEditOrganizationDialog] =
+    useState(false);
   const [editGradeData, setEditGradeData] = useState(null);
   const { isTablet, isMobile } = useIsMobile();
 
@@ -80,9 +90,16 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
     { title: "School Settings" },
   ];
   const { data: gradeData, isFetching: isGradeDataFetching } = useQuery({
-    queryKey: ["grade-data"],
+    queryKey: ["academic-grades"],
     queryFn: getGradesData,
   });
+  const { data: organizationData } = useQuery({
+    queryKey: ["organization"],
+    queryFn: getOrganization,
+  });
+  const logo = Array.isArray(organizationData?.logoUrl)
+    ? organizationData?.logoUrl[0]
+    : organizationData?.logoUrl;
   return (
     <Stack>
       <Box
@@ -164,7 +181,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                     alignItems: "center",
                   }}
                 >
-                  <LocalShippingIcon fontSize="small" />
+                  <AccessTimeIcon fontSize="small" />
                   <Typography variant="body2" sx={{ ml: "0.3rem" }}>
                     Academic Years
                   </Typography>
@@ -181,7 +198,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                     alignItems: "center",
                   }}
                 >
-                  <ReceiptLongIcon fontSize="small" />
+                  <Filter1Icon fontSize="small" />
                   <Typography variant="body2" sx={{ ml: "0.3rem" }}>
                     Academic Grades
                   </Typography>
@@ -198,7 +215,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                     alignItems: "center",
                   }}
                 >
-                  <ApartmentIcon fontSize="small" />
+                  <SubjectIcon fontSize="small" />
                   <Typography variant="body2" sx={{ ml: "0.3rem" }}>
                     Academic Subjects
                   </Typography>
@@ -215,7 +232,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                     alignItems: "center",
                   }}
                 >
-                  <DeleteIcon fontSize="small" />
+                  <ClassIcon fontSize="small" />
                   <Typography variant="body2" sx={{ ml: "0.3rem" }}>
                     Academic Classes
                   </Typography>
@@ -225,7 +242,64 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
             />
           </Tabs>
         </AppBar>
-        <TabPanel value={activeTab} index={0} dir={theme.direction}></TabPanel>
+        <TabPanel value={activeTab} index={0} dir={theme.direction}>
+          <Stack
+            sx={{
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 5,
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: isMobile ? "center" : "flex-end",
+                width: "100%",
+              }}
+            >
+              <CustomButton
+                variant="contained"
+                sx={{
+                  backgroundColor: "var(--pallet-blue)",
+                }}
+                size="medium"
+                startIcon={<EditIcon />}
+                onClick={() => setOpenEditOrganizationDialog(true)}
+              >
+                Edit General Details
+              </CustomButton>
+            </Box>
+
+            {hasSignedUrl(logo) && (
+              <Box
+                sx={{
+                  position: "relative",
+                  display: "flex",
+                  justifyContent: "center",
+                  width: "100%",
+                }}
+              >
+                <img
+                  src={logo.signedUrl}
+                  alt="Organization Logo"
+                  style={{
+                    width: 300,
+                    height: 300,
+                    borderRadius: "50%",
+                    objectFit: "fill",
+                    boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+                    padding: "1rem",
+                  }}
+                />
+              </Box>
+            )}
+
+            <DrawerContentItem
+              label="School Name"
+              value={organizationData?.organizationName}
+            />
+          </Stack>
+        </TabPanel>
         <TabPanel value={activeTab} index={1} dir={theme.direction}></TabPanel>
         <TabPanel value={activeTab} index={2} dir={theme.direction}>
           <Stack>
@@ -281,7 +355,9 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                         }}
                       >
                         <TableCell align="center">{row.id}</TableCell>
-                        <TableCell align="center">{row.grade}</TableCell>
+                        <TableCell align="center">
+                          <Chip variant="filled" label={row.grade} sx={{backgroundColor: "var(--pallet-lighter-blue)"}}/>
+                        </TableCell>
                         <TableCell align="center">
                           <IconButton
                             onClick={() => {
@@ -318,6 +394,13 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
           open={openAcademicGradeDialog}
           setOpen={setOpenAcademicGradeDialog}
           defaultValues={editGradeData}
+        />
+      )}
+      {openEditOrganizationDialog && (
+        <EditOrganizationDialog
+          open={openEditOrganizationDialog}
+          handleClose={() => setOpenEditOrganizationDialog(false)}
+          defaultValues={organizationData}
         />
       )}
     </Stack>
