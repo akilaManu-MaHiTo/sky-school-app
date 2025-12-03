@@ -20,6 +20,16 @@ export const AcademicYearSchema = z.object({
 });
 export type AcademicYear = z.infer<typeof AcademicYearSchema>;
 
+export const SubjectSchema= z.object({
+  id: z.number(),
+  subjectName: z.string(),
+  subjectCode: z.string(),
+  isBasketSubject: z.boolean(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+export type AcademicSubject= z.infer<typeof SubjectSchema>;
+
 export async function getGradesData() {
   const res = await axios.get(`/api/grade`);
   return res.data;

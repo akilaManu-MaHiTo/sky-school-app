@@ -26,6 +26,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import {
   getGradesData,
   getOrganization,
+  getSubjectData,
   getYearsData,
   Organization,
 } from "../../../api/OrganizationSettings/organizationSettingsApi";
@@ -47,6 +48,10 @@ import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal
 import { deleteAcademicYear } from "../../../api/OrganizationSettings/academicGradeApi";
 import queryClient from "../../../state/queryClient";
 import { enqueueSnackbar } from "notistack";
+import SearchInput from "../../../components/SearchBar";
+import { useDebounce } from "../../../util/useDebounce";
+import { AddOrEditSubjects } from "./AddOrEditSubjects";
+import { set } from "date-fns";
 interface TabPanelProps {
   children?: React.ReactNode;
   dir?: string;
@@ -91,6 +96,11 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
   const [openDeleteAcademicYearDialog, setOpenDeleteAcademicYearDialog] =
     useState(false);
 
+  const [openAddOrEditSubjectDialog, setOpenAddOrEditSubjectDialog] =
+    useState(false);
+  const [editSubjectData, setEditSubjectData] = useState(null);
+
+  const [searchQuery, setSearchQuery] = useState("");
   const { isTablet, isMobile } = useIsMobile();
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -112,11 +122,31 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
     queryKey: ["organization"],
     queryFn: getOrganization,
   });
+
+  const debouncedQuery = useDebounce(searchQuery, 1000);
+  const {
+    data: searchedSubjectData,
+    refetch: researchSubjectData,
+    isFetching: isSearchingSubjects,
+  } = useQuery({
+    queryKey: ["subject-data", debouncedQuery],
+    queryFn: ({ queryKey }) => getSubjectData({ query: queryKey[1] }),
+  });
+  const handleSearch = async (query: string) => {
+    console.log("Searching for:", query);
+    setSearchQuery(query);
+    try {
+      await researchSubjectData();
+    } catch (error) {
+      console.error("Search failed:", error);
+    }
+  };
+
   const logo = Array.isArray(organizationData?.logoUrl)
     ? organizationData?.logoUrl[0]
     : organizationData?.logoUrl;
-  
-    const {
+
+  const {
     mutate: deleteAcademicYearMutation,
     isPending: isAcademicYearDeleting,
   } = useMutation({
@@ -536,7 +566,175 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
             </TableContainer>
           </Stack>
         </TabPanel>
-        <TabPanel value={activeTab} index={3} dir={theme.direction}></TabPanel>
+        <TabPanel value={activeTab} index={3} dir={theme.direction}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginBottom: theme.spacing(2),
+            }}
+          >
+            <CustomButton
+              variant="contained"
+              sx={{
+                backgroundColor: "var(--pallet-blue)",
+              }}
+              size="medium"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setEditSubjectData(null);
+                setOpenAddOrEditSubjectDialog(true);
+              }}
+            >
+              Add New Subject
+            </CustomButton>
+          </Box>
+          <Box mb={4} display="flex" justifyContent="flex-start">
+            <SearchInput
+              placeholder="Search Subjects..."
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onSearch={handleSearch}
+              isSearching={isSearchingSubjects}
+            />
+          </Box>
+
+          <Stack spacing={3}>
+            {isSearchingSubjects ? (
+              <Box sx={{ py: 4 }}>
+                <LinearProgress sx={{ width: "100%", borderRadius: 1 }} />
+              </Box>
+            ) : searchedSubjectData && searchedSubjectData.length > 0 ? (
+              searchedSubjectData
+                .filter(
+                  (item: any) =>
+                    Array.isArray(item.subjects) && item.subjects.length > 0
+                )
+                .map((item: any) => (
+                  <Box key={item.letter} sx={{ mb: 2 }}>
+                    <Chip
+                      label={item.letter}
+                      sx={{
+                        mb: 2,
+                        fontSize: "18px",
+                        fontWeight: "700",
+                        borderRadius: "8px",
+                        padding: "8px 16px",
+                        height: "40px",
+                        backgroundColor: "var(--pallet-blue)",
+                        color: "white",
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      }}
+                    />
+
+                    <Stack spacing={1.5}>
+                      {item.subjects.map((subject: any) => (
+                        <Paper
+                          key={subject.id}
+                          elevation={2}
+                          sx={{
+                            padding: 2.5,
+                            borderRadius: 2,
+                            transition: "all 0.2s ease-in-out",
+                            border: "1px solid",
+                            borderColor: "divider",
+                          }}
+                        >
+                          <Stack
+                            direction={{ xs: "column", sm: "row" }}
+                            spacing={{ xs: 1, sm: 3 }}
+                            alignItems={{ xs: "flex-start", sm: "center" }}
+                          >
+                            <Box
+                              sx={{
+                                minWidth: 60,
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Chip
+                                label={subject.isBasketSubject ? "B" : "NB"}
+                                size="small"
+                                sx={{
+                                  backgroundColor: "var(--pallet-lighter-blue)",
+                                  fontWeight: "600",
+                                  fontSize: "12px",
+                                }}
+                              />
+                            </Box>
+
+                            <Box sx={{ flex: 1 }}>
+                              <Box></Box>
+                              <Typography
+                                variant="inherit"
+                                sx={{
+                                  mb: 0.5,
+                                }}
+                              >
+                                {subject.subjectName}
+                              </Typography>
+
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: "text.secondary",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 0.5,
+                                }}
+                              >
+                                <SubjectIcon fontSize="small" />
+                                {subject.subjectCode}
+                              </Typography>
+                            </Box>
+
+                            <Box>
+                              <IconButton
+                                onClick={() => {
+                                  setEditSubjectData(subject);
+                                  setOpenAddOrEditSubjectDialog(true);
+                                }}
+                              >
+                                <EditIcon color="primary" />
+                              </IconButton>
+                            </Box>
+                            <Box>
+                              <IconButton>
+                                <DeleteIcon color="error" />
+                              </IconButton>
+                            </Box>
+                          </Stack>
+                        </Paper>
+                      ))}
+                    </Stack>
+                  </Box>
+                ))
+            ) : (
+              <Paper
+                elevation={0}
+                sx={{
+                  py: 8,
+                  textAlign: "center",
+                  backgroundColor: "var(--pallet-lighter-grey)",
+                  borderRadius: 2,
+                }}
+              >
+                <SubjectIcon
+                  sx={{ fontSize: 64, color: "text.disabled", mb: 2 }}
+                />
+                <Typography
+                  variant="h6"
+                  sx={{ color: "text.secondary", mb: 1 }}
+                >
+                  No subjects found
+                </Typography>
+                <Typography variant="body2" sx={{ color: "text.disabled" }}>
+                  Try adjusting your search criteria
+                </Typography>
+              </Paper>
+            )}
+          </Stack>
+        </TabPanel>
         <TabPanel value={activeTab} index={4} dir={theme.direction}></TabPanel>
       </Box>
       {openAcademicGradeDialog && (
@@ -560,6 +758,13 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
           defaultValues={editAcademicYearData}
         />
       )}
+      {openAddOrEditSubjectDialog && (
+        <AddOrEditSubjects
+          open={openAddOrEditSubjectDialog}
+          setOpen={setOpenAddOrEditSubjectDialog}
+          defaultValues={editSubjectData}
+        />
+      )}
       {openDeleteAcademicYearDialog && (
         <DeleteConfirmationModal
           open={openDeleteAcademicYearDialog}
@@ -578,11 +783,11 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
           }}
           onSuccess={() => {
             setOpenDeleteAcademicYearDialog(false);
-            setEditAcademicYearData(null)
+            setEditAcademicYearData(null);
           }}
           handleReject={() => {
-            setOpenDeleteAcademicYearDialog(false)
-            setEditAcademicYearData(null)
+            setOpenDeleteAcademicYearDialog(false);
+            setEditAcademicYearData(null);
           }}
         />
       )}

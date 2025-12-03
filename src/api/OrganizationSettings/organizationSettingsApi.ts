@@ -91,3 +91,7 @@ export async function getYearsData() {
   const res = await axios.get(`/api/year`);
   return res.data;
 }
+export async function getSubjectData({query}:{query:string}) {
+  const res = await axios.get(`/api/subject?search=${query}`);
+  return res.data;
+}
