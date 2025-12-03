@@ -36,7 +36,7 @@ const AccessManagementTable = React.lazy(
 );
 // Administration > School Management > School Settings
 const SchoolSettings = React.lazy(
-  () => import("./components/UnderDevelopment")
+  () => import("./views/Administration/SchoolManagement/SchoolSettings")
 );
 // Administration > Staff Management > Add Class Teacher
 const AddClassTeacher = React.lazy(
