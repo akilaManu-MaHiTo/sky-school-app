@@ -18,6 +18,7 @@ import { useForm } from "react-hook-form";
 import {
   AcademicGrade,
   createAcademicGrade,
+  updateAcademicGrade,
 } from "../../../api/OrganizationSettings/academicGradeApi";
 import useIsMobile from "../../../customHooks/useIsMobile";
 import queryClient from "../../../state/queryClient";
@@ -50,7 +51,12 @@ export const AddOrEditAcademicGrade = ({
   console.log("defaultValues", defaultValues);
 
   const handleCreateNewGrade = (data) => {
-    createAcademicGradeMutation(data);
+    if (defaultValues) {
+      updateAcademicGradeMutation(data);
+      return;
+    } else {
+      createAcademicGradeMutation(data);
+    }
   };
   const {
     mutate: createAcademicGradeMutation,
@@ -69,6 +75,27 @@ export const AddOrEditAcademicGrade = ({
     },
     onError: (error: any) => {
       const message = error?.data?.message || "Academic Grade Create Failed";
+      enqueueSnackbar(message, { variant: "error" });
+    },
+  });
+
+  const {
+    mutate: updateAcademicGradeMutation,
+    isPending: isAcademicGradeUpdating,
+  } = useMutation({
+    mutationFn: updateAcademicGrade,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["academic-grades"],
+      });
+      enqueueSnackbar("Academic Grade Updated Successfully!", {
+        variant: "success",
+      });
+      reset();
+      setOpen(false);
+    },
+    onError: (error: any) => {
+      const message = error?.data?.message || "Academic Grade Update Failed";
       enqueueSnackbar(message, { variant: "error" });
     },
   });
@@ -160,7 +187,7 @@ export const AddOrEditAcademicGrade = ({
           }
           onClick={handleSubmit(handleCreateNewGrade)}
         >
-          Add New Grade
+          {defaultValues ? "Update Grade" : "Add New Grade"}
         </CustomButton>
       </DialogActions>
     </Dialog>

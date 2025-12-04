@@ -47,6 +47,14 @@ export const createAcademicGrade = async (academicGrade: AcademicGrade) => {
   const res = await axios.post(`/api/grade`, academicGrade);
   return res.data;
 }
+export const updateAcademicGrade = async (academicGrade: AcademicGrade) => {
+  const res = await axios.post(`/api/grade/${academicGrade.id}`, academicGrade);
+  return res.data;
+}
+export const deleteAcademicGrade = async (id: String) => {
+  const res = await axios.delete(`/api/grade/${id}`);
+  return res.data;
+}
 
 export const createAcademicYear = async (academicYear: AcademicYear) => {
   const res = await axios.post(`/api/year`, academicYear);
