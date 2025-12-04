@@ -497,10 +497,9 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                 maxWidth: isMobile ? "65vw" : "100%",
               }}
             >
-              {isYearDataFetching ||
-                (isAcademicYearDeleting && (
-                  <LinearProgress sx={{ width: "100%" }} />
-                ))}
+              {(isYearDataFetching || isAcademicYearDeleting) && (
+                <LinearProgress sx={{ width: "100%" }} />
+              )}
               <Table aria-label="simple table">
                 <TableHead
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
@@ -613,10 +612,9 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                 maxWidth: isMobile ? "88vw" : "100%",
               }}
             >
-              {isGradeDataFetching ||
-                (isAcademicGradeDeleting && (
-                  <LinearProgress sx={{ width: "100%" }} />
-                ))}
+              {(isGradeDataFetching || isAcademicGradeDeleting) && (
+                <LinearProgress sx={{ width: "100%" }} />
+              )}
               <Table aria-label="simple table">
                 <TableHead
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
@@ -882,10 +880,9 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
               elevation={2}
               sx={{ overflowX: "auto", maxWidth: isMobile ? "88vw" : "100%" }}
             >
-              {isClassDataFetching ||
-                (isAcademicClassDeleting && (
-                  <LinearProgress sx={{ width: "100%" }} />
-                ))}
+              {(isClassDataFetching || isAcademicClassDeleting) && (
+                <LinearProgress sx={{ width: "100%" }} />
+              )}
               <Table aria-label="classes table">
                 <TableHead
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
