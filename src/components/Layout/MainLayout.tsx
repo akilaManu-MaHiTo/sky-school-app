@@ -538,6 +538,7 @@ const DrawerContent = ({
           deleteFunc={async () => {
             localStorage.removeItem("token");
             navigate("/");
+            window.location.reload();
           }}
           onSuccess={() => {
             setLogoutDialogOpen(false);

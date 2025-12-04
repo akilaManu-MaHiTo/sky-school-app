@@ -1,9 +1,5 @@
 import { Box, Stack, Typography } from "@mui/material";
-import welcome from "../../assets/welcomeInsight.png";
 import useCurrentUser from "../../hooks/useCurrentUser";
-import { getOrganization } from "../../api/OrganizationSettings/organizationSettingsApi";
-import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
 import insightImage from "../../assets/welcomeInsight.png";
 
 function Insight() {
@@ -16,7 +12,7 @@ function Insight() {
         align="center"
         sx={{ mt: 2, mb: 2, fontWeight: "bold", color: "var(--pallet-orange)" }}
       >
-        {`Welcome ${user?.name}!`}
+        {`Welcome ${user?.name || user?.userName}!`}
       </Typography>
       <Box
         component="img"
