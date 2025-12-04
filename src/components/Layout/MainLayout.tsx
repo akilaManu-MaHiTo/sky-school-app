@@ -143,6 +143,13 @@ export default function MainLayout({ children }: Props) {
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [openEditUserRoleDialog, setOpenEditUserRoleDialog] = useState(false);
   const statusColor = user?.availability ? "#44b700" : "#f44336";
+  const { data: organizationData } = useQuery({
+    queryKey: ["organization"],
+    queryFn: getOrganization,
+  });
+  const logo = Array.isArray(organizationData?.logoUrl)
+    ? organizationData?.logoUrl[0]
+    : organizationData?.logoUrl;
 
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -204,6 +211,27 @@ export default function MainLayout({ children }: Props) {
                   <ChevronLeftIcon sx={{ fontSize: 32 }} />
                 )}
               </IconButton>
+              {isMobile && hasSignedUrl(logo) && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    width: "100%",
+                  }}
+                >
+                  <img
+                    src={logo.signedUrl}
+                    alt="Organization Logo"
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: "50%",
+                      objectFit: "fill",
+                      boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+                    }}
+                  />
+                </Box>
+              )}
             </Box>
 
             {!isMobile && (
@@ -386,6 +414,7 @@ const DrawerContent = ({
 }) => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const { user } = useCurrentUser();
   const { data: organizationData } = useQuery({
@@ -405,7 +434,7 @@ const DrawerContent = ({
   return (
     <>
       <DrawerHeader sx={{ justifyContent: "flex-start" }}>
-        {hasSignedUrl(logo) && (
+        {!isMobile && hasSignedUrl(logo) && (
           <Box
             sx={{
               display: "flex",

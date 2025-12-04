@@ -145,24 +145,24 @@ function ChemicalRequestTable({
     chemicalRequests,
   ]);
   const isCreateDisabled = !useCurrentUserHaveAccess(
-    PermissionKeys.CHEMICAL_MNG_REQUEST_REGISTER_CREATE
+    PermissionKeys.INSIGHT_VIEW
   );
   const isAssignedCreateDisabled = !useCurrentUserHaveAccess(
-    PermissionKeys.CHEMICAL_MNG_ASSIGNED_TASKS_CREATE
+    PermissionKeys.INSIGHT_VIEW
   );
 
   const isEditDisabled = !useCurrentUserHaveAccess(
-    PermissionKeys.CHEMICAL_MNG_REQUEST_REGISTER_EDIT
+    PermissionKeys.INSIGHT_VIEW
   );
   const isAssignedEditDisabled = !useCurrentUserHaveAccess(
-    PermissionKeys.CHEMICAL_MNG_ASSIGNED_TASKS_EDIT
+    PermissionKeys.INSIGHT_VIEW
   );
 
   const isDeleteDisabled = !useCurrentUserHaveAccess(
-    PermissionKeys.CHEMICAL_MNG_REQUEST_REGISTER_DELETE
+    PermissionKeys.INSIGHT_VIEW
   );
   const isAssignedDeleteDisabled = !useCurrentUserHaveAccess(
-    PermissionKeys.CHEMICAL_MNG_ASSIGNED_TASKS_DELETE
+    PermissionKeys.INSIGHT_VIEW
   );
 
   return (
