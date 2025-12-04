@@ -46,7 +46,7 @@ export const sidebarItems: Array<SidebarItem> = [
     ],
   },
   {
-    title: "Student/Parent Dashboard",
+    title: "Student Dashboard",
     href: "/student-parent-dashboard",
     icon: <DashboardIcon fontSize="small" />,
     accessKey: PermissionKeys.STUDENT_PARENT_DASHBOARD_VIEW,

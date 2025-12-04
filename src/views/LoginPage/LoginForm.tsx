@@ -18,8 +18,10 @@ import LoginIcon from "@mui/icons-material/Login";
 import ForgotPasswordDialog from "./ForgotPasswordDialog";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { login } from "../../api/userApi";
+import { getOrganization } from "../../api/OrganizationSettings/organizationSettingsApi";
+import { hasSignedUrl } from "../Administration/SchoolManagement/schoolUtils";
 
 function LoginForm() {
   const theme = useTheme();
@@ -27,6 +29,14 @@ function LoginForm() {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const { data: organizationData } = useQuery({
+    queryKey: ["organization"],
+    queryFn: getOrganization,
+  });
+  const logo = Array.isArray(organizationData?.logoUrl)
+    ? organizationData?.logoUrl[0]
+    : organizationData?.logoUrl;
 
   const [showPassword, setShowPassword] = useState(false);
   const [openForgotPasswordDialog, setOpenForgotPasswordDialog] =
@@ -73,13 +83,26 @@ function LoginForm() {
       }}
     >
       <Box>
-        <img src={companyLogo} alt="logo" height={"65em"} />
-        {/* <img
-          src={groupLogo}
-          alt="logo"
-          style={{ marginLeft: "1rem" }}
-          height={"50rem"}
-        /> */}
+        {hasSignedUrl(logo) && (
+          <Box
+            sx={{
+              display: "flex",
+              width: "100%",
+            }}
+          >
+            <img
+              src={logo.signedUrl}
+              alt="Organization Logo"
+              style={{
+                width: 100,
+                height: 100,
+                borderRadius: "50%",
+                objectFit: "fill",
+                boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+              }}
+            />
+          </Box>
+        )}
       </Box>
       <Box>
         <Typography variant={"body2"}>
