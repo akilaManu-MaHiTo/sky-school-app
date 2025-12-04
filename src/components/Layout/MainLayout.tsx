@@ -41,8 +41,9 @@ import ViewProfileDataDrawer, {
 } from "../ViewProfileDataDrawer";
 import ProfileImage from "../ProfileImageComponent";
 import { useQuery } from "@tanstack/react-query";
-// import { getOrganization } from "../../api/OrganizationSettings/organizationSettingsApi";
+import { getOrganization } from "../../api/OrganizationSettings/organizationSettingsApi";
 import logoUrl from "../../assets/company-logo1.jpg";
+import { hasSignedUrl } from "../../views/Administration/SchoolManagement/schoolUtils";
 
 const drawerWidth = 275;
 
@@ -189,17 +190,22 @@ export default function MainLayout({ children }: Props) {
               >
                 <MenuIcon />
               </IconButton>
-              {logoUrl && (
-                <Box>
-                  <img
-                    src={logoUrl}
-                    alt="logo"
-                    height={"45rem"}
-                    style={{ marginTop: "10px" }}
-                  />
-                </Box>
-              )}
+              <IconButton
+                onClick={handleDrawerClose}
+                sx={[
+                  { color: "var(--pallet-blue)" },
+                  isMobile && { display: "none" },
+                  !open && !isMobile && { display: "none" },
+                ]}
+              >
+                {theme.direction === "rtl" ? (
+                  <ChevronRightIcon fontSize="medium" />
+                ) : (
+                  <ChevronLeftIcon sx={{ fontSize: 32 }} />
+                )}
+              </IconButton>
             </Box>
+
             {!isMobile && (
               <Box
                 sx={{
@@ -225,13 +231,13 @@ export default function MainLayout({ children }: Props) {
                   sx={{ color: "#000", display: "flex" }}
                 >
                   <span className="slider-text" style={{ fontWeight: 600 }}>
-                    Sustainability
+                    Performance
                   </span>
                   <span className="slider-text" style={{ fontWeight: 600 }}>
-                    Health & Safety
+                    Reliability
                   </span>
                   <span className="slider-text" style={{ fontWeight: 600 }}>
-                    Social
+                    Excellence
                   </span>
                 </Typography>
               </Box>
@@ -334,7 +340,7 @@ export default function MainLayout({ children }: Props) {
           }}
           PaperProps={{
             sx: {
-              backgroundColor: "#010f24",
+              backgroundColor: "#fff",
               color: "#fff",
               elevation: 2,
             },
@@ -382,6 +388,13 @@ const DrawerContent = ({
   const { enqueueSnackbar } = useSnackbar();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const { user } = useCurrentUser();
+  const { data: organizationData } = useQuery({
+    queryKey: ["organization"],
+    queryFn: getOrganization,
+  });
+  const logo = Array.isArray(organizationData?.logoUrl)
+    ? organizationData?.logoUrl[0]
+    : organizationData?.logoUrl;
 
   const userPermissionObject = useMemo(() => {
     if (user && user?.permissionObject) {
@@ -392,29 +405,28 @@ const DrawerContent = ({
   return (
     <>
       <DrawerHeader sx={{ justifyContent: "flex-start" }}>
-        <IconButton onClick={handleDrawerClose}>
-          {theme.direction === "rtl" ? (
-            <ChevronRightIcon
-              sx={{
-                color: "#fff",
+        {hasSignedUrl(logo) && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              width: "100%",
+              m: "2rem",
+            }}
+          >
+            <img
+              src={logo.signedUrl}
+              alt="Organization Logo"
+              style={{
+                width: 100,
+                height: 100,
+                borderRadius: "50%",
+                objectFit: "fill",
+                boxShadow: "0 0 10px rgba(0,0,0,0.1)",
               }}
             />
-          ) : (
-            <ChevronLeftIcon
-              sx={{
-                color: "#fff",
-              }}
-            />
-          )}
-        </IconButton>
-        <Typography
-          variant="subtitle1"
-          noWrap
-          component="div"
-          sx={{ color: "#7db0ff" }}
-        >
-          Hello, Welcome!
-        </Typography>
+          </Box>
+        )}
       </DrawerHeader>
       <Divider sx={{ marginBottom: "1rem", backgroundColor: "#7db0ff" }} />
       <Box

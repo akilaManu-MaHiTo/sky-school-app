@@ -7,6 +7,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
 import { QueryClientProvider } from "@tanstack/react-query";
 import queryClient from "./state/queryClient.ts";
+import { OrganizationHeadSetter } from "../src/utils/index.html";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <CssBaseline />
           <BrowserRouter>
             <SnackbarProvider maxSnack={3} autoHideDuration={2500}>
+              <OrganizationHeadSetter />
               <AppRoutes />
             </SnackbarProvider>
           </BrowserRouter>

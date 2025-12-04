@@ -806,28 +806,38 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                               </Typography>
                             </Box>
 
-                            <Box>
-                              <IconButton
-                                onClick={() => {
-                                  setEditSubjectData(subject);
-                                  setOpenAddOrEditSubjectDialog(true);
-                                }}
-                                disabled={isAcademicSubjectDeleting}
-                              >
-                                <EditIcon color="primary" />
-                              </IconButton>
-                            </Box>
-                            <Box>
-                              <IconButton
-                                onClick={() => {
-                                  setEditSubjectData(subject);
-                                  setOpenDeleteAcademicSubjectDialog(true);
-                                }}
-                                disabled={isAcademicSubjectDeleting}
-                              >
-                                <DeleteIcon color="error" />
-                              </IconButton>
-                            </Box>
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              sx={{
+                                justifyContent: isMobile
+                                  ? "space-between"
+                                  : "flex-end",
+                              }}
+                            >
+                              <Box>
+                                <IconButton
+                                  onClick={() => {
+                                    setEditSubjectData(subject);
+                                    setOpenAddOrEditSubjectDialog(true);
+                                  }}
+                                  disabled={isAcademicSubjectDeleting}
+                                >
+                                  <EditIcon color="primary" />
+                                </IconButton>
+                              </Box>
+                              <Box>
+                                <IconButton
+                                  onClick={() => {
+                                    setEditSubjectData(subject);
+                                    setOpenDeleteAcademicSubjectDialog(true);
+                                  }}
+                                  disabled={isAcademicSubjectDeleting}
+                                >
+                                  <DeleteIcon color="error" />
+                                </IconButton>
+                              </Box>
+                            </Stack>
                           </Stack>
                         </Paper>
                       ))}
