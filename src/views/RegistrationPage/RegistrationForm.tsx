@@ -9,27 +9,18 @@ import {
   useMediaQuery,
   useTheme,
   Autocomplete,
+  ToggleButtonGroup,
+  ToggleButton,
 } from "@mui/material";
-import { useState, useEffect } from "react";
-import groupLogo from "../../assets/group-logo.png";
+import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import CustomButton from "../../components/CustomButton";
 import LoginIcon from "@mui/icons-material/Login";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { registerUser } from "../../api/userApi";
-import SwitchButton from "../../components/SwitchButton";
-import AutoCheckBox from "../../components/AutoCheckbox";
+import { EmployeeType, registerUser } from "../../api/userApi";
 import companyLogo from "../../assets/company-logo1.jpg";
-
-//API Imports
-import { departmentSchema, fetchDepartmentData } from "../../api/departmentApi";
-import { factorySchema, fetchFactoryData } from "../../api/factoryApi";
-import {
-  jobPositionSchema,
-  fetchJobPositionData,
-} from "../../api/jobPositionApi";
 
 function RegistrationForm() {
   const theme = useTheme();
@@ -37,29 +28,7 @@ function RegistrationForm() {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [selectedFactories, setSelectedFactories] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
-
-  //API Fetch Data
-  // const [departments, setDepartments] = useState<departmentSchema[]>([]);
-  // const [factory, setFactory] = useState<factorySchema[]>([]);
-  // const [jobPositions, setJobPositions] = useState<jobPositionSchema[]>([]);
-
-  const { data: departments, isFetched: isDepartmentsFetched } = useQuery({
-    queryKey: ["departments"],
-    queryFn: fetchDepartmentData,
-  });
-
-  const { data: factories, isFetched: isFactoryFetched } = useQuery({
-    queryKey: ["factories"],
-    queryFn: fetchFactoryData,
-  });
-
-  const { data: jobPositions, isFetched: isJobPositionsFetched } = useQuery({
-    queryKey: ["jobPositions"],
-    queryFn: fetchJobPositionData,
-  });
-
   const {
     register,
     handleSubmit,
@@ -73,23 +42,20 @@ function RegistrationForm() {
       password: "",
       mobileNumber: null,
       name: "",
+      userName: "",
       confirmPassword: "",
-      isCompanyEmployee: false,
-      jobPosition: "",
-      department: "",
-      assignedFactory: selectedFactories,
+      employeeType: "",
       employeeNumber: "",
     },
   });
 
-  const isNotEmployee = watch("isCompanyEmployee");
   const userPassword = watch("password");
+  const userEmployeeType = watch("employeeType");
 
   const { mutate: registrationMutation, isPending } = useMutation({
     mutationFn: registerUser,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["current-user"] });
-      localStorage.setItem("token", data?.access_token);
       enqueueSnackbar("Account Created Successfully!", { variant: "success" });
       navigate("/home");
     },
@@ -102,39 +68,8 @@ function RegistrationForm() {
   });
 
   const onRegistrationSubmit = (data) => {
-    if (data.isCompanyEmployee && data.assignedFactory.length === 0) {
-      enqueueSnackbar("Please select at least one factory.", {
-        variant: "error",
-      });
-      return;
-    }
     registrationMutation(data);
   };
-
-  //API functions to get data
-  // useEffect(() => {
-  //   async function getDepartments() {
-  //     const data = await fetchDepartmentData();
-  //     setDepartments(data);
-  //   }
-  //   getDepartments();
-  // }, []);
-
-  // useEffect(() => {
-  //   async function getFactory() {
-  //     const data = await fetchFactoryData();
-  //     setFactory(data);
-  //   }
-  //   getFactory();
-  // }, []);
-
-  // useEffect(() => {
-  //   async function getJobPosition() {
-  //     const data = await fetchJobPositionData();
-  //     setJobPositions(data);
-  //   }
-  //   getJobPosition();
-  // }, []);
 
   return (
     <Stack
@@ -147,37 +82,31 @@ function RegistrationForm() {
     >
       <Box>
         <img src={companyLogo} alt="logo" height={"65em"} />
-        
       </Box>
       <Box>
         <Typography variant={"body2"}>
-          Create an account to access the platform
+          Create an account to access the School System
         </Typography>
       </Box>
       <form onSubmit={handleSubmit(onRegistrationSubmit)}>
         <TextField
           required
-          id="name"
-          label="Name"
-          error={!!errors.name}
+          id="userName"
+          label="User Name"
+          error={!!errors.userName}
           fullWidth
           size="small"
           sx={{ marginTop: "1rem" }}
-          helperText={errors.name ? errors.name.message : ""}
-          {...register("name", {
+          helperText={errors.userName ? errors.userName.message : ""}
+          {...register("userName", {
             required: {
               value: true,
               message: "Required",
-            },
-            pattern: {
-              value: /^[a-zA-Z\s]+$/,
-              message: "Name must contain only letters and spaces",
             },
           })}
         />
 
         <TextField
-          required
           id="email"
           label="Email Address"
           placeholder="sample@company.com"
@@ -187,10 +116,6 @@ function RegistrationForm() {
           size="small"
           sx={{ marginTop: "1rem" }}
           {...register("email", {
-            required: {
-              value: true,
-              message: "Email is required",
-            },
             minLength: {
               value: 5,
               message: "Email must be at least 5 characters long",
@@ -205,6 +130,40 @@ function RegistrationForm() {
             },
           })}
           helperText={errors.email ? errors.email.message : ""}
+        />
+
+        <TextField
+          required
+          id="mobileNumber"
+          label="Mobile Number"
+          type="tel"
+          error={!!errors.mobileNumber}
+          fullWidth
+          size="small"
+          sx={{ marginTop: "1rem" }}
+          helperText={
+            typeof errors.mobileNumber?.message === "string"
+              ? errors.mobileNumber.message
+              : ""
+          }
+          {...register("mobileNumber", {
+            required: {
+              value: true,
+              message: "Mobile number is required",
+            },
+            minLength: {
+              value: 6,
+              message: "Mobile number must be at least 6 digits",
+            },
+            maxLength: {
+              value: 16,
+              message: "Mobile number cannot exceed 16 digits",
+            },
+            pattern: {
+              value: /^[0-9]+$/,
+              message: "Enter a valid mobile number (digits only)",
+            },
+          })}
         />
 
         <TextField
@@ -272,163 +231,100 @@ function RegistrationForm() {
                 fontSize: "0.85rem",
               },
               marginTop: "1rem",
+              marginBottom: "1rem",
             }}
           />
         </Box>
 
-        <TextField
-          required
-          id="mobileNumber"
-          label="Mobile Number"
-          type="tel"
-          error={!!errors.mobileNumber}
-          fullWidth
-          size="small"
-          sx={{ marginTop: "1rem" }}
-          helperText={
-            typeof errors.mobileNumber?.message === "string"
-              ? errors.mobileNumber.message
-              : ""
-          }
-          {...register("mobileNumber", {
-            required: {
-              value: true,
-              message: "Mobile number is required",
-            },
-            minLength: {
-              value: 6,
-              message: "Mobile number must be at least 6 digits",
-            },
-            maxLength: {
-              value: 16,
-              message: "Mobile number cannot exceed 16 digits",
-            },
-            pattern: {
-              value: /^[0-9]+$/,
-              message: "Enter a valid mobile number (digits only)",
-            },
-          })}
+        <Controller
+          control={control}
+          name={"employeeType"}
+          render={({ field }) => {
+            return (
+              <ToggleButtonGroup
+                size="small"
+                {...control}
+                aria-label="Small sizes"
+                color="primary"
+                value={field.value}
+                exclusive
+                onChange={(e, value) => {
+                  field.onChange(value);
+                }}
+              >
+                <ToggleButton
+                  value={EmployeeType.TEACHER}
+                  key={EmployeeType.TEACHER}
+                >
+                  <Typography variant="caption" component="div">
+                    {EmployeeType.TEACHER}
+                  </Typography>
+                </ToggleButton>
+                <ToggleButton
+                  value={EmployeeType.STUDENT}
+                  key={EmployeeType.STUDENT}
+                >
+                  <Typography variant="caption" component="div">
+                    {EmployeeType.STUDENT}
+                  </Typography>
+                </ToggleButton>
+                <ToggleButton
+                  value={EmployeeType.PARENT}
+                  key={EmployeeType.PARENT}
+                >
+                  <Typography variant="caption" component="div">
+                    {EmployeeType.PARENT}
+                  </Typography>
+                </ToggleButton>
+              </ToggleButtonGroup>
+            );
+          }}
         />
 
-        <Box sx={{ marginTop: "2rem" }}>
-          <Controller
-            control={control}
-            name={"isCompanyEmployee"}
-            render={({ field }) => {
-              return (
-                <SwitchButton
-                  label="Is Company Employee"
-                  onChange={field.onChange}
-                  value={field.value}
-                />
-              );
-            }}
+        {userEmployeeType === EmployeeType.TEACHER && (
+          <TextField
+            required
+            id="employeeNumber"
+            label="Staff Number"
+            error={!!errors.employeeNumber}
+            fullWidth
+            size="small"
+            sx={{ marginTop: "1rem" }}
+            helperText={
+              typeof errors.employeeNumber?.message === "string"
+                ? errors.employeeNumber.message
+                : ""
+            }
+            {...register("employeeNumber", {
+              required: {
+                value: true,
+                message: "Staff Number is required",
+              },
+            })}
           />
-        </Box>
-
-        {isNotEmployee ? (
-          <Stack
-            sx={{
-              display: "flex",
-            }}
-          >
-            {isDepartmentsFetched && departments && (
-              <Autocomplete
-                {...register("department", { required: true })}
-                size="small"
-                options={
-                  departments?.map((supplierType) => supplierType.department) ||
-                  []
-                }
-                sx={{}}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    required
-                    error={!!errors.department}
-                    label="Department"
-                    name="department"
-                  />
-                )}
-              />
-            )}
-            {isJobPositionsFetched && jobPositions && (
-              <Autocomplete
-                {...register("jobPosition", { required: true })}
-                size="small"
-                options={
-                  jobPositions?.map(
-                    (supplierType) => supplierType.jobPosition
-                  ) || []
-                }
-                sx={{ marginTop: "1rem" }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    required
-                    error={!!errors.jobPosition}
-                    label="Job Position"
-                    name="jobPosition"
-                  />
-                )}
-              />
-            )}
-
-            {isFactoryFetched && factories && (
-              // <AutoCheckBox
-              //   {...register("assignedFactory", { required: true })}
-              //   control={control}
-              //   limitTags={1}
-              //   name="assignedFactory"
-              //   options={factories}
-              //   selectedValues={selectedFactories}
-              //   setSelectedValues={setSelectedFactories}
-              //   label="Assigned Factories"
-              //   placeholder="Select factories"
-              // />
-
-              <Box sx={{ marginTop: "1rem" }}>
-                <AutoCheckBox
-                  {...register("assignedFactory", { required: true })}
-                  control={control}
-                  required={true}
-                  name="assignedFactory"
-                  label="Assigned Factories"
-                  options={factories}
-                  selectedValues={selectedFactories}
-                  setSelectedValues={setSelectedFactories}
-                  getOptionLabel={(option) => option.factoryName}
-                  getOptionValue={(option) => option.factoryName}
-                  placeholder="Choose Factories"
-                  limitTags={2}
-                />
-              </Box>
-            )}
-
-            <TextField
-              required
-              id="employeeNumber"
-              label="Employee Number"
-              error={!!errors.employeeNumber}
-              size="small"
-              sx={{ marginTop: "1rem" }}
-              {...register("employeeNumber", {
-                required: {
-                  value: true,
-                  message: "Employee Number is required",
-                },
-                pattern: {
-                  value: /^[a-zA-Z0-9]+$/,
-                  message:
-                    "Employee Number must contain only letters and numbers",
-                },
-              })}
-              helperText={
-                errors.employeeNumber ? errors.employeeNumber.message : ""
-              }
-            />
-          </Stack>
-        ) : null}
+        )}
+        {userEmployeeType === EmployeeType.STUDENT && (
+          <TextField
+            required
+            id="employeeNumber"
+            label="Student Register Number"
+            error={!!errors.employeeNumber}
+            fullWidth
+            size="small"
+            sx={{ marginTop: "1rem" }}
+            helperText={
+              typeof errors.employeeNumber?.message === "string"
+                ? errors.employeeNumber.message
+                : ""
+            }
+            {...register("employeeNumber", {
+              required: {
+                value: true,
+                message: "Student Register Number is required",
+              },
+            })}
+          />
+        )}
 
         <Box
           sx={{
