@@ -10,92 +10,98 @@ import {
   DialogActions,
   Button,
   CircularProgress,
+  Switch,
+  Alert,
 } from "@mui/material";
 import { grey } from "@mui/material/colors";
 import { useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import {
   AcademicGrade,
+  AcademicSubject,
+  AcademicYear,
   createAcademicGrade,
-  updateAcademicGrade,
+  createAcademicSubject,
+  createAcademicYear,
+  updateAcademicSubject,
+  updateAcademicYear,
 } from "../../../api/OrganizationSettings/academicGradeApi";
 import useIsMobile from "../../../customHooks/useIsMobile";
 import queryClient from "../../../state/queryClient";
 import CloseIcon from "@mui/icons-material/Close";
 import CustomButton from "../../../components/CustomButton";
-import { useEffect } from "react";
+import SwitchButton from "../../../components/SwitchButton";
 
-export const AddOrEditAcademicGrade = ({
+export const AddOrEditSubjects = ({
   open,
   setOpen,
   defaultValues,
+  query,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
-  defaultValues?: AcademicGrade;
+  defaultValues?: AcademicSubject;
+  query?: string;
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const {
     register,
     handleSubmit,
     formState: { errors },
-    control,
-    watch,
-    setValue,
     reset,
-  } = useForm<AcademicGrade>({
+    control,
+  } = useForm<AcademicSubject>({
     defaultValues: defaultValues,
   });
   const { isMobile } = useIsMobile();
   console.log("defaultValues", defaultValues);
 
-  const handleCreateNewGrade = (data) => {
+  const handleCreateNewYear = (data) => {
     if (defaultValues) {
-      updateAcademicGradeMutation(data);
-      return;
+      updateAcademicSubjectMutation(data);
     } else {
-      createAcademicGradeMutation(data);
+      createAcademicSubjectMutation(data);
     }
   };
   const {
-    mutate: createAcademicGradeMutation,
-    isPending: isAcademicGradeCreating,
+    mutate: createAcademicSubjectMutation,
+    isPending: isAcademicSubjectCreating,
   } = useMutation({
-    mutationFn: createAcademicGrade,
+    mutationFn: createAcademicSubject,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["academic-grades"],
+        queryKey: ["subject-data", query],
       });
-      enqueueSnackbar("Academic Grade Created Successfully!", {
+      enqueueSnackbar("Academic Subject Created Successfully!", {
         variant: "success",
       });
       reset();
       setOpen(false);
     },
     onError: (error: any) => {
-      const message = error?.data?.message || "Academic Grade Create Failed";
+      const message = error?.data?.message || "Academic Subject Create Failed";
       enqueueSnackbar(message, { variant: "error" });
     },
   });
 
   const {
-    mutate: updateAcademicGradeMutation,
-    isPending: isAcademicGradeUpdating,
+    mutate: updateAcademicSubjectMutation,
+    isPending: isUpdatingAcademicSubject,
   } = useMutation({
-    mutationFn: updateAcademicGrade,
+    mutationFn: updateAcademicSubject,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["academic-grades"],
+        queryKey: ["subject-data"],
       });
-      enqueueSnackbar("Academic Grade Updated Successfully!", {
+      enqueueSnackbar("Academic Subject Update Successfully!", {
         variant: "success",
       });
       reset();
       setOpen(false);
     },
     onError: (error: any) => {
-      const message = error?.data?.message || "Academic Grade Update Failed";
+      const message = error?.data?.message || "Academic Subject Update Failed";
       enqueueSnackbar(message, { variant: "error" });
     },
   });
@@ -126,7 +132,7 @@ export const AddOrEditAcademicGrade = ({
         }}
       >
         <Typography variant="h6" component="div">
-          Add New Academic Grade
+          {defaultValues ? `Update Subject` : "Add New Subject"}
         </Typography>
         <IconButton
           aria-label="open drawer"
@@ -144,27 +150,47 @@ export const AddOrEditAcademicGrade = ({
         <Box
           sx={{
             display: "flex",
-            flexDirection: isMobile ? "column" : "row",
+            flexDirection: isMobile ? "column" : "column",
           }}
         >
           <TextField
-            {...register("grade", {
-              required: {
-                value: true,
-                message: "Grade is required",
-              },
-              min: { value: 1, message: "Grade must be at least 1" },
-              max: { value: 13, message: "Grade cannot be more than 13" },
-            })}
-            id="grade"
-            name="grade"
-            type="number"
-            label="New Grade"
+            {...register("subjectCode")}
+            id="subjectCode"
+            name="subjectCode"
+            label="Subject Code"
             size="small"
-            error={!!errors.grade}
-            helperText={errors.grade ? errors.grade.message : ""}
+            error={!!errors.subjectCode}
             fullWidth
             sx={{ margin: "0.5rem", flex: 1 }}
+          />
+          <TextField
+            {...register("subjectName", {
+              required: {
+                value: true,
+                message: "Subject Name is required",
+              },
+            })}
+            id="subjectName"
+            name="subjectName"
+            label="Subject Name"
+            size="small"
+            error={!!errors.subjectName}
+            helperText={errors.subjectName ? errors.subjectName.message : ""}
+            fullWidth
+            sx={{ margin: "0.5rem", flex: 1 }}
+          />
+          <Controller
+            name="isBasketSubject"
+            control={control}
+            defaultValue={defaultValues?.isBasketSubject || false}
+            render={({ field }) => (
+              <SwitchButton
+                value={field.value}
+                onChange={(val: boolean) => field.onChange(val)}
+                label={"Is Basket Subject"}
+                disabled={false}
+              />
+            )}
           />
         </Box>
       </DialogContent>
@@ -181,13 +207,14 @@ export const AddOrEditAcademicGrade = ({
             backgroundColor: "var(--pallet-blue)",
           }}
           size="medium"
-          disabled={isAcademicGradeCreating}
+          disabled={isAcademicSubjectCreating || isUpdatingAcademicSubject}
           endIcon={
-            isAcademicGradeCreating ? <CircularProgress size={20} /> : null
+            isUpdatingAcademicSubject ||
+            (isAcademicSubjectCreating && <CircularProgress size={20} />)
           }
-          onClick={handleSubmit(handleCreateNewGrade)}
+          onClick={handleSubmit(handleCreateNewYear)}
         >
-          {defaultValues ? "Update Grade" : "Add New Grade"}
+          {defaultValues ? "Update Subject" : "Create Subject"}
         </CustomButton>
       </DialogActions>
     </Dialog>

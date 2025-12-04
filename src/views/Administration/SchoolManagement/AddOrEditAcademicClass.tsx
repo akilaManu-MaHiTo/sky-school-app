@@ -16,86 +16,73 @@ import { useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
 import { useForm } from "react-hook-form";
 import {
-  AcademicGrade,
-  createAcademicGrade,
-  updateAcademicGrade,
+  AcademicClass,
+  createAcademicClass,
+  updateAcademicClass,
 } from "../../../api/OrganizationSettings/academicGradeApi";
 import useIsMobile from "../../../customHooks/useIsMobile";
 import queryClient from "../../../state/queryClient";
 import CloseIcon from "@mui/icons-material/Close";
 import CustomButton from "../../../components/CustomButton";
-import { useEffect } from "react";
 
-export const AddOrEditAcademicGrade = ({
+export const AddOrEditAcademicClass = ({
   open,
   setOpen,
   defaultValues,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
-  defaultValues?: AcademicGrade;
+  defaultValues?: AcademicClass | null;
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const {
     register,
     handleSubmit,
     formState: { errors },
-    control,
-    watch,
-    setValue,
     reset,
-  } = useForm<AcademicGrade>({
-    defaultValues: defaultValues,
+  } = useForm<AcademicClass>({
+    defaultValues: defaultValues ?? ({} as AcademicClass),
   });
   const { isMobile } = useIsMobile();
-  console.log("defaultValues", defaultValues);
 
-  const handleCreateNewGrade = (data) => {
-    if (defaultValues) {
-      updateAcademicGradeMutation(data);
-      return;
+  const isEdit = !!defaultValues?.id;
+
+  const handleSubmitClass = (data: AcademicClass) => {
+    if (isEdit) {
+      updateMutation(data);
     } else {
-      createAcademicGradeMutation(data);
+      createMutation(data);
     }
   };
-  const {
-    mutate: createAcademicGradeMutation,
-    isPending: isAcademicGradeCreating,
-  } = useMutation({
-    mutationFn: createAcademicGrade,
+
+  const { mutate: createMutation, isPending: isCreating } = useMutation({
+    mutationFn: createAcademicClass,
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["academic-grades"],
-      });
-      enqueueSnackbar("Academic Grade Created Successfully!", {
+      queryClient.invalidateQueries({ queryKey: ["academic-classes"] });
+      enqueueSnackbar("Academic Class Created Successfully!", {
         variant: "success",
       });
       reset();
       setOpen(false);
     },
     onError: (error: any) => {
-      const message = error?.data?.message || "Academic Grade Create Failed";
+      const message = error?.data?.message || "Academic Class Create Failed";
       enqueueSnackbar(message, { variant: "error" });
     },
   });
 
-  const {
-    mutate: updateAcademicGradeMutation,
-    isPending: isAcademicGradeUpdating,
-  } = useMutation({
-    mutationFn: updateAcademicGrade,
+  const { mutate: updateMutation, isPending: isUpdating } = useMutation({
+    mutationFn: updateAcademicClass,
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["academic-grades"],
-      });
-      enqueueSnackbar("Academic Grade Updated Successfully!", {
+      queryClient.invalidateQueries({ queryKey: ["academic-classes"] });
+      enqueueSnackbar("Academic Class Updated Successfully!", {
         variant: "success",
       });
       reset();
       setOpen(false);
     },
     onError: (error: any) => {
-      const message = error?.data?.message || "Academic Grade Update Failed";
+      const message = error?.data?.message || "Academic Class Update Failed";
       enqueueSnackbar(message, { variant: "error" });
     },
   });
@@ -126,70 +113,54 @@ export const AddOrEditAcademicGrade = ({
         }}
       >
         <Typography variant="h6" component="div">
-          Add New Academic Grade
+          {isEdit ? "Edit Academic Class" : "Add New Academic Class"}
         </Typography>
         <IconButton
-          aria-label="open drawer"
+          aria-label="close"
           onClick={() => setOpen(false)}
           edge="start"
-          sx={{
-            color: "#024271",
-          }}
+          sx={{ color: "#024271" }}
         >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
       <Divider />
       <DialogContent>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: isMobile ? "column" : "row",
-          }}
-        >
+        <Box sx={{ display: "flex", flexDirection: isMobile ? "column" : "row" }}>
           <TextField
-            {...register("grade", {
-              required: {
-                value: true,
-                message: "Grade is required",
-              },
-              min: { value: 1, message: "Grade must be at least 1" },
-              max: { value: 13, message: "Grade cannot be more than 13" },
+            {...register("className", {
+              required: { value: true, message: "Class Name is required" },
+              minLength: { value: 1, message: "Class Name must be at least 1 character" },
             })}
-            id="grade"
-            name="grade"
-            type="number"
-            label="New Grade"
+            id="className"
+            name="className"
+            type="text"
+            label="Class Name"
             size="small"
-            error={!!errors.grade}
-            helperText={errors.grade ? errors.grade.message : ""}
+            error={!!errors.className}
+            helperText={errors.className ? errors.className.message : ""}
             fullWidth
             sx={{ margin: "0.5rem", flex: 1 }}
           />
         </Box>
       </DialogContent>
       <DialogActions sx={{ padding: "1rem" }}>
-        <Button
-          onClick={() => setOpen(false)}
-          sx={{ color: "var(--pallet-blue)" }}
-        >
+        <Button onClick={() => setOpen(false)} sx={{ color: "var(--pallet-blue)" }}>
           Cancel
         </Button>
         <CustomButton
           variant="contained"
-          sx={{
-            backgroundColor: "var(--pallet-blue)",
-          }}
+          sx={{ backgroundColor: "var(--pallet-blue)" }}
           size="medium"
-          disabled={isAcademicGradeCreating}
-          endIcon={
-            isAcademicGradeCreating ? <CircularProgress size={20} /> : null
-          }
-          onClick={handleSubmit(handleCreateNewGrade)}
+          disabled={isCreating || isUpdating}
+          endIcon={isCreating || isUpdating ? <CircularProgress size={20} /> : null}
+          onClick={handleSubmit(handleSubmitClass)}
         >
-          {defaultValues ? "Update Grade" : "Add New Grade"}
+          {isEdit ? "Save Changes" : "Add New Class"}
         </CustomButton>
       </DialogActions>
     </Dialog>
   );
 };
+
+export default AddOrEditAcademicClass;
