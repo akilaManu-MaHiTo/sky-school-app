@@ -202,6 +202,7 @@ export function DrawerUpdateButtons({
           deleteFunc={async () => {
             localStorage.removeItem("token");
             navigate("/");
+            window.location.reload();
           }}
           onSuccess={() => {
             setLogoutDialogOpen(false);
