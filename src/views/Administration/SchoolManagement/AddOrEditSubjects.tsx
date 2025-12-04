@@ -22,7 +22,9 @@ import {
   AcademicSubject,
   AcademicYear,
   createAcademicGrade,
+  createAcademicSubject,
   createAcademicYear,
+  updateAcademicSubject,
   updateAcademicYear,
 } from "../../../api/OrganizationSettings/academicGradeApi";
 import useIsMobile from "../../../customHooks/useIsMobile";
@@ -35,10 +37,12 @@ export const AddOrEditSubjects = ({
   open,
   setOpen,
   defaultValues,
+  query,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
   defaultValues?: AcademicSubject;
+  query?: string;
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const {
@@ -55,49 +59,49 @@ export const AddOrEditSubjects = ({
 
   const handleCreateNewYear = (data) => {
     if (defaultValues) {
-      updateAcademicYearMutation(data);
+      updateAcademicSubjectMutation(data);
     } else {
-      createAcademicYearMutation(data);
+      createAcademicSubjectMutation(data);
     }
   };
   const {
-    mutate: createAcademicYearMutation,
-    isPending: isAcademicYearCreating,
+    mutate: createAcademicSubjectMutation,
+    isPending: isAcademicSubjectCreating,
   } = useMutation({
-    mutationFn: createAcademicYear,
+    mutationFn: createAcademicSubject,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["academic-years"],
+        queryKey: ["subject-data", query],
       });
-      enqueueSnackbar("Academic Year Created Successfully!", {
+      enqueueSnackbar("Academic Subject Created Successfully!", {
         variant: "success",
       });
       reset();
       setOpen(false);
     },
     onError: (error: any) => {
-      const message = error?.data?.message || "Academic Year Create Failed";
+      const message = error?.data?.message || "Academic Subject Create Failed";
       enqueueSnackbar(message, { variant: "error" });
     },
   });
 
   const {
-    mutate: updateAcademicYearMutation,
-    isPending: isUpdatingAcademicYear,
+    mutate: updateAcademicSubjectMutation,
+    isPending: isUpdatingAcademicSubject,
   } = useMutation({
-    mutationFn: updateAcademicYear,
+    mutationFn: updateAcademicSubject,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["academic-years"],
+        queryKey: ["subject-data"],
       });
-      enqueueSnackbar("Academic Year Update Successfully!", {
+      enqueueSnackbar("Academic Subject Update Successfully!", {
         variant: "success",
       });
       reset();
       setOpen(false);
     },
     onError: (error: any) => {
-      const message = error?.data?.message || "Academic Year Update Failed";
+      const message = error?.data?.message || "Academic Subject Update Failed";
       enqueueSnackbar(message, { variant: "error" });
     },
   });
@@ -143,11 +147,6 @@ export const AddOrEditSubjects = ({
       </DialogTitle>
       <Divider />
       <DialogContent>
-        <Alert severity={defaultValues ? "warning" : "info"} sx={{ mb: 2 }}>
-          {defaultValues
-            ? "Ending an academic year will prevent any further modifications to it."
-            : "Creating a new academic year will set it as the current active year for the School."}
-        </Alert>
         <Box
           sx={{
             display: "flex",
@@ -208,13 +207,14 @@ export const AddOrEditSubjects = ({
             backgroundColor: "var(--pallet-blue)",
           }}
           size="medium"
-          disabled={isAcademicYearCreating}
+          disabled={isAcademicSubjectCreating || isUpdatingAcademicSubject}
           endIcon={
-            isAcademicYearCreating ? <CircularProgress size={20} /> : null
+            isUpdatingAcademicSubject ||
+            (isAcademicSubjectCreating && <CircularProgress size={20} />)
           }
           onClick={handleSubmit(handleCreateNewYear)}
         >
-          {defaultValues ? "End This Year" : "Create Academic Year"}
+          {defaultValues ? "Update Subject" : "Create Subject"}
         </CustomButton>
       </DialogActions>
     </Dialog>

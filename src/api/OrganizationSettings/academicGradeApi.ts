@@ -30,6 +30,15 @@ export const SubjectSchema= z.object({
 });
 export type AcademicSubject= z.infer<typeof SubjectSchema>;
 
+export const ClassSchema = z.object({
+  id: z.number(),
+  className: z.string(),
+  gradeId: z.number().optional(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+export type AcademicClass = z.infer<typeof ClassSchema>;
+
 export async function getGradesData() {
   const res = await axios.get(`/api/grade`);
   return res.data;
@@ -49,5 +58,38 @@ export const updateAcademicYear = async (academicYear: AcademicYear) => {
 }
 export const deleteAcademicYear = async (id: String) => {
   const res = await axios.delete(`/api/year/${id}`);
+  return res.data;
+}
+
+export const createAcademicSubject = async (academicSubject: AcademicSubject) => {
+  const res = await axios.post(`/api/subject`, academicSubject);
+  return res.data;
+}
+export const updateAcademicSubject = async (academicSubject: AcademicSubject) => {
+  const res = await axios.post(`/api/subject/${academicSubject.id}`, academicSubject);
+  return res.data;
+}
+export const deleteAcademicSubject = async (id: String) => {
+  const res = await axios.delete(`/api/subject/${id}`);
+  return res.data;
+}
+
+export async function getClassesData() {
+  const res = await axios.get(`/api/class`);
+  return res.data;
+}
+
+export const createAcademicClass = async (academicClass: AcademicClass) => {
+  const res = await axios.post(`/api/class`, academicClass);
+  return res.data;
+}
+
+export const updateAcademicClass = async (academicClass: AcademicClass) => {
+  const res = await axios.post(`/api/class/${academicClass.id}` , academicClass);
+  return res.data;
+}
+
+export const deleteAcademicClass = async (id: String) => {
+  const res = await axios.delete(`/api/class/${id}`);
   return res.data;
 }

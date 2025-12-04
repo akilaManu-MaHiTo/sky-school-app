@@ -40,12 +40,14 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import Filter1Icon from "@mui/icons-material/Filter1";
 import SubjectIcon from "@mui/icons-material/Subject";
 import ClassIcon from "@mui/icons-material/Class";
+import { AddOrEditAcademicClass } from "./AddOrEditAcademicClass";
+import { getClassesData } from "../../../api/OrganizationSettings/academicGradeApi";
 import { DrawerContentItem } from "../../../components/ViewDataDrawer";
 import { hasSignedUrl } from "./schoolUtils";
 import EditOrganizationDialog from "./AddOrEditSchoolDialog";
 import { AddOrEditAcademicYear } from "./AddOrEditAcademicYear";
 import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal";
-import { deleteAcademicYear } from "../../../api/OrganizationSettings/academicGradeApi";
+import { deleteAcademicSubject, deleteAcademicYear } from "../../../api/OrganizationSettings/academicGradeApi";
 import queryClient from "../../../state/queryClient";
 import { enqueueSnackbar } from "notistack";
 import SearchInput from "../../../components/SearchBar";
@@ -89,16 +91,19 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
   const [openEditOrganizationDialog, setOpenEditOrganizationDialog] =
     useState(false);
   const [openAcademicYearDialog, setOpenAcademicYearDialog] = useState(false);
+  const [openAcademicClassDialog, setOpenAcademicClassDialog] = useState(false);
 
   const [editGradeData, setEditGradeData] = useState(null);
   const [editAcademicYearData, setEditAcademicYearData] = useState(null);
-
   const [openDeleteAcademicYearDialog, setOpenDeleteAcademicYearDialog] =
     useState(false);
 
   const [openAddOrEditSubjectDialog, setOpenAddOrEditSubjectDialog] =
     useState(false);
   const [editSubjectData, setEditSubjectData] = useState(null);
+  const [openDeleteAcademicSubjectDialog, setOpenDeleteAcademicSubjectDialog] =
+    useState(false);
+  const [editAcademicClassData, setEditAcademicClassData] = useState(null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const { isTablet, isMobile } = useIsMobile();
@@ -121,6 +126,10 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
   const { data: organizationData } = useQuery({
     queryKey: ["organization"],
     queryFn: getOrganization,
+  });
+  const { data: classData, isFetching: isClassDataFetching } = useQuery({
+    queryKey: ["academic-classes"],
+    queryFn: getClassesData,
   });
 
   const debouncedQuery = useDebounce(searchQuery, 1000);
@@ -163,6 +172,26 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
     },
     onError: (error: any) => {
       const message = error?.data?.message || "Academic Year Delete Failed";
+      enqueueSnackbar(message, { variant: "error" });
+    },
+  });
+  const {
+    mutate: deleteAcademicSubjectMutation,
+    isPending: isAcademicSubjectDeleting,
+  } = useMutation({
+    mutationFn: deleteAcademicSubject,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["subject-data"],
+      });
+      enqueueSnackbar("Academic Subject Delete Successfully!", {
+        variant: "success",
+      });
+      setOpenDeleteAcademicSubjectDialog(false);
+      setEditSubjectData(null);
+    },
+    onError: (error: any) => {
+      const message = error?.data?.message || "Academic Subject Delete Failed";
       enqueueSnackbar(message, { variant: "error" });
     },
   });
@@ -699,7 +728,12 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                               </IconButton>
                             </Box>
                             <Box>
-                              <IconButton>
+                              <IconButton
+                                onClick={() => {
+                                  setEditSubjectData(subject);
+                                  setOpenDeleteAcademicSubjectDialog(true);
+                                }}
+                              >
                                 <DeleteIcon color="error" />
                               </IconButton>
                             </Box>
@@ -735,7 +769,71 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
             )}
           </Stack>
         </TabPanel>
-        <TabPanel value={activeTab} index={4} dir={theme.direction}></TabPanel>
+        <TabPanel value={activeTab} index={4} dir={theme.direction}>
+          <Stack>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginBottom: theme.spacing(2),
+              }}
+            >
+              <CustomButton
+                variant="contained"
+                sx={{ backgroundColor: "var(--pallet-blue)" }}
+                size="medium"
+                startIcon={<AddIcon />}
+                onClick={() => {
+                  setEditAcademicClassData(null);
+                  setOpenAcademicClassDialog(true);
+                }}
+              >
+                Add New Academic Class
+              </CustomButton>
+            </Box>
+            <TableContainer component={Paper} elevation={2} sx={{ overflowX: "auto", maxWidth: isMobile ? "88vw" : "100%" }}>
+              {isClassDataFetching && <LinearProgress sx={{ width: "100%" }} />}
+              <Table aria-label="classes table">
+                <TableHead sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}>
+                  <TableRow>
+                    <TableCell align="center">Id</TableCell>
+                    <TableCell align="center">Class Name</TableCell>
+                    <TableCell align="center"></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {classData?.length > 0 ? (
+                    classData?.map((row: any) => (
+                      <TableRow key={`${row.id}`} sx={{ "&:last-child td, &:last-child th": { border: 0 }, cursor: "pointer" }}>
+                        <TableCell align="center">{row.id}</TableCell>
+                        <TableCell align="center">
+                          <Chip variant="filled" label={row.className} sx={{ backgroundColor: "var(--pallet-lighter-blue)" }} />
+                        </TableCell>
+                        <TableCell align="center">
+                          <IconButton
+                            onClick={() => {
+                              setEditAcademicClassData(row);
+                              setOpenAcademicClassDialog(true);
+                            }}
+                          >
+                            <EditIcon color="primary" />
+                          </IconButton>
+                          {/* Delete for classes can be added when API exists */}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={11} align="center">
+                        <Typography variant="body2">No Classes found</Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Stack>
+        </TabPanel>
       </Box>
       {openAcademicGradeDialog && (
         <AddOrEditAcademicGrade
@@ -763,6 +861,14 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
           open={openAddOrEditSubjectDialog}
           setOpen={setOpenAddOrEditSubjectDialog}
           defaultValues={editSubjectData}
+          query={debouncedQuery}
+        />
+      )}
+      {openAcademicClassDialog && (
+        <AddOrEditAcademicClass
+          open={openAcademicClassDialog}
+          setOpen={setOpenAcademicClassDialog}
+          defaultValues={editAcademicClassData}
         />
       )}
       {openDeleteAcademicYearDialog && (
@@ -788,6 +894,32 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
           handleReject={() => {
             setOpenDeleteAcademicYearDialog(false);
             setEditAcademicYearData(null);
+          }}
+        />
+      )}
+      {openDeleteAcademicSubjectDialog && (
+        <DeleteConfirmationModal
+          open={openDeleteAcademicSubjectDialog}
+          title="Remove Academic Year Confirmation"
+          content={
+            <>
+              Are you sure you want to remove this Academic Subject?
+              <Alert severity="warning" style={{ marginTop: "1rem" }}>
+                This action is not reversible.
+              </Alert>
+            </>
+          }
+          handleClose={() => setOpenDeleteAcademicSubjectDialog(false)}
+          deleteFunc={async () => {
+            deleteAcademicSubjectMutation(editSubjectData.id);
+          }}
+          onSuccess={() => {
+            setOpenDeleteAcademicSubjectDialog(false);
+            setEditSubjectData(null);
+          }}
+          handleReject={() => {
+            setOpenDeleteAcademicSubjectDialog(false);
+            setEditSubjectData(null);
           }}
         />
       )}
