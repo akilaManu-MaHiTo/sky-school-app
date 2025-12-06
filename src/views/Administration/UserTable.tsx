@@ -7,12 +7,15 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import {
   Alert,
+  AppBar,
   Box,
   Chip,
   LinearProgress,
   Stack,
+  Tab,
   TableFooter,
   TablePagination,
+  Tabs,
   Theme,
   Typography,
   useMediaQuery,
@@ -33,7 +36,41 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { green, grey } from "@mui/material/colors";
 import queryClient from "../../state/queryClient";
 
+interface TabPanelProps {
+  children?: React.ReactNode;
+  dir?: string;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`full-width-tabpanel-${index}`}
+      aria-labelledby={`full-width-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+    </div>
+  );
+}
+
+function a11yProps(index: number) {
+  return {
+    id: `full-width-tab-${index}`,
+    "aria-controls": `full-width-tabpanel-${index}`,
+  };
+}
+
 function UserTable() {
+  const [activeTab, setActiveTab] = useState(0);
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+  };
   const { enqueueSnackbar } = useSnackbar();
   const [openViewDrawer, setOpenViewDrawer] = useState(false);
   const [selectedRow, setSelectedRow] = useState<User>(null);
@@ -114,6 +151,93 @@ function UserTable() {
         <Breadcrumb breadcrumbs={breadcrumbItems} />
       </Box>
       <Stack sx={{ alignItems: "center" }}>
+        <AppBar position="static" sx={{ maxWidth: isMobile ? "75vw" : "100%" }}>
+          <Tabs
+            value={activeTab}
+            onChange={handleChange}
+            indicatorColor="secondary"
+            TabIndicatorProps={{
+              style: { backgroundColor: "var(--pallet-blue)", height: "3px" },
+            }}
+            sx={{
+              backgroundColor: "var(--pallet-lighter-grey)",
+              color: "var(--pallet-blue)",
+              width: "100%",
+            }}
+            textColor="inherit"
+            variant="scrollable"
+            scrollButtons={true}
+          >
+            <Tab
+              label={
+                <Box
+                  sx={{
+                    color: "var(--pallet-blue)",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  {/* <TextSnippetIcon fontSize="small" /> */}
+                  <Typography variant="body2" sx={{ ml: "0.3rem" }}>
+                    Teachers
+                  </Typography>
+                </Box>
+              }
+              {...a11yProps(0)}
+            />
+            <Tab
+              label={
+                <Box
+                  sx={{
+                    color: "var(--pallet-blue)",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  {/* <AccessTimeIcon fontSize="small" /> */}
+                  <Typography variant="body2" sx={{ ml: "0.3rem" }}>
+                    Students
+                  </Typography>
+                </Box>
+              }
+              {...a11yProps(1)}
+            />
+            <Tab
+              label={
+                <Box
+                  sx={{
+                    color: "var(--pallet-blue)",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  {/* <Filter1Icon fontSize="small" /> */}
+                  <Typography variant="body2" sx={{ ml: "0.3rem" }}>
+                    Parents
+                  </Typography>
+                </Box>
+              }
+              {...a11yProps(2)}
+            />
+            <Tab
+              label={
+                <Box
+                  sx={{
+                    color: "var(--pallet-blue)",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  {/* <SubjectIcon fontSize="small" /> */}
+                  <Typography variant="body2" sx={{ ml: "0.3rem" }}>
+                    Management Staff
+                  </Typography>
+                </Box>
+              }
+              {...a11yProps(3)}
+            />
+          </Tabs>
+        </AppBar>
         <TableContainer
           component={Paper}
           elevation={2}

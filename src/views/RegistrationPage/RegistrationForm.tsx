@@ -156,7 +156,7 @@ function RegistrationForm() {
               message: "Mobile number must be at least 6 digits",
             },
             maxLength: {
-              value: 16,
+              value: 10,
               message: "Mobile number cannot exceed 16 digits",
             },
             pattern: {
