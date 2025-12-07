@@ -1,6 +1,7 @@
 import {
   Alert,
   Box,
+  Dialog,
   Drawer,
   IconButton,
   SxProps,
@@ -39,6 +40,31 @@ function ViewProfileDataDrawer({
   const isMobile = useMediaQuery((theme: Theme) =>
     theme.breakpoints.down("md")
   );
+
+  if (isMobile) {
+    return (
+      <Dialog
+        fullScreen
+        open={open}
+        onClose={handleClose}
+        PaperProps={{
+          sx: {
+            padding: 2,
+            backgroundColor: "background.default",
+          },
+        }}
+      >
+        <Box
+          sx={{
+            height: "100%",
+            overflowY: "auto",
+          }}
+        >
+          {drawerContent}
+        </Box>
+      </Dialog>
+    );
+  }
   return (
     <Drawer
       anchor={"right"}

@@ -58,3 +58,8 @@ export const updateAcademicDetail = async (payload: AcademicDetail) => {
   const res = await axios.post(`api/teacher-profiles/${payload.id}`, submitData);
   return res.data;
 };
+
+export const deleteAcademicDetail = async (id: number) => {
+  const res = await axios.delete(`api/teacher-profiles/${id}`);
+  return res.data;
+}

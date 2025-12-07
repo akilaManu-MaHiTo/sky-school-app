@@ -20,12 +20,11 @@ import { useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
 import CustomButton from "../../components/CustomButton";
 import useIsMobile from "../../customHooks/useIsMobile";
-import {
-  updateUserProfileDetails,
-  User,
-} from "../../api/userApi";
+import { updateUserProfileDetails, User } from "../../api/userApi";
 import queryClient from "../../state/queryClient";
 import { genderOptions } from "../../constants/accidentConstants";
+import DatePickerComponent from "../../components/DatePickerComponent";
+import RichTextComponent from "../../components/RichTextComponent";
 
 type DialogProps = {
   open: boolean;
@@ -87,9 +86,10 @@ export default function UpdateUserProfile({
       name: data.name!,
       gender: data.gender!,
       mobile: data.mobile,
+      birthDate: data.birthDate!,
+      address: data.address,
     });
   };
-
   return (
     <Dialog
       open={open}
@@ -97,10 +97,12 @@ export default function UpdateUserProfile({
         resetForm();
         handleClose();
       }}
+      fullWidth
+      maxWidth="md"
+      fullScreen={isTablet}
       PaperProps={{
         style: {
           backgroundColor: grey[50],
-          minWidth: "500px",
         },
         component: "form",
       }}
@@ -129,39 +131,53 @@ export default function UpdateUserProfile({
         <Stack direction="column" gap={1}>
           {isAvailability && (
             <>
-              <Box sx={{ display: "flex" }}>
-                <TextField
-                  id="name"
-                  type="text"
-                  label="Full Name"
-                  required
-                  error={!!errors.name}
-                  helperText={errors.name ? "Required *" : ""}
-                  size="small"
-                  sx={{ flex: 1, margin: "0.5rem" }}
-                  {...register("name", { required: true })}
-                />
-              </Box>
+              <TextField
+                id="name"
+                type="text"
+                label="Full Name"
+                required
+                error={!!errors.name}
+                helperText={errors.name ? "Required *" : ""}
+                size="small"
+                sx={{ flex: 1, margin: "0.5rem", width: "full" }}
+                {...register("name", { required: true })}
+              />
+              <TextField
+                id="mobile"
+                type="text"
+                label="Mobile Number"
+                required
+                error={!!errors.mobile}
+                helperText={errors.mobile ? "Required *" : ""}
+                size="small"
+                sx={{ flex: 1, margin: "0.5rem", width: "full" }}
+                {...register("mobile", { required: true })}
+              />
 
-              <Box sx={{ display: "flex" }}>
-                <TextField
-                  id="mobile"
-                  type="text"
-                  label="Mobile Number"
-                  required
-                  error={!!errors.mobile}
-                  helperText={errors.mobile ? "Required *" : ""}
-                  size="small"
-                  sx={{ flex: 1, margin: "0.5rem" }}
-                  {...register("mobile", { required: true })}
-                />
-              </Box>
+              <Box>
+                <Box sx={{ mx: "0.5rem", mb: "2rem" }}>
+                  <Controller
+                    control={control}
+                    {...register("birthDate", { required: true })}
+                    name={"birthDate"}
+                    render={({ field }) => {
+                      return (
+                        <DatePickerComponent
+                          onChange={(e) => field.onChange(e)}
+                          value={
+                            field.value ? new Date(field.value) : undefined
+                          }
+                          label="Birthday"
+                          error={errors?.birthDate ? "Required" : ""}
+                        />
+                      );
+                    }}
+                  />
+                </Box>
 
-              <Box sx={{ flex: 1 }}>
                 <Controller
                   control={control}
                   name="gender"
-                  rules={{ required: true }}
                   render={({ field }) => (
                     <Autocomplete
                       options={genderOptions}
@@ -172,7 +188,6 @@ export default function UpdateUserProfile({
                       renderInput={(params) => (
                         <TextField
                           {...params}
-                          required
                           error={!!errors.gender}
                           label="Gender"
                           name="gender"
@@ -181,6 +196,26 @@ export default function UpdateUserProfile({
                     />
                   )}
                 />
+                <Box
+                  sx={{
+                    display: "flex",
+                    margin: "0.5rem",
+                    mt: "1.5rem",
+                  }}
+                >
+                  <Controller
+                    control={control}
+                    name={"address"}
+                    render={({ field }) => {
+                      return (
+                        <RichTextComponent
+                          onChange={(e) => field.onChange(e)}
+                          placeholder={field.value ?? "Address"}
+                        />
+                      );
+                    }}
+                  />
+                </Box>
               </Box>
             </>
           )}
