@@ -28,6 +28,16 @@ export const userLevelSchema = z.object({
   created_at: z.string(),
 });
 
+export const teacherProfileSchema = z.object({
+  id: z.string(),
+  academicSubjectId: z.string(),
+  academicClassId: z.string().optional(),
+  academicYear: z.string(),
+  academicMedium: z.string(),
+});
+
+type TeacherProfile = z.infer<typeof teacherProfileSchema>;
+
 export enum EmployeeType {
   TEACHER = "Teacher",
   STUDENT = "Student",
@@ -65,6 +75,9 @@ export const userSchema = z.object({
   jobPosition: z.string(),
   assigneeLevel: z.string(),
   permissionObject: PermissionKeysObjectSchema,
+
+  birthDate: z.string().optional(),
+  userProfile: z.array(teacherProfileSchema)
 });
 
 export type User = z.infer<typeof userSchema>;

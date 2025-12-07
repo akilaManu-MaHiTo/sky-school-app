@@ -95,3 +95,8 @@ export async function getSubjectData({query}:{query:string}) {
   const res = await axios.get(`/api/subject?search=${query}`);
   return res.data;
 }
+
+export async function getAllSubjectData() {
+  const res = await axios.get(`/api/all-subjects`);
+  return res.data;
+}

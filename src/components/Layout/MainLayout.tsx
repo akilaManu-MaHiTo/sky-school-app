@@ -341,7 +341,7 @@ export default function MainLayout({ children }: Props) {
                 drawerContent={
                   <Stack spacing={1} sx={{ paddingX: theme.spacing(1) }}>
                     <DrawerProfileHeader
-                      title="User Profile"
+                      title=""
                       handleClose={() => setOpenViewProfileDrawer(false)}
                       onEdit={() => {
                         setOpenEditUserRoleDialog(true);
