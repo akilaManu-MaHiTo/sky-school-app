@@ -76,8 +76,10 @@ export const userSchema = z.object({
   assigneeLevel: z.string(),
   permissionObject: PermissionKeysObjectSchema,
 
-  birthDate: z.string().optional(),
-  userProfile: z.array(teacherProfileSchema)
+  birthDate: z.date().optional(),
+  userProfile: z.array(teacherProfileSchema),
+  employeeType: z.nativeEnum(EmployeeType),
+  address: z.string().optional(),
 });
 
 export type User = z.infer<typeof userSchema>;
@@ -285,16 +287,22 @@ export async function updateUserProfileDetails({
   name,
   gender,
   mobile,
+  birthDate,
+  address,
 }: {
   id: number;
   name: string;
   gender: string;
   mobile: string;
+  birthDate: Date;
+  address: string;
 }) {
   const data = {
     name,
     gender,
     mobile,
+    birthDate,
+    address,
   };
 
   const res = await axios.post(`/api/user/${id}/profile-update`, data);
