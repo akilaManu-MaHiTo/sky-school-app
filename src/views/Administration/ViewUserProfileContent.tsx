@@ -78,7 +78,6 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
   const saveImage = () => {
     if (imageFile) {
       profileUpdateMutation({ id: selectedUser.id, imageFile });
-      setImageFile(null);
     }
   };
   const [openViewProfileDrawer, setOpenViewProfileDrawer] = useState(false);
@@ -468,7 +467,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                     setOpenAcademicDetailsDialog(true);
                   }}
                 >
-                  Add New Details
+                  Add Academic Details
                 </CustomButton>
               </Box>
               {transformProfileData.map(({ year, profiles }) => (
