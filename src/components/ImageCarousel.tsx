@@ -23,8 +23,8 @@ const ImageCarousel = ({
     <div
       style={{
         position: "relative",
-        width: isMdUp ? "80vh" : isSmUp ? "40vh" : "35vh",
-        height: isMdUp ? "80vh" : isSmUp ? "40vh" : "35vh",
+        width: isMdUp ? "60vh" : isSmUp ? "40vh" : "35vh",
+        height: isMdUp ? "60vh" : isSmUp ? "40vh" : "35vh",
         overflow: "hidden",
         marginTop: "2rem",
       }}

@@ -191,10 +191,16 @@ const EditOrganizationDialog = ({
             id="organizationName"
             label="School Name"
             error={!!errors.organizationName}
-            helperText={errors.organizationName && "Required"}
+            helperText={errors.organizationName?.message || ""}
             size="small"
             sx={{ flex: 1 }}
-            {...register("organizationName", { required: true })}
+            {...register("organizationName", {
+              required: "Organization name is required",
+              pattern: {
+                value: /^[A-Za-z\s\W_]+$/,
+                message: "Only letters and symbols are allowed",
+              },
+            })}
           />
         </Stack>
       </DialogContent>

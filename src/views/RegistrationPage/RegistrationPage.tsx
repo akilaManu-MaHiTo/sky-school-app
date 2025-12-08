@@ -16,6 +16,7 @@ function RegistrationPage() {
   const navigate = useNavigate();
 
   const { user, status } = useCurrentUser();
+  const year = new Date().getFullYear();
 
   if (status === "loading" || status === "idle" || status === "pending") {
     return <PageLoader />;
@@ -47,25 +48,18 @@ function RegistrationPage() {
             alignItems: "center",
           }}
         >
-          <ImageCarousel
-            images={[
-              { src: index1, alt: "Welcome" },
-              { src: index2, alt: "Health & Safety" },
-              { src: index3, alt: "Employee Engagement" },
-            ]}
-          />
           <Typography
             variant={isMdUp ? "h2" : "h3"}
             sx={{
               fontWeight: "700",
               color: "#525252",
-              marginTop: "1rem",
+              marginTop: "5rem",
               marginLeft: "1rem",
               marginRight: "1rem",
               textAlign: "center",
             }}
           >
-            Sky Smart Technology
+            School Management System
           </Typography>
           <Typography
             variant="subtitle2"
@@ -76,7 +70,9 @@ function RegistrationPage() {
               textAlign: "center",
             }}
           >
-            copyright © 2025 Sky Smart Technology, All Rights Reserved
+            {`copyright © ` +
+              year +
+              ` Sky Smart Technology, All Rights Reserved`}
           </Typography>
           <Typography
             variant="subtitle2"
@@ -86,33 +82,28 @@ function RegistrationPage() {
               textAlign: "center",
               marginLeft: "3rem",
               marginRight: "3rem",
-              marginBottom: "2rem",
+              marginBottom: "1rem",
             }}
           >
-            Our dedicated teams of engineers, architects, and tech consultants
-            are here to support your bold ideas, guide you through our
-            cutting-edge solutions, and provide answers to your technical and
-            business questions. Let's build smarter, together.
+            Our dedicated team is here to empower your school community with
+            smart, intuitive digital solutions. We support your vision, guide
+            you through our innovative school management features, and ensure
+            you have the answers you need for academic and administrative
+            excellence.
           </Typography>
+          <ImageCarousel
+            images={[
+              { src: index1, alt: "Welcome" },
+              { src: index2, alt: "Health & Safety" },
+              { src: index3, alt: "Employee Engagement" },
+            ]}
+          />
         </Stack>
         <Stack sx={{ flex: isMdUp ? 2 : 1, justifyContent: "center" }}>
           <RegistrationForm />
         </Stack>
       </Stack>
-      <img
-        src={leftLandingLeave}
-        alt="Logo"
-        width={150}
-        height={150}
-        style={{ position: "absolute", left: 0, bottom: -5, zIndex: 10 }}
-      />
-      <img
-        src={rightLandingLeave}
-        alt="Logo"
-        width={150}
-        height={150}
-        style={{ position: "absolute", right: 0, bottom: -20, zIndex: 10 }}
-      />
+      
     </Stack>
   );
 }

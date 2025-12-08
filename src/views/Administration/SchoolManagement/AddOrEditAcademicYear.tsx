@@ -102,6 +102,7 @@ export const AddOrEditAcademicYear = ({
   });
 
   const isFinishedYear = defaultValues?.status === "Finished" ? true : false;
+  const year = new Date().getFullYear();
 
   return (
     <Dialog
@@ -180,6 +181,18 @@ export const AddOrEditAcademicYear = ({
                   value: true,
                   message: "Year is required",
                 },
+                min: {
+                  value: year,
+                  message: `Year cannot be less than ${year}`,
+                },
+                minLength: {
+                  value: 4,
+                  message: "Year must be 4 digits",
+                },
+                maxLength: {
+                  value: 4,
+                  message: "Year must be 4 digits",
+                }
               })}
               id="year"
               name="year"
@@ -188,6 +201,7 @@ export const AddOrEditAcademicYear = ({
               size="small"
               error={!!errors.year}
               helperText={errors.year ? errors.year.message : ""}
+              required
               fullWidth
               sx={{ margin: "0.5rem", flex: 1 }}
             />
