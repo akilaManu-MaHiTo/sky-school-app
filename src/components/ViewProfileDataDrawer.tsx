@@ -274,7 +274,15 @@ export function DrawerContentItem({
       {isRichText ? (
         <Typography
           variant="body2"
-          dangerouslySetInnerHTML={{ __html: value ?? "--" }}
+          component="div"
+          dangerouslySetInnerHTML={{
+            __html:
+              typeof value === "string"
+                ? value
+                : value != null
+                  ? String(value)
+                  : "--",
+          }}
         />
       ) : (
         <Typography variant="body2">{value ?? "--"}</Typography>

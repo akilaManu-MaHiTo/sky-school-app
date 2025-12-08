@@ -149,6 +149,8 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
   const logo = Array.isArray(organizationData?.logoUrl)
     ? organizationData?.logoUrl[0]
     : organizationData?.logoUrl;
+  const pdfOrganizationName =
+    organization?.organizationName || organizationData?.organizationName;
 
   // Fetch Academic Year Data
   const { data: yearData, isFetching: isYearDataFetching } = useQuery({
@@ -707,7 +709,14 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
               size="medium"
               startIcon={<ArrowDownwardIcon />}
               onClick={() => {
-                generatePdf(searchedSubjectData,organization);
+                try {
+                  const reportData = (searchedSubjectData || []) as LetterSubjects[];
+                  generatePdf(reportData, {
+                    organizationName: pdfOrganizationName,
+                  });
+                } catch (error) {
+                  console.error("Unable to generate subject PDF:", error);
+                }
               }}
             >
               Download PDF
