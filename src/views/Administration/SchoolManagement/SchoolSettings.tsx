@@ -60,6 +60,12 @@ import { enqueueSnackbar } from "notistack";
 import SearchInput from "../../../components/SearchBar";
 import { useDebounce } from "../../../util/useDebounce";
 import { AddOrEditSubjects } from "./AddOrEditSubjects";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import {
+  generatePdf,
+  LetterSubjects,
+} from "../../../reportsUtils/SubjectsReportPDF";
+import useCurrentOrganization from "../../../hooks/useCurrentOrganization";
 interface TabPanelProps {
   children?: React.ReactNode;
   dir?: string;
@@ -92,6 +98,7 @@ function a11yProps(index: number) {
 
 function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
   const [activeTab, setActiveTab] = useState(0);
+  const { organization } = useCurrentOrganization();
 
   // General Details Dialogs
   const [openEditOrganizationDialog, setOpenEditOrganizationDialog] =
@@ -142,6 +149,8 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
   const logo = Array.isArray(organizationData?.logoUrl)
     ? organizationData?.logoUrl[0]
     : organizationData?.logoUrl;
+  const pdfOrganizationName =
+    organization?.organizationName || organizationData?.organizationName;
 
   // Fetch Academic Year Data
   const { data: yearData, isFetching: isYearDataFetching } = useQuery({
@@ -687,9 +696,31 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
             sx={{
               display: "flex",
               justifyContent: "flex-end",
+              flexDirection: isTablet ? "column" : "row",
               marginBottom: theme.spacing(2),
+              gap: 2,
             }}
           >
+            <CustomButton
+              variant="contained"
+              sx={{
+                backgroundColor: "var(--pallet-blue)",
+              }}
+              size="medium"
+              startIcon={<ArrowDownwardIcon />}
+              onClick={() => {
+                try {
+                  const reportData = (searchedSubjectData || []) as LetterSubjects[];
+                  generatePdf(reportData, {
+                    organizationName: pdfOrganizationName,
+                  });
+                } catch (error) {
+                  console.error("Unable to generate subject PDF:", error);
+                }
+              }}
+            >
+              Download PDF
+            </CustomButton>
             <CustomButton
               variant="contained"
               sx={{
@@ -705,6 +736,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
               Add New Subject
             </CustomButton>
           </Box>
+
           <Box mb={4} display="flex" justifyContent="flex-start">
             <SearchInput
               placeholder="Search Subjects..."
@@ -763,33 +795,16 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                             spacing={{ xs: 1, sm: 3 }}
                             alignItems={{ xs: "flex-start", sm: "center" }}
                           >
-                            <Box
-                              sx={{
-                                minWidth: 60,
-                                display: "flex",
-                                alignItems: "center",
-                              }}
-                            >
-                              <Chip
-                                label={subject.isBasketSubject ? "B" : "NB"}
-                                size="small"
-                                sx={{
-                                  backgroundColor: "var(--pallet-lighter-blue)",
-                                  fontWeight: "600",
-                                  fontSize: "12px",
-                                }}
-                              />
-                            </Box>
-
                             <Box sx={{ flex: 1 }}>
-                              <Box></Box>
                               <Typography
                                 variant="inherit"
                                 sx={{
                                   mb: 0.5,
                                 }}
                               >
-                                {subject.subjectName}
+                                {subject.subjectName}{" "}
+                                {subject.subjectMedium &&
+                                  ` - ${subject.subjectMedium} Medium`}
                               </Typography>
 
                               <Typography

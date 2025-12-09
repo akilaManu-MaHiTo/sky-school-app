@@ -88,14 +88,16 @@ function LoginForm() {
             sx={{
               display: "flex",
               width: "100%",
+              justifyContent: "center",
+              mb: 2,
             }}
           >
             <img
               src={logo.signedUrl}
               alt="Organization Logo"
               style={{
-                width: 100,
-                height: 100,
+                width: 150,
+                height: 150,
                 borderRadius: "50%",
                 objectFit: "fill",
                 boxShadow: "0 0 10px rgba(0,0,0,0.1)",
@@ -109,7 +111,7 @@ function LoginForm() {
           Please sign-in to your account using your credentials
           <br /> Don't have an account?{" "}
           <span
-            style={{ color: "var(--pallet-blue)", cursor: "pointer" }}
+            style={{ color: "var(--pallet-blue)", cursor: "pointer",fontSize:"15px",textDecoration:"underline" }}
             onClick={() => navigate("/register")}
           >
             Sign Up Here

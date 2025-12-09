@@ -588,7 +588,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                     color: "var(--pallet-red)",
                   }}
                 >
-                  DANGER ZONE
+                  SECURITY SETTINGS
                 </Typography>
               </Box>
             </AccordionSummary>

@@ -11,6 +11,7 @@ import {
   Autocomplete,
   ToggleButtonGroup,
   ToggleButton,
+  styled,
 } from "@mui/material";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -21,10 +22,18 @@ import { useNavigate } from "react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { EmployeeType, registerUser } from "../../api/userApi";
 import companyLogo from "../../assets/company-logo1.jpg";
+import { getOrganization } from "../../api/OrganizationSettings/organizationSettingsApi";
+import { hasSignedUrl } from "../Administration/SchoolManagement/schoolUtils";
+import RoleButton from "../../components/RoleButton";
+
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import SchoolIcon from "@mui/icons-material/School";
+import GroupIcon from "@mui/icons-material/Group";
 
 function RegistrationForm() {
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up(990));
+  const [selectedRole, setSelectedRole] = useState("");
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -34,6 +43,7 @@ function RegistrationForm() {
     handleSubmit,
     formState: { errors },
     watch,
+    clearErrors,
     control,
   } = useForm({
     mode: "all",
@@ -48,9 +58,15 @@ function RegistrationForm() {
       employeeNumber: "",
     },
   });
+  const { data: organizationData } = useQuery({
+    queryKey: ["organization"],
+    queryFn: getOrganization,
+  });
+  const logo = Array.isArray(organizationData?.logoUrl)
+    ? organizationData?.logoUrl[0]
+    : organizationData?.logoUrl;
 
   const userPassword = watch("password");
-  const userEmployeeType = watch("employeeType");
 
   const { mutate: registrationMutation, isPending } = useMutation({
     mutationFn: registerUser,
@@ -68,6 +84,7 @@ function RegistrationForm() {
   });
 
   const onRegistrationSubmit = (data) => {
+    data.employeeType = selectedRole;
     registrationMutation(data);
   };
 
@@ -81,7 +98,28 @@ function RegistrationForm() {
       }}
     >
       <Box>
-        <img src={companyLogo} alt="logo" height={"65em"} />
+        {hasSignedUrl(logo) && (
+          <Box
+            sx={{
+              display: "flex",
+              width: "100%",
+              justifyContent: "center",
+              mb: 2,
+            }}
+          >
+            <img
+              src={logo.signedUrl}
+              alt="Organization Logo"
+              style={{
+                width: 100,
+                height: 100,
+                borderRadius: "50%",
+                objectFit: "fill",
+                boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+              }}
+            />
+          </Box>
+        )}
       </Box>
       <Box>
         <Typography variant={"body2"}>
@@ -89,6 +127,94 @@ function RegistrationForm() {
         </Typography>
       </Box>
       <form onSubmit={handleSubmit(onRegistrationSubmit)}>
+        <Controller
+          control={control}
+          name={"employeeType"}
+          render={({ field }) => {
+            return (
+              <Box display="flex" gap={2}>
+                {" "}
+                <RoleButton
+                  value={EmployeeType.TEACHER}
+                  selected={selectedRole === EmployeeType.TEACHER}
+                  onClick={setSelectedRole}
+                  key={EmployeeType.TEACHER}
+                >
+                  <AdminPanelSettingsIcon />
+                  <Typography variant="caption" component="div">
+                    {EmployeeType.TEACHER}
+                  </Typography>
+                </RoleButton>
+                <RoleButton
+                  value={EmployeeType.STUDENT}
+                  selected={selectedRole === EmployeeType.STUDENT}
+                  onClick={setSelectedRole}
+                  key={EmployeeType.STUDENT}
+                >
+                  <SchoolIcon />
+                  <Typography variant="caption" component="div">
+                    {EmployeeType.STUDENT}
+                  </Typography>
+                </RoleButton>
+                <RoleButton
+                  value={EmployeeType.PARENT}
+                  selected={selectedRole === EmployeeType.PARENT}
+                  onClick={setSelectedRole}
+                  key={EmployeeType.PARENT}
+                >
+                  <GroupIcon />
+                  <Typography variant="caption" component="div">
+                    {EmployeeType.PARENT}
+                  </Typography>
+                </RoleButton>
+              </Box>
+            );
+          }}
+        />
+
+        {selectedRole === EmployeeType.TEACHER && (
+          <TextField
+            required
+            id="employeeNumber"
+            label="Staff Number"
+            error={!!errors.employeeNumber}
+            fullWidth
+            size="small"
+            sx={{ marginTop: "1rem" }}
+            helperText={errors.employeeNumber?.message || ""}
+            {...register("employeeNumber", {
+              required: "Register Number is required",
+            })}
+            onChange={(e) => {
+              clearErrors("employeeNumber");
+              register("employeeNumber").onChange(e);
+            }}
+          />
+        )}
+        {selectedRole === EmployeeType.STUDENT && (
+          <TextField
+            required
+            id="employeeNumber"
+            label="Student Admission Number"
+            error={!!errors.employeeNumber}
+            fullWidth
+            size="small"
+            sx={{ marginTop: "1rem" }}
+            helperText={errors.employeeNumber?.message || ""}
+            {...register("employeeNumber", {
+              required: "Student Register Number is required",
+              minLength: {
+                value: 5,
+                message: "Register Number cannot be less than 5",
+              },
+            })}
+            onChange={(e) => {
+              clearErrors("employeeNumber");
+              register("employeeNumber").onChange(e);
+            }}
+          />
+        )}
+
         <TextField
           required
           id="userName"
@@ -152,12 +278,12 @@ function RegistrationForm() {
               message: "Mobile number is required",
             },
             minLength: {
-              value: 6,
-              message: "Mobile number must be at least 6 digits",
+              value: 10,
+              message: "Mobile number must be at least 10 digits",
             },
             maxLength: {
-              value: 16,
-              message: "Mobile number cannot exceed 16 digits",
+              value: 10,
+              message: "Mobile number cannot exceed 10 digits",
             },
             pattern: {
               value: /^[0-9]+$/,
@@ -235,96 +361,6 @@ function RegistrationForm() {
             }}
           />
         </Box>
-
-        <Controller
-          control={control}
-          name={"employeeType"}
-          render={({ field }) => {
-            return (
-              <ToggleButtonGroup
-                size="small"
-                {...control}
-                aria-label="Small sizes"
-                color="primary"
-                value={field.value}
-                exclusive
-                onChange={(e, value) => {
-                  field.onChange(value);
-                }}
-              >
-                <ToggleButton
-                  value={EmployeeType.TEACHER}
-                  key={EmployeeType.TEACHER}
-                >
-                  <Typography variant="caption" component="div">
-                    {EmployeeType.TEACHER}
-                  </Typography>
-                </ToggleButton>
-                <ToggleButton
-                  value={EmployeeType.STUDENT}
-                  key={EmployeeType.STUDENT}
-                >
-                  <Typography variant="caption" component="div">
-                    {EmployeeType.STUDENT}
-                  </Typography>
-                </ToggleButton>
-                <ToggleButton
-                  value={EmployeeType.PARENT}
-                  key={EmployeeType.PARENT}
-                >
-                  <Typography variant="caption" component="div">
-                    {EmployeeType.PARENT}
-                  </Typography>
-                </ToggleButton>
-              </ToggleButtonGroup>
-            );
-          }}
-        />
-
-        {userEmployeeType === EmployeeType.TEACHER && (
-          <TextField
-            required
-            id="employeeNumber"
-            label="Staff Number"
-            error={!!errors.employeeNumber}
-            fullWidth
-            size="small"
-            sx={{ marginTop: "1rem" }}
-            helperText={
-              typeof errors.employeeNumber?.message === "string"
-                ? errors.employeeNumber.message
-                : ""
-            }
-            {...register("employeeNumber", {
-              required: {
-                value: true,
-                message: "Staff Number is required",
-              },
-            })}
-          />
-        )}
-        {userEmployeeType === EmployeeType.STUDENT && (
-          <TextField
-            required
-            id="employeeNumber"
-            label="Student Register Number"
-            error={!!errors.employeeNumber}
-            fullWidth
-            size="small"
-            sx={{ marginTop: "1rem" }}
-            helperText={
-              typeof errors.employeeNumber?.message === "string"
-                ? errors.employeeNumber.message
-                : ""
-            }
-            {...register("employeeNumber", {
-              required: {
-                value: true,
-                message: "Student Register Number is required",
-              },
-            })}
-          />
-        )}
 
         <Box
           sx={{

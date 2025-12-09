@@ -46,18 +46,12 @@ function LoginPage() {
             alignItems: "center",
           }}
         >
-          <ImageCarousel
-            images={[
-              { src: index1, alt: "Welcome" },
-              { src: index2, alt: "Health & Safety" },
-            ]}
-          />
           <Typography
             variant={isMdUp ? "h2" : "h3"}
             sx={{
               fontWeight: "700",
               color: "#525252",
-              marginTop: "1rem",
+              marginTop: "5rem",
               marginLeft: "1rem",
               marginRight: "1rem",
               textAlign: "center",
@@ -73,33 +67,28 @@ function LoginPage() {
               textAlign: "center",
               marginLeft: "3rem",
               marginRight: "3rem",
-              marginBottom: "2rem",
+              marginTop: "1rem",
+              marginBottom: "1rem",
             }}
           >
-            Our dedicated teams of engineers, architects, and tech consultants
-            are here to support your bold ideas, guide you through our
-            cutting-edge solutions, and provide answers to your technical and
-            business questions. Let's build smarter, together.
+            Our intelligent school platform brings teachers, students, and
+            parents into one connected learning space. Students gain
+            clear access to their progress through interactive report views, and
+            parents stay informed with real-time insights into their child's
+            academic journey.
           </Typography>
+          <ImageCarousel
+            images={[
+              { src: index1, alt: "Welcome" },
+              { src: index2, alt: "Health & Safety" },
+            ]}
+          />
         </Stack>
         <Stack sx={{ flex: isMdUp ? 2 : 1 }}>
           <LoginForm />
         </Stack>
       </Stack>
-      <img
-        src={leftLandingLeave}
-        alt="Logo"
-        width={150}
-        height={150}
-        style={{ position: "absolute", left: 0, bottom: -5, zIndex: 10 }}
-      />
-      <img
-        src={rightLandingLeave}
-        alt="Logo"
-        width={150}
-        height={150}
-        style={{ position: "absolute", right: 0, bottom: -20, zIndex: 10 }}
-      />
+      
     </Stack>
   );
 }

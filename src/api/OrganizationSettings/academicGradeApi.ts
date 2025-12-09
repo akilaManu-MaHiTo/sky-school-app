@@ -27,6 +27,7 @@ export const SubjectSchema= z.object({
   isBasketSubject: z.boolean(),
   createdAt: z.date(),
   updatedAt: z.date(),
+  subjectMedium: z.string()
 });
 export type AcademicSubject= z.infer<typeof SubjectSchema>;
 

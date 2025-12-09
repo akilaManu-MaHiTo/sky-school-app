@@ -12,6 +12,7 @@ import {
   CircularProgress,
   Switch,
   Alert,
+  Autocomplete,
 } from "@mui/material";
 import { grey } from "@mui/material/colors";
 import { useMutation } from "@tanstack/react-query";
@@ -32,6 +33,7 @@ import queryClient from "../../../state/queryClient";
 import CloseIcon from "@mui/icons-material/Close";
 import CustomButton from "../../../components/CustomButton";
 import SwitchButton from "../../../components/SwitchButton";
+import { AcademicMedium } from "../../../api/OrganizationSettings/academicDetailsApi";
 
 export const AddOrEditSubjects = ({
   open,
@@ -153,45 +155,80 @@ export const AddOrEditSubjects = ({
             flexDirection: isMobile ? "column" : "column",
           }}
         >
-          <TextField
-            {...register("subjectCode")}
-            id="subjectCode"
-            name="subjectCode"
-            label="Subject Code"
-            size="small"
-            error={!!errors.subjectCode}
-            fullWidth
-            sx={{ margin: "0.5rem", flex: 1 }}
-          />
-          <TextField
-            {...register("subjectName", {
-              required: {
-                value: true,
-                message: "Subject Name is required",
-              },
-            })}
-            id="subjectName"
-            name="subjectName"
-            label="Subject Name"
-            size="small"
-            error={!!errors.subjectName}
-            helperText={errors.subjectName ? errors.subjectName.message : ""}
-            fullWidth
-            sx={{ margin: "0.5rem", flex: 1 }}
-          />
+          <Box sx={{ marginRight: "1rem" }}>
+            <TextField
+              {...register("subjectCode")}
+              id="subjectCode"
+              name="subjectCode"
+              label="Subject Code"
+              size="small"
+              error={!!errors.subjectCode}
+              fullWidth
+              sx={{ margin: "0.5rem", flex: 1 }}
+            />
+          </Box>
+          <Box sx={{ marginRight: "1rem" }}>
+            <TextField
+              {...register("subjectName", {
+                required: {
+                  value: true,
+                  message: "Subject Name is required",
+                },
+              })}
+              id="subjectName"
+              name="subjectName"
+              label="Subject Name"
+              size="small"
+              error={!!errors.subjectName}
+              helperText={errors.subjectName ? errors.subjectName.message : ""}
+              fullWidth
+              sx={{ margin: "0.5rem", flex: 1 }}
+            />
+          </Box>
           <Controller
-            name="isBasketSubject"
+            name="subjectMedium"
             control={control}
-            defaultValue={defaultValues?.isBasketSubject || false}
+            defaultValue={defaultValues?.subjectMedium ?? ""}
+            {...register("subjectMedium", { required: true })}
             render={({ field }) => (
-              <SwitchButton
-                value={field.value}
-                onChange={(val: boolean) => field.onChange(val)}
-                label={"Is Basket Subject"}
-                disabled={false}
+              <Autocomplete
+                {...field}
+                onChange={(event, newValue) => field.onChange(newValue)}
+                size="small"
+                options={
+                  AcademicMedium?.length
+                    ? AcademicMedium.map((medium) => medium.academicMedium)
+                    : []
+                }
+                sx={{ flex: 1, margin: "0.5rem" }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    required
+                    error={!!errors.subjectMedium}
+                    helperText={errors.subjectMedium && "Required"}
+                    label="Subject Medium"
+                    name="subjectMedium"
+                  />
+                )}
               />
             )}
           />
+          <Box sx={{ marginLeft: "0.5rem" }}>
+            <Controller
+              name="isBasketSubject"
+              control={control}
+              defaultValue={defaultValues?.isBasketSubject || false}
+              render={({ field }) => (
+                <SwitchButton
+                  value={field.value}
+                  onChange={(val: boolean) => field.onChange(val)}
+                  label={"Is Basket Subject"}
+                  disabled={false}
+                />
+              )}
+            />
+          </Box>
         </Box>
       </DialogContent>
       <DialogActions sx={{ padding: "1rem" }}>

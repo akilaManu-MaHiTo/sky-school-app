@@ -137,11 +137,16 @@ export default function UpdateUserProfile({
                 label="Full Name"
                 required
                 error={!!errors.name}
-                helperText={errors.name ? "Required *" : ""}
+                helperText={
+                  errors.name ? "Only letters and spaces are allowed" : ""
+                }
                 size="small"
                 sx={{ flex: 1, margin: "0.5rem", width: "full" }}
-                {...register("name", { required: true })}
+                {...register("name", {
+                  pattern: /^[A-Za-z\s]+$/, // only letters and spaces
+                })}
               />
+
               <TextField
                 id="mobile"
                 type="text"
@@ -169,6 +174,7 @@ export default function UpdateUserProfile({
                           }
                           label="Birthday"
                           error={errors?.birthDate ? "Required" : ""}
+                          disableFuture={true}
                         />
                       );
                     }}
@@ -199,22 +205,35 @@ export default function UpdateUserProfile({
                 <Box
                   sx={{
                     display: "flex",
+                    flexDirection: "column",
                     margin: "0.5rem",
                     mt: "1.5rem",
                   }}
                 >
                   <Controller
                     control={control}
-                    name={"address"}
-                    render={({ field }) => {
-                      return (
-                        <RichTextComponent
-                          onChange={(e) => field.onChange(e)}
-                          placeholder={field.value ?? "Address"}
-                        />
-                      );
+                    name="address"
+                    rules={{
+                      required: "Address is required",
+                      pattern: {
+                        value: /[A-Za-z]/,
+                        message: "Address must contain at least one letter",
+                      },
                     }}
+                    render={({ field }) => (
+                      <RichTextComponent
+                        onChange={(value) => field.onChange(value)}
+                        placeholder={field.value ?? "Address"}
+                      />
+                    )}
                   />
+                  {errors.address && (
+                    <Box
+                      sx={{ color: "red", fontSize: "0.75rem", mt: "0.25rem" }}
+                    >
+                      {errors.address.message}
+                    </Box>
+                  )}
                 </Box>
               </Box>
             </>
