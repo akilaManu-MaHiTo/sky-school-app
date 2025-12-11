@@ -42,6 +42,7 @@ export const createAcademicDetail = async (payload: AcademicDetail) => {
     academicGradeId: Number(payload.grades.id),
     academicSubjectId: Number(payload.subjects.id),
     academicClassId: Number(payload.classes.id),
+    academicMedium: payload.subjects.subjectMedium,
   };
   console.log("submitData", submitData);
   const res = await axios.post(`api/teacher-profiles`, submitData);
@@ -54,12 +55,42 @@ export const updateAcademicDetail = async (payload: AcademicDetail) => {
     academicGradeId: Number(payload.grades.id),
     academicSubjectId: Number(payload.subjects.id),
     academicClassId: Number(payload.classes.id),
+    academicMedium: payload.subjects.subjectMedium,
   };
-  const res = await axios.post(`api/teacher-profiles/${payload.id}`, submitData);
+  const res = await axios.post(
+    `api/teacher-profiles/${payload.id}`,
+    submitData
+  );
   return res.data;
 };
 
 export const deleteAcademicDetail = async (id: number) => {
   const res = await axios.delete(`api/teacher-profiles/${id}`);
   return res.data;
-}
+};
+
+
+export const createAcademicStudentDetail = async (payload: AcademicDetail) => {
+  console.log("payload", payload);
+  const submitData = {
+    ...payload,
+    academicGradeId: Number(payload.grades.id),
+    academicClassId: Number(payload.classes.id),
+  };
+  console.log("submitData", submitData);
+  const res = await axios.post(`api/student-profiles`, submitData);
+  return res.data;
+};
+
+export const updateAcademicStudentDetail = async (payload: AcademicDetail) => {
+  const submitData = {
+    ...payload,
+    academicGradeId: Number(payload.grades.id),
+    academicClassId: Number(payload.classes.id),
+  };
+  const res = await axios.post(
+    `api/student-profiles/${payload.id}`,
+    submitData
+  );
+  return res.data;
+};

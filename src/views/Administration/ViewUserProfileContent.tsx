@@ -37,12 +37,14 @@ import CustomButton from "../../components/CustomButton";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import theme from "../../theme";
-import AddOrEditAcademicDetailsDialog from "./AcademicDetails/AddOrEditAcademicDetailsDialog";
+import AddOrEditTeacherAcademicDetailsDialog from "./AcademicDetails/AddOrEditTeacherAcademicDetailsDialog";
+
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
 import { deleteAcademicDetail } from "../../api/OrganizationSettings/academicDetailsApi";
 import { format } from "date-fns";
+import AddOrEditStudentAcademicDetailsDialog from "./AcademicDetails/AddOrEditStudentAcademicDetailsDialog";
 
 function ViewUserContent({ selectedUser }: { selectedUser: User }) {
   const { isTablet, isMobile } = useIsMobile();
@@ -89,15 +91,52 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
 
   const [openAcademicDetailsDialog, setOpenAcademicDetailsDialog] =
     useState(false);
-
   const [editAcademicDetails, setEditAcademicDetails] = useState(null);
   const [openDeleteAcademicDetailsDialog, setOpenDeleteAcademicDetailsDialog] =
     useState(false);
+
+  const [
+    openAcademicStudentDetailsDialog,
+    setOpenAcademicStudentDetailsDialog,
+  ] = useState(false);
+  const [editAcademicStudentDetails, setEditAcademicStudentDetails] =
+    useState(null);
+  const [
+    openDeleteAcademicStudentDetailsDialog,
+    setOpenDeleteAcademicStudentDetailsDialog,
+  ] = useState(false);
 
   const transformProfileData = useMemo(() => {
     if (!selectedUser || !selectedUser.userProfile) return [];
 
     const grouped: Record<string, any> = selectedUser.userProfile.reduce(
+      (acc, profile) => {
+        const year = profile.academicYear;
+        if (!acc[year]) acc[year] = [];
+        acc[year].push(profile);
+        return acc;
+      },
+      {} as Record<string, any>
+    );
+    const sortedEntries = Object.entries(grouped).sort((a, b) => {
+      const yearA = Number(a[0]);
+      const yearB = Number(b[0]);
+      if (!Number.isNaN(yearA) && !Number.isNaN(yearB)) {
+        return yearB - yearA;
+      }
+      return b[0].localeCompare(a[0]);
+    });
+
+    return sortedEntries.map(([year, profiles]) => ({
+      year,
+      profiles,
+    }));
+  }, [selectedUser]);
+
+  const transformStudentProfileData = useMemo(() => {
+    if (!selectedUser || !selectedUser.studentProfile) return [];
+
+    const grouped: Record<string, any> = selectedUser.studentProfile.reduce(
       (acc, profile) => {
         const year = profile.academicYear;
         if (!acc[year]) acc[year] = [];
@@ -396,10 +435,18 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
         )}
 
         {openAcademicDetailsDialog && (
-          <AddOrEditAcademicDetailsDialog
+          <AddOrEditTeacherAcademicDetailsDialog
             open={openAcademicDetailsDialog}
             setOpen={setOpenAcademicDetailsDialog}
             defaultValues={editAcademicDetails}
+          />
+        )}
+
+        {openAcademicStudentDetailsDialog && (
+          <AddOrEditStudentAcademicDetailsDialog
+            open={openAcademicStudentDetailsDialog}
+            setOpen={setOpenAcademicStudentDetailsDialog}
+            defaultValues={editAcademicStudentDetails}
           />
         )}
       </Stack>
@@ -408,6 +455,152 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
           my: 1,
         }}
       >
+        {selectedUser.employeeType === EmployeeType.STUDENT && (
+          <Accordion
+            variant="elevation"
+            sx={{
+              paddingTop: 0,
+              borderRadius: "8px",
+              marginTop: "1rem",
+            }}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="panel1a-content"
+              style={{
+                borderBottom: `1px solid${colors.grey[100]}`,
+                borderRadius: "8px",
+              }}
+              id="panel1a-header"
+            >
+              <Box
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  margin: "10px 0",
+                }}
+              >
+                <Typography
+                  color="textSecondary"
+                  variant="body2"
+                  sx={{
+                    color: "black",
+                    fontWeight: "semi-bold",
+                  }}
+                >
+                  MY ACADEMIC DETAILS
+                </Typography>
+              </Box>
+            </AccordionSummary>
+
+            <AccordionDetails>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  mt: "1rem",
+                  marginBottom: theme.spacing(2),
+                }}
+              >
+                <CustomButton
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "var(--pallet-blue)",
+                  }}
+                  size="medium"
+                  startIcon={<AddIcon />}
+                  onClick={() => {
+                    setEditAcademicStudentDetails(null);
+                    setOpenAcademicStudentDetailsDialog(true);
+                  }}
+                >
+                  Add Academic Details
+                </CustomButton>
+              </Box>
+              {transformStudentProfileData.map(({ year, profiles }) => (
+                <Accordion
+                  key={year}
+                  variant="elevation"
+                  sx={{ borderRadius: "8px", mt: "1rem" }}
+                >
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    sx={{
+                      borderBottom: `1px solid ${colors.grey[100]}`,
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <Typography sx={{ color: "var(--pallet-blue)" }}>
+                      Year {year}
+                    </Typography>
+                  </AccordionSummary>
+
+                  <AccordionDetails>
+                    <TableContainer
+                      component={Paper}
+                      elevation={2}
+                      sx={{
+                        overflowX: "auto",
+                        maxWidth: isMobile ? "88vw" : "100%",
+                      }}
+                    >
+                      {isAcademicDetailDeleting && (
+                        <LinearProgress sx={{ width: "100%" }} />
+                      )}
+                      <Table aria-label="simple table">
+                        <TableHead
+                          sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
+                        >
+                          <TableRow>
+                            <TableCell>Grade</TableCell>
+                            <TableCell>Class</TableCell>
+                            <TableCell>Medium</TableCell>
+                            <TableCell></TableCell>
+                          </TableRow>
+                        </TableHead>
+
+                        <TableBody>
+                          {profiles.map((p) => (
+                            <TableRow key={p.id}>
+                              <TableCell>{`Grade ` + p.grade?.grade}</TableCell>
+                              <TableCell>{p.class?.className}</TableCell>
+                              <TableCell>{p.academicMedium}</TableCell>
+                              {!p.isStudentApproved && (
+                                <TableCell>
+                                  <IconButton
+                                    onClick={() => {
+                                      setEditAcademicStudentDetails(p);
+                                      setOpenAcademicStudentDetailsDialog(true);
+                                    }}
+                                    disabled={isAcademicDetailDeleting}
+                                  >
+                                    <EditIcon color="primary" />
+                                  </IconButton>
+                                  <IconButton
+                                    onClick={() => {
+                                      setEditAcademicStudentDetails(p);
+                                      setOpenDeleteAcademicStudentDetailsDialog(
+                                        true
+                                      );
+                                    }}
+                                    disabled={isAcademicDetailDeleting}
+                                  >
+                                    <DeleteIcon color="error" />
+                                  </IconButton>
+                                </TableCell>
+                              )}
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </AccordionDetails>
+                </Accordion>
+              ))}
+            </AccordionDetails>
+          </Accordion>
+        )}
+
         {selectedUser.employeeType === EmployeeType.TEACHER && (
           <Accordion
             variant="elevation"

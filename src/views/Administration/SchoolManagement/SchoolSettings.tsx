@@ -17,7 +17,7 @@ import {
   Tabs,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import TextSnippetIcon from "@mui/icons-material/TextSnippet";
 import DeleteIcon from "@mui/icons-material/Delete";
 import useIsMobile from "../../../customHooks/useIsMobile";
@@ -34,6 +34,8 @@ import PageTitle from "../../../components/PageTitle";
 import Breadcrumb from "../../../components/BreadCrumb";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import CustomButton from "../../../components/CustomButton";
+import useColumnVisibility from "../../../components/useColumnVisibility";
+import ColumnVisibilitySelector from "../../../components/ColumnVisibilitySelector";
 import AddIcon from "@mui/icons-material/Add";
 import { AddOrEditAcademicGrade } from "./AddOrEditAcademicGrade";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -128,6 +130,36 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
   const [openAcademicClassDialog, setOpenAcademicClassDialog] = useState(false);
   const [openDeleteAcademicClassDialog, setOpenDeleteAcademicClassDialog] =
     useState(false);
+
+  // Column visibility configs
+  const gradeColumns = useMemo(
+    () => [
+      { key: "id", label: "Id" },
+      { key: "grade", label: "Grade" },
+    ],
+    []
+  );
+  const classColumns = useMemo(
+    () => [
+      { key: "id", label: "Id" },
+      { key: "className", label: "Class Name" },
+    ],
+    []
+  );
+
+  const {
+    visibility: gradeColumnVisibility,
+    columnSelectorProps: gradeColumnSelectorProps,
+  } = useColumnVisibility({
+    columns: gradeColumns,
+  });
+
+  const {
+    visibility: classColumnVisibility,
+    columnSelectorProps: classColumnSelectorProps,
+  } = useColumnVisibility({
+    columns: classColumns,
+  });
 
   // Utils
   const [searchQuery, setSearchQuery] = useState("");
@@ -595,6 +627,9 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
               sx={{
                 display: "flex",
                 justifyContent: "flex-end",
+                alignItems: "center",
+                flexDirection: isMobile ? "column" : "row",
+                gap: 2,
                 marginBottom: theme.spacing(2),
               }}
             >
@@ -624,14 +659,35 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
               {(isGradeDataFetching || isAcademicGradeDeleting) && (
                 <LinearProgress sx={{ width: "100%" }} />
               )}
+
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <ColumnVisibilitySelector
+                  {...gradeColumnSelectorProps}
+                  popoverTitle="Show/Hide Grade Columns"
+                />
+              </Box>
+
               <Table aria-label="simple table">
                 <TableHead
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
                 >
                   <TableRow>
-                    <TableCell align="center">Id</TableCell>
-                    <TableCell align="center">Grade</TableCell>
-                    <TableCell align="center"></TableCell>
+                    {gradeColumnVisibility.id && (
+                      <TableCell align="center">Id</TableCell>
+                    )}
+                    {gradeColumnVisibility.grade && (
+                      <TableCell align="center">Grade</TableCell>
+                    )}
+                    {(gradeColumnVisibility.grade &&
+                      gradeColumnVisibility.id) && (
+                      <TableCell align="center"></TableCell>
+                    )}
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -644,37 +700,44 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                           cursor: "pointer",
                         }}
                       >
-                        <TableCell align="center">{row.id}</TableCell>
-                        <TableCell align="center">
-                          <Chip
-                            variant="filled"
-                            label={`Grade ` + row.grade}
-                            sx={{
-                              backgroundColor: "var(--pallet-lighter-blue)",
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell align="center">
-                          <IconButton
-                            onClick={() => {
-                              setEditGradeData(row);
-                              setOpenAcademicGradeDialog(true);
-                            }}
-                            disabled={isAcademicGradeDeleting}
-                          >
-                            <EditIcon color="primary" />
-                          </IconButton>
+                        {gradeColumnVisibility.id && (
+                          <TableCell align="center">{row.id}</TableCell>
+                        )}
+                        {gradeColumnVisibility.grade && (
+                          <TableCell align="center">
+                            <Chip
+                              variant="filled"
+                              label={`Grade ` + row.grade}
+                              sx={{
+                                backgroundColor: "var(--pallet-lighter-blue)",
+                              }}
+                            />
+                          </TableCell>
+                        )}
+                        {(gradeColumnVisibility.grade &&
+                          gradeColumnVisibility.id) && (
+                          <TableCell align="center">
+                            <IconButton
+                              onClick={() => {
+                                setEditGradeData(row);
+                                setOpenAcademicGradeDialog(true);
+                              }}
+                              disabled={isAcademicGradeDeleting}
+                            >
+                              <EditIcon color="primary" />
+                            </IconButton>
 
-                          <IconButton
-                            onClick={() => {
-                              setEditGradeData(row);
-                              setOpenDeleteAcademicGradeDialog(true);
-                            }}
-                            disabled={isAcademicGradeDeleting}
-                          >
-                            <DeleteIcon color="error" />
-                          </IconButton>
-                        </TableCell>
+                            <IconButton
+                              onClick={() => {
+                                setEditGradeData(row);
+                                setOpenDeleteAcademicGradeDialog(true);
+                              }}
+                              disabled={isAcademicGradeDeleting}
+                            >
+                              <DeleteIcon color="error" />
+                            </IconButton>
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))
                   ) : (
@@ -710,7 +773,8 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
               startIcon={<ArrowDownwardIcon />}
               onClick={() => {
                 try {
-                  const reportData = (searchedSubjectData || []) as LetterSubjects[];
+                  const reportData = (searchedSubjectData ||
+                    []) as LetterSubjects[];
                   generatePdf(reportData, {
                     organizationName: pdfOrganizationName,
                   });
@@ -883,10 +947,17 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
             <Box
               sx={{
                 display: "flex",
-                justifyContent: "flex-end",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexDirection: isMobile ? "column" : "row",
+                gap: 2,
                 marginBottom: theme.spacing(2),
               }}
             >
+              <ColumnVisibilitySelector
+                {...classColumnSelectorProps}
+                popoverTitle="Show/Hide Class Columns"
+              />
               <CustomButton
                 variant="contained"
                 sx={{ backgroundColor: "var(--pallet-blue)" }}
@@ -913,8 +984,12 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
                 >
                   <TableRow>
-                    <TableCell align="left">Id</TableCell>
-                    <TableCell align="left">Class Name</TableCell>
+                    {classColumnVisibility.id && (
+                      <TableCell align="left">Id</TableCell>
+                    )}
+                    {classColumnVisibility.className && (
+                      <TableCell align="left">Class Name</TableCell>
+                    )}
                     <TableCell align="center"></TableCell>
                   </TableRow>
                 </TableHead>
@@ -928,16 +1003,20 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                           cursor: "pointer",
                         }}
                       >
-                        <TableCell align="left">{row.id}</TableCell>
-                        <TableCell align="left">
-                          <Chip
-                            variant="filled"
-                            label={row.className}
-                            sx={{
-                              backgroundColor: "var(--pallet-lighter-blue)",
-                            }}
-                          />
-                        </TableCell>
+                        {classColumnVisibility.id && (
+                          <TableCell align="left">{row.id}</TableCell>
+                        )}
+                        {classColumnVisibility.className && (
+                          <TableCell align="left">
+                            <Chip
+                              variant="filled"
+                              label={row.className}
+                              sx={{
+                                backgroundColor: "var(--pallet-lighter-blue)",
+                              }}
+                            />
+                          </TableCell>
+                        )}
                         <TableCell align="center">
                           <IconButton
                             onClick={() => {

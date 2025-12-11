@@ -78,6 +78,7 @@ export const userSchema = z.object({
 
   birthDate: z.date().optional(),
   userProfile: z.array(teacherProfileSchema),
+  studentProfile: z.array(teacherProfileSchema),
   employeeType: z.nativeEnum(EmployeeType),
   address: z.string().optional(),
 });

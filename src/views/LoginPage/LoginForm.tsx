@@ -111,7 +111,13 @@ function LoginForm() {
           Please sign-in to your account using your credentials
           <br /> Don't have an account?{" "}
           <span
-            style={{ color: "var(--pallet-blue)", cursor: "pointer",fontSize:"15px",textDecoration:"underline" }}
+            style={{
+              color: "var(--pallet-blue)",
+              cursor: "pointer",
+              fontSize: "15px",
+              textDecoration: "underline",
+              fontWeight: "500",
+            }}
             onClick={() => navigate("/register")}
           >
             Sign Up Here
