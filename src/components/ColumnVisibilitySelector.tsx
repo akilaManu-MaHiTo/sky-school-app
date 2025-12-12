@@ -2,6 +2,7 @@ import { useState } from "react";
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
 import {
   Box,
+  Button,
   Checkbox,
   FormControlLabel,
   FormGroup,
@@ -43,7 +44,7 @@ const ColumnVisibilitySelector = ({
 
   return (
     <>
-      <IconButton
+      <Button
         sx={{ borderColor: "var(--pallet-blue)", color: "var(--pallet-blue)" }}
         size="medium"
         onClick={handleOpen}
@@ -58,7 +59,7 @@ const ColumnVisibilitySelector = ({
         ) : (
           <MoreVertIcon />
         )}
-      </IconButton>
+      </Button>
       <Popover
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}

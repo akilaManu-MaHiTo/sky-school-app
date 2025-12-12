@@ -67,7 +67,7 @@ const ManagementStudentReport = React.lazy(
 );
 
 // Academics
-const AddMarks = React.lazy(() => import("./components/UnderDevelopment"));
+const AddMarks = React.lazy(() => import("./views/Academics/StudentMarksPage"));
 
 function withLayout(Layout: any, Component: any, restrictAccess = false) {
   return (
