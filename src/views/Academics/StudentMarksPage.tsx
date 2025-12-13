@@ -56,6 +56,7 @@ import useIsMobile from "../../customHooks/useIsMobile";
 import { Controller, useForm } from "react-hook-form";
 import CustomButton from "../../components/CustomButton";
 import StudentMarksTable from "./StudentMarksTable";
+import { set } from "date-fns";
 
 const TERM_OPTIONS = ["Term 1", "Term 2", "Term 3", "Monthly Exam"];
 
@@ -237,6 +238,10 @@ const StudentMarksPage = () => {
                         shouldDirty: true,
                         shouldValidate: true,
                       });
+                      setValue("teacherSubject", null, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      });
                     }}
                     size="small"
                     options={
@@ -257,78 +262,82 @@ const StudentMarksPage = () => {
                 )}
               />
             </Box>
-            <Box
-              sx={{
-                display: "flex",
-                flex: 1,
-                // minWidth: "250px",
-              }}
-            >
-              <Controller
-                name="teacherGrade"
-                control={control}
-                render={({ field }) => (
-                  <Autocomplete
-                    {...field}
-                    value={field.value ?? null}
-                    onChange={(e, newVal) => {
-                      field.onChange(newVal);
-                      setValue("teacherClassName", null, {
-                        shouldDirty: true,
-                        shouldValidate: true,
-                      });
-                    }}
-                    size="small"
-                    options={teacherGradeData ?? []}
-                    getOptionLabel={(option) => `Grade ` + option.grade}
-                    sx={{ flex: 1, margin: "0.5rem" }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        required
-                        error={!!errors.teacherGrade}
-                        helperText={errors.teacherGrade && "Required"}
-                        label="Select Grade"
-                        name="teacherGrade"
-                      />
-                    )}
-                  />
-                )}
-              />
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                flex: 1,
-                // minWidth: "250px",
-              }}
-            >
-              <Controller
-                name="teacherClassName"
-                control={control}
-                render={({ field }) => (
-                  <Autocomplete
-                    {...field}
-                    value={field.value ?? null}
-                    onChange={(event, newValue) => field.onChange(newValue)}
-                    size="small"
-                    options={teacherClassData ?? []}
-                    getOptionLabel={(option) => option.className}
-                    sx={{ flex: 1, margin: "0.5rem" }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        required
-                        error={!!errors.teacherClassName}
-                        helperText={errors.teacherClassName && "Required"}
-                        label="Select Class"
-                        name="teacherClassName"
-                      />
-                    )}
-                  />
-                )}
-              />
-            </Box>
+            {selectedYear && (
+              <Box
+                sx={{
+                  display: "flex",
+                  flex: 1,
+                  // minWidth: "250px",
+                }}
+              >
+                <Controller
+                  name="teacherGrade"
+                  control={control}
+                  render={({ field }) => (
+                    <Autocomplete
+                      {...field}
+                      value={field.value ?? null}
+                      onChange={(e, newVal) => {
+                        field.onChange(newVal);
+                        setValue("teacherClassName", null, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        });
+                      }}
+                      size="small"
+                      options={teacherGradeData ?? []}
+                      getOptionLabel={(option) => `Grade ` + option.grade}
+                      sx={{ flex: 1, margin: "0.5rem" }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          required
+                          error={!!errors.teacherGrade}
+                          helperText={errors.teacherGrade && "Required"}
+                          label="Select Grade"
+                          name="teacherGrade"
+                        />
+                      )}
+                    />
+                  )}
+                />
+              </Box>
+            )}
+            {selectedYear && selectedGrade && (
+              <Box
+                sx={{
+                  display: "flex",
+                  flex: 1,
+                  // minWidth: "250px",
+                }}
+              >
+                <Controller
+                  name="teacherClassName"
+                  control={control}
+                  render={({ field }) => (
+                    <Autocomplete
+                      {...field}
+                      value={field.value ?? null}
+                      onChange={(event, newValue) => field.onChange(newValue)}
+                      size="small"
+                      options={teacherClassData ?? []}
+                      getOptionLabel={(option) => option.className}
+                      sx={{ flex: 1, margin: "0.5rem" }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          required
+                          error={!!errors.teacherClassName}
+                          helperText={errors.teacherClassName && "Required"}
+                          label="Select Class"
+                          name="teacherClassName"
+                        />
+                      )}
+                    />
+                  )}
+                />
+              </Box>
+            )}
             <Box
               sx={{
                 display: "flex",
@@ -343,7 +352,14 @@ const StudentMarksPage = () => {
                   <Autocomplete
                     {...field}
                     value={field.value ?? null}
-                    onChange={(event, newValue) => field.onChange(newValue)}
+                    onChange={(e, newVal) => {
+                      field.onChange(newVal);
+                      setValue("monthlyExam", null, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      });
+                      
+                    }}
                     size="small"
                     options={examTerms?.filter((item) => item != null) ?? []}
                     sx={{ flex: 1, margin: "0.5rem" }}
@@ -403,74 +419,78 @@ const StudentMarksPage = () => {
               flex: 1,
             }}
           >
-            <Box
-              sx={{
-                display: "flex",
-                flex: 1,
-                minWidth: "250px",
-              }}
-            >
-              <Controller
-                name="teacherMedium"
-                control={control}
-                render={({ field }) => (
-                  <Autocomplete
-                    {...field}
-                    value={field.value ?? null}
-                    onChange={(event, newValue) => field.onChange(newValue)}
-                    size="small"
-                    options={
-                      teacherMediumData?.filter((item) => item != null) ?? []
-                    }
-                    sx={{ flex: 1, margin: "0.5rem" }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        required
-                        error={!!errors.teacherMedium}
-                        helperText={errors.teacherMedium && "Required"}
-                        label="Select Medium"
-                        name="teacherMedium"
-                      />
-                    )}
-                  />
-                )}
-              />
-            </Box>
+            {selectedYear && (
+              <Box
+                sx={{
+                  display: "flex",
+                  flex: 1,
+                  minWidth: "250px",
+                }}
+              >
+                <Controller
+                  name="teacherMedium"
+                  control={control}
+                  render={({ field }) => (
+                    <Autocomplete
+                      {...field}
+                      value={field.value ?? null}
+                      onChange={(event, newValue) => field.onChange(newValue)}
+                      size="small"
+                      options={
+                        teacherMediumData?.filter((item) => item != null) ?? []
+                      }
+                      sx={{ flex: 1, margin: "0.5rem" }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          required
+                          error={!!errors.teacherMedium}
+                          helperText={errors.teacherMedium && "Required"}
+                          label="Select Medium"
+                          name="teacherMedium"
+                        />
+                      )}
+                    />
+                  )}
+                />
+              </Box>
+            )}
 
-            <Box
-              sx={{
-                display: "flex",
-                flex: 1,
-                minWidth: "250px",
-              }}
-            >
-              <Controller
-                name="teacherSubject"
-                control={control}
-                render={({ field }) => (
-                  <Autocomplete
-                    {...field}
-                    value={field.value ?? null}
-                    onChange={(event, newValue) => field.onChange(newValue)}
-                    size="small"
-                    options={teacherSubjectData ?? []}
-                    getOptionLabel={(option) => option.subjectName}
-                    sx={{ flex: 1, margin: "0.5rem" }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        required
-                        error={!!errors.teacherSubject}
-                        helperText={errors.teacherSubject && "Required"}
-                        label="Select Subject"
-                        name="teacherSubject"
-                      />
-                    )}
-                  />
-                )}
-              />
-            </Box>
+            {selectedYear && selectedMedium && (
+              <Box
+                sx={{
+                  display: "flex",
+                  flex: 1,
+                  minWidth: "250px",
+                }}
+              >
+                <Controller
+                  name="teacherSubject"
+                  control={control}
+                  render={({ field }) => (
+                    <Autocomplete
+                      {...field}
+                      value={field.value ?? null}
+                      onChange={(event, newValue) => field.onChange(newValue)}
+                      size="small"
+                      options={teacherSubjectData ?? []}
+                      getOptionLabel={(option) => option.subjectName}
+                      sx={{ flex: 1, margin: "0.5rem" }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          required
+                          error={!!errors.teacherSubject}
+                          helperText={errors.teacherSubject && "Required"}
+                          label="Select Subject"
+                          name="teacherSubject"
+                        />
+                      )}
+                    />
+                  )}
+                />
+              </Box>
+            )}
           </Box>
           <Box
             sx={{
