@@ -221,6 +221,13 @@ const StudentMarksTable = ({
     );
     return rowWithSubject?.subject?.subjectName ?? undefined;
   }, [rows]);
+  const resolvedMonthlyTermLabel = useMemo(() => {
+    const trimmedMonth = selectedMonth?.trim();
+    if (selectedTerm === "Monthly Exam" && trimmedMonth) {
+      return `${selectedTerm} - ${trimmedMonth}`;
+    }
+    return undefined;
+  }, [selectedMonth, selectedTerm]);
   useEffect(() => {
     const signatureEntries = buildRowSignature(rows);
     const nextSignature = JSON.stringify(signatureEntries);
@@ -550,14 +557,24 @@ const StudentMarksTable = ({
           : "-"
         : row.markGrade ??
           (row.studentMark !== undefined ? getMarkGrade(row.studentMark) : "-");
+      const academicTermValue =
+        resolvedMonthlyTermLabel !== undefined
+          ? resolvedMonthlyTermLabel
+          : row.academicTerm;
       return {
         ...row,
         studentMark: markValue,
         markGrade: gradeValue,
         isAbsentStudent: isAbsentValue,
+        academicTerm: academicTermValue,
       };
     });
-  }, [filteredRowEntries, watchedAbsences, watchedMarks]);
+  }, [
+    filteredRowEntries,
+    resolvedMonthlyTermLabel,
+    watchedAbsences,
+    watchedMarks,
+  ]);
   const handleDownloadPdf = useCallback(() => {
     if (!marksDataForExport.length) {
       enqueueSnackbar("No student marks to export", { variant: "warning" });
@@ -568,7 +585,7 @@ const StudentMarksTable = ({
         organizationName,
         subjectName: resolvedSubjectName,
         academicYear: selectedYear,
-        academicTerm: selectedTerm,
+        academicTerm: resolvedMonthlyTermLabel ?? selectedTerm,
         title: "Student Marks Report",
       });
     } catch (error) {
@@ -579,6 +596,7 @@ const StudentMarksTable = ({
     enqueueSnackbar,
     marksDataForExport,
     organizationName,
+    resolvedMonthlyTermLabel,
     resolvedSubjectName,
     selectedTerm,
     selectedYear,
