@@ -10,7 +10,7 @@ import {
   Popover,
   Typography,
 } from "@mui/material";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+// import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 export interface ColumnVisibilityOption {
   key: string;
@@ -57,7 +57,7 @@ const ColumnVisibilitySelector = ({
             <Typography variant="body2">{buttonText}</Typography>
           </Box>
         ) : (
-          <MoreVertIcon />
+          <ViewColumnIcon />
         )}
       </Button>
       <Popover
@@ -74,22 +74,24 @@ const ColumnVisibilitySelector = ({
             <Typography variant="caption">{popoverTitle}</Typography>
           </Box>
 
-          <FormGroup>
-            {options.map((option) => (
-              <FormControlLabel
-                key={option.key}
-                control={
-                  <Checkbox
-                    checked={option.checked}
-                    onChange={(event) =>
-                      onToggle(option.key, event.target.checked)
-                    }
-                  />
-                }
-                label={option.label}
-              />
-            ))}
-          </FormGroup>
+          <Box sx={{ maxHeight: 240, overflowY: "auto" }}>
+            <FormGroup>
+              {options.map((option) => (
+                <FormControlLabel
+                  key={option.key}
+                  control={
+                    <Checkbox
+                      checked={option.checked}
+                      onChange={(event) =>
+                        onToggle(option.key, event.target.checked)
+                      }
+                    />
+                  }
+                  label={option.label}
+                />
+              ))}
+            </FormGroup>
+          </Box>
         </Box>
       </Popover>
     </>

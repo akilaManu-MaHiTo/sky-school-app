@@ -26,6 +26,7 @@ import {
   Button,
   Switch,
   InputAdornment,
+  Tooltip,
 } from "@mui/material";
 import ColumnVisibilitySelector from "../../components/ColumnVisibilitySelector";
 import CustomButton from "../../components/CustomButton";
@@ -49,7 +50,7 @@ import {
   getMarkGrade,
   parseStudentMarksExcel,
 } from "./studentMarksUtils";
-
+import RefreshIcon from "@mui/icons-material/Refresh";
 // Props Interface
 interface StudentMarksTableProps {
   rows: StudentMarkRow[] | null;
@@ -289,17 +290,20 @@ const StudentMarksTable = ({
     [persistMarkMutation]
   );
 
-  const cancelPendingMutation = useCallback((studentProfileId?: number | null) => {
-    if (!studentProfileId) {
-      return;
-    }
-    const timeoutMap = debounceTimeouts.current;
-    const existingTimeout = timeoutMap.get(studentProfileId);
-    if (existingTimeout) {
-      clearTimeout(existingTimeout);
-      timeoutMap.delete(studentProfileId);
-    }
-  }, []);
+  const cancelPendingMutation = useCallback(
+    (studentProfileId?: number | null) => {
+      if (!studentProfileId) {
+        return;
+      }
+      const timeoutMap = debounceTimeouts.current;
+      const existingTimeout = timeoutMap.get(studentProfileId);
+      if (existingTimeout) {
+        clearTimeout(existingTimeout);
+        timeoutMap.delete(studentProfileId);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     return () => {
@@ -546,53 +550,83 @@ const StudentMarksTable = ({
         }}
       >
         <Stack
-          direction="row"
-          gap={isMobile && 1}
+          direction={isMobile ? "column" : "row"}
+          gap={isMobile ? 2 : 3}
           sx={{
-            justifyContent: isMobile ? "flex-end" : "space-between",
+            justifyContent: "space-between",
           }}
-          alignItems="center"
-          flexDirection={isMobile ? "column" : "row"}
-          p={2}
+          alignItems={isMobile ? "stretch" : "center"}
+          p={isMobile ? 1.5 : 2}
         >
-          <ColumnVisibilitySelector
-            {...columnSelectorProps}
-            popoverTitle="Hide Columns"
-            buttonText="Columns"
-          />
-          <TextField
-            label="Search Students"
-            size="small"
-            type="search"
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            sx={{ minWidth: isMobile ? "100%" : 250 }}
-            placeholder="Name or admission no."
-          />
           <Stack
             direction={isMobile ? "column" : "row"}
-            gap={1}
-            alignItems="center"
+            gap={isMobile ? 1.5 : 2}
+            alignItems={isMobile ? "stretch" : "center"}
+            flex={1}
           >
+            <TextField
+              label="Search Students"
+              size="small"
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              sx={{ minWidth: isMobile ? "100%" : 250 }}
+              fullWidth={isMobile}
+              placeholder="Name or admission no."
+            />
+            {!isMobile && (
+              <ColumnVisibilitySelector
+                {...columnSelectorProps}
+                popoverTitle="Hide Columns"
+                buttonText={isMobile ? "" : "Columns"}
+              />
+            )}
+          </Stack>
+
+          <Stack
+            direction="row"
+            gap={isMobile ? 1 : 2}
+            alignItems="center"
+            justifyContent={isMobile ? "flex-end" : "flex-start"}
+            flexWrap={isMobile ? "wrap" : "nowrap"}
+          >
+            <Tooltip title="Refresh marks">
+              <IconButton onClick={() => refetchData?.()}>
+                <RefreshIcon fontSize="medium" color="info" />
+              </IconButton>
+            </Tooltip>
             <StudentMarksExcelDownload
               marksData={marksDataForExport}
               columns={columns}
               visibility={visibility}
               isLoading={isDataLoading || isSavingMarks}
-              sx={{
-                backgroundColor: "var(--pallet-blue)",
-              }}
+              displayMode={isMobile ? "icon" : "button"}
+              tooltip="Download Excel"
             />
-            <Button onClick={() => refetchData?.()}>Refresh</Button>
-            <CustomButton
-              variant="outlined"
-              size="medium"
-              startIcon={<UploadFileIcon />}
-              onClick={() => excelInputRef.current?.click()}
-              disabled={isDataLoading}
-            >
-              Upload Excel
-            </CustomButton>
+            {isMobile ? (
+              <Tooltip title="Upload Excel">
+                <span>
+                  <IconButton
+                    color="primary"
+                    size="small"
+                    onClick={() => excelInputRef.current?.click()}
+                    disabled={isDataLoading}
+                  >
+                    <UploadFileIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            ) : (
+              <CustomButton
+                variant="outlined"
+                size="medium"
+                startIcon={<UploadFileIcon />}
+                onClick={() => excelInputRef.current?.click()}
+                disabled={isDataLoading}
+              >
+                Upload Excel
+              </CustomButton>
+            )}
             <input
               type="file"
               accept=".xlsx,.xls"
@@ -600,6 +634,13 @@ const StudentMarksTable = ({
               onChange={handleExcelInputChange}
               style={{ display: "none" }}
             />
+            {isMobile && (
+              <ColumnVisibilitySelector
+                {...columnSelectorProps}
+                popoverTitle="Hide Columns"
+                buttonText={isMobile ? "" : "Columns"}
+              />
+            )}
           </Stack>
         </Stack>
         <TableContainer
@@ -779,12 +820,9 @@ const StudentMarksTable = ({
                               const handleClearMark = () => {
                                 field.onChange("");
                                 cancelPendingMutation(row.studentProfileId);
-                                triggerMarkMutation(
-                                  row,
-                                  "",
-                                  currentIsAbsent,
-                                  { immediate: true }
-                                );
+                                triggerMarkMutation(row, "", currentIsAbsent, {
+                                  immediate: true,
+                                });
                                 const input = inputRefs.current[index];
                                 if (input) {
                                   input.focus();
@@ -796,9 +834,7 @@ const StudentMarksTable = ({
                                   {...field}
                                   defaultValue={row.studentMark}
                                   id={`studentMark-${index}`}
-                                  label={
-                                    row.student?.employeeNumber ?? "Mark"
-                                  }
+                                  label={row.student?.employeeNumber ?? "Mark"}
                                   size="small"
                                   error={Boolean(markErrorMessage)}
                                   helperText={markErrorMessage}

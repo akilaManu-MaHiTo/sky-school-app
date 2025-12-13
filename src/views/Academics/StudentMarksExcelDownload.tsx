@@ -1,5 +1,5 @@
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import { SxProps, Theme } from "@mui/material";
+import { IconButton, SxProps, Theme, Tooltip } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { ColumnDefinition } from "../../components/useColumnVisibility";
 import CustomButton from "../../components/CustomButton";
@@ -13,6 +13,8 @@ interface StudentMarksExcelDownloadProps {
   fileName?: string;
   isLoading?: boolean;
   sx?: SxProps<Theme>;
+  displayMode?: "button" | "icon";
+  tooltip?: string;
 }
 
 const columnValueSelector: Record<
@@ -49,6 +51,8 @@ const StudentMarksExcelDownload = ({
   fileName = "student-marks.xlsx",
   isLoading,
   sx,
+  displayMode = "button",
+  tooltip = "Download Excel",
 }: StudentMarksExcelDownloadProps) => {
   const { enqueueSnackbar } = useSnackbar();
 
@@ -84,13 +88,33 @@ const StudentMarksExcelDownload = ({
     XLSX.writeFile(workbook, fileName);
   };
 
+  const isDisabled = isLoading || !marksData?.length;
+
+  if (displayMode === "icon") {
+    return (
+      <Tooltip title={tooltip}>
+        <span>
+          <IconButton
+            onClick={handleDownload}
+            disabled={isDisabled}
+            sx={sx}
+            color="primary"
+            size="small"
+          >
+            <ArrowDownwardIcon fontSize="small" />
+          </IconButton>
+        </span>
+      </Tooltip>
+    );
+  }
+
   return (
     <CustomButton
-      variant="contained"
+      variant="outlined"
       size="medium"
       startIcon={<ArrowDownwardIcon />}
       onClick={handleDownload}
-      disabled={isLoading || !marksData?.length}
+      disabled={isDisabled}
       sx={sx}
     >
       Download Excel
