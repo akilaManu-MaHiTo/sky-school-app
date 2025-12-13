@@ -23,7 +23,6 @@ import {
   LinearProgress,
   Chip,
   IconButton,
-  Button,
   Switch,
   InputAdornment,
   Tooltip,
@@ -51,6 +50,9 @@ import {
   parseStudentMarksExcel,
 } from "./studentMarksUtils";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import { generateStudentMarksPdf } from "../../reportsUtils/StudentMarksReportPDF";
+import useCurrentOrganization from "../../hooks/useCurrentOrganization";
 // Props Interface
 interface StudentMarksTableProps {
   rows: StudentMarkRow[] | null;
@@ -150,6 +152,8 @@ const StudentMarksTable = ({
   isDataLoading,
   refetchData,
 }: StudentMarksTableProps) => {
+  const { organization } = useCurrentOrganization();
+  const organizationName = organization?.organizationName;
   // Input Refs and Debounce Setup
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const excelInputRef = useRef<HTMLInputElement | null>(null);
@@ -205,6 +209,15 @@ const StudentMarksTable = ({
       return haystack.includes(query);
     });
   }, [rows, searchQuery]);
+  const resolvedSubjectName = useMemo(() => {
+    if (!rows.length) {
+      return undefined;
+    }
+    const rowWithSubject = rows.find(
+      (studentRow) => studentRow.subject?.subjectName
+    );
+    return rowWithSubject?.subject?.subjectName ?? undefined;
+  }, [rows]);
   useEffect(() => {
     const signatureEntries = buildRowSignature(rows);
     const nextSignature = JSON.stringify(signatureEntries);
@@ -540,6 +553,31 @@ const StudentMarksTable = ({
       };
     });
   }, [filteredRowEntries, watchedAbsences, watchedMarks]);
+  const handleDownloadPdf = useCallback(() => {
+    if (!marksDataForExport.length) {
+      enqueueSnackbar("No student marks to export", { variant: "warning" });
+      return;
+    }
+    try {
+      generateStudentMarksPdf(marksDataForExport, {
+        organizationName,
+        subjectName: resolvedSubjectName,
+        academicYear: selectedYear,
+        academicTerm: selectedTerm,
+        title: "Student Marks Report",
+      });
+    } catch (error) {
+      console.error("Unable to generate student marks PDF:", error);
+      enqueueSnackbar("Unable to generate PDF", { variant: "error" });
+    }
+  }, [
+    enqueueSnackbar,
+    marksDataForExport,
+    organizationName,
+    resolvedSubjectName,
+    selectedTerm,
+    selectedYear,
+  ]);
 
   return (
     <Box>
@@ -603,6 +641,36 @@ const StudentMarksTable = ({
               displayMode={isMobile ? "icon" : "button"}
               tooltip="Download Excel"
             />
+            {isMobile ? (
+              <Tooltip title="Download PDF">
+                <span>
+                  <IconButton
+                    color="primary"
+                    size="small"
+                    onClick={handleDownloadPdf}
+                    disabled={
+                      isDataLoading ||
+                      isSavingMarks ||
+                      !marksDataForExport.length
+                    }
+                  >
+                    <PictureAsPdfIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            ) : (
+              <CustomButton
+                variant="outlined"
+                size="medium"
+                startIcon={<PictureAsPdfIcon />}
+                onClick={handleDownloadPdf}
+                disabled={
+                  isDataLoading || isSavingMarks || !marksDataForExport.length
+                }
+              >
+                Download PDF
+              </CustomButton>
+            )}
             {isMobile ? (
               <Tooltip title="Upload Excel">
                 <span>
