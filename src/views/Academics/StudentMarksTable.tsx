@@ -287,6 +287,18 @@ const StudentMarksTable = ({
     [persistMarkMutation]
   );
 
+  const cancelPendingMutation = useCallback((studentProfileId?: number | null) => {
+    if (!studentProfileId) {
+      return;
+    }
+    const timeoutMap = debounceTimeouts.current;
+    const existingTimeout = timeoutMap.get(studentProfileId);
+    if (existingTimeout) {
+      clearTimeout(existingTimeout);
+      timeoutMap.delete(studentProfileId);
+    }
+  }, []);
+
   useEffect(() => {
     return () => {
       debounceTimeouts.current.forEach((timeoutId) => clearTimeout(timeoutId));
@@ -310,6 +322,7 @@ const StudentMarksTable = ({
       const studentMarkValue =
         markValue === null || markValue === undefined ? "" : String(markValue);
       if (!isMarkValueWithinRange(studentMarkValue)) {
+        cancelPendingMutation(row.studentProfileId);
         return;
       }
       const normalizedAbsent =
@@ -331,18 +344,14 @@ const StudentMarksTable = ({
         isAbsentStudent: normalizedAbsent,
       };
       if (options?.immediate) {
-        const timeoutMap = debounceTimeouts.current;
-        const existingTimeout = timeoutMap.get(row.studentProfileId);
-        if (existingTimeout) {
-          clearTimeout(existingTimeout);
-          timeoutMap.delete(row.studentProfileId);
-        }
+        cancelPendingMutation(row.studentProfileId);
         persistMarkMutation(payload);
         return;
       }
       debouncedMutation(row.studentProfileId, payload);
     },
     [
+      cancelPendingMutation,
       debouncedMutation,
       persistMarkMutation,
       selectedSubject,
@@ -787,6 +796,10 @@ const StudentMarksTable = ({
                                         row,
                                         val,
                                         currentIsAbsent
+                                      );
+                                    } else {
+                                      cancelPendingMutation(
+                                        row.studentProfileId
                                       );
                                     }
                                   }
