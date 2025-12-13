@@ -17,6 +17,7 @@ import {
   Chip,
   IconButton,
   Button,
+  Switch,
 } from "@mui/material";
 import ColumnVisibilitySelector from "../../components/ColumnVisibilitySelector";
 import CustomButton from "../../components/CustomButton";
@@ -53,6 +54,7 @@ interface StudentMarksTableProps {
 // Form Values Interface
 type FormValues = {
   studentMarks: Array<string | number | null>;
+  isAbsentStudents: Array<boolean>;
 };
 type MarkMutationPayload = {
   studentProfileId: number;
@@ -62,6 +64,7 @@ type MarkMutationPayload = {
   academicYear: string;
   academicTerm: string;
   markId?: string | number | null;
+  isAbsentStudent?: boolean;
 };
 const normalizeMarkValue = (
   value: string | number | null | undefined
@@ -75,14 +78,19 @@ const normalizeMarkValue = (
 const deriveMarksFromRows = (rows: StudentMarkRow[] | null | undefined) =>
   (rows ?? []).map((row) => normalizeMarkValue(row.studentMark));
 
+const deriveAbsencesFromRows = (
+  rows: StudentMarkRow[] | null | undefined
+) => (rows ?? []).map((row) => Boolean(row.isAbsentStudent));
+
 const buildRowSignature = (
   rows: StudentMarkRow[] | null | undefined
-): Array<{ key: string; mark: string }> =>
+): Array<{ key: string; mark: string; isAbsent: boolean }> =>
   (rows ?? []).map((row, index) => ({
     key: String(
       row.studentProfileId ?? row.student?.employeeNumber ?? `row-${index}`
     ),
     mark: normalizeMarkValue(row.studentMark),
+    isAbsent: Boolean(row.isAbsentStudent),
   }));
 const gradeColorMap: Record<
   string,
@@ -111,6 +119,7 @@ const StudentMarksTable = ({
     useForm<FormValues>({
       defaultValues: {
         studentMarks: deriveMarksFromRows(rows),
+        isAbsentStudents: deriveAbsencesFromRows(rows),
       },
     });
   const { enqueueSnackbar } = useSnackbar();
@@ -132,6 +141,7 @@ const StudentMarksTable = ({
     }
   };
   const watchedMarks = watch("studentMarks") || [];
+  const watchedAbsences = watch("isAbsentStudents") || [];
   useEffect(() => {
     const signatureEntries = buildRowSignature(rows);
     const nextSignature = JSON.stringify(signatureEntries);
@@ -141,7 +151,10 @@ const StudentMarksTable = ({
     }
 
     lastSyncedSignatureRef.current = nextSignature;
-    reset({ studentMarks: signatureEntries.map((entry) => entry.mark) });
+    reset({
+      studentMarks: signatureEntries.map((entry) => entry.mark),
+      isAbsentStudents: signatureEntries.map((entry) => entry.isAbsent),
+    });
   }, [reset, rows]);
   const lastSyncedSignatureRef = useRef<string>(
     JSON.stringify(buildRowSignature(rows))
@@ -223,12 +236,21 @@ const StudentMarksTable = ({
   }, []);
 
   const triggerMarkMutation = useCallback(
-    (row: StudentMarkRow, markValue: string | number | null) => {
+    (
+      row: StudentMarkRow,
+      markValue: string | number | null,
+      isAbsentStudent?: boolean,
+      options?: { immediate?: boolean }
+    ) => {
       if (!row.studentProfileId || !selectedSubject?.id) {
         return;
       }
       const studentMarkValue =
         markValue === null || markValue === undefined ? "" : String(markValue);
+      const normalizedAbsent =
+        isAbsentStudent === undefined
+          ? Boolean(row.isAbsentStudent)
+          : isAbsentStudent;
       const markIdentifier =
         row.markId === undefined || row.markId === null || row.markId === ""
           ? undefined
@@ -241,10 +263,27 @@ const StudentMarksTable = ({
         academicYear: selectedYear,
         academicTerm: selectedTerm,
         markId: markIdentifier,
+        isAbsentStudent: normalizedAbsent,
       };
+      if (options?.immediate) {
+        const timeoutMap = debounceTimeouts.current;
+        const existingTimeout = timeoutMap.get(row.studentProfileId);
+        if (existingTimeout) {
+          clearTimeout(existingTimeout);
+          timeoutMap.delete(row.studentProfileId);
+        }
+        persistMarkMutation(payload);
+        return;
+      }
       debouncedMutation(row.studentProfileId, payload);
     },
-    [debouncedMutation, selectedSubject, selectedTerm, selectedYear]
+    [
+      debouncedMutation,
+      persistMarkMutation,
+      selectedSubject,
+      selectedTerm,
+      selectedYear,
+    ]
   );
 
   const handleExcelUpload = useCallback(
@@ -259,16 +298,36 @@ const StudentMarksTable = ({
         }
         const markMap = new Map(
           parsedRecords.map(
-            ({ normalizedName, admissionNumber, studentMark }) => [
+            ({
+              normalizedName,
+              admissionNumber,
+              studentMark,
+              isAbsentStudent,
+            }) => [
               `${admissionNumber}|${normalizedName}`,
-              studentMark === null || studentMark === undefined
-                ? ""
-                : String(studentMark),
+              {
+                mark:
+                  studentMark === null || studentMark === undefined
+                    ? ""
+                    : String(studentMark),
+                isAbsent: isAbsentStudent,
+              },
             ]
           )
         );
-        const currentMarks = [...(getValues("studentMarks") ?? [])];
-        const pendingUpdates: Array<{ row: StudentMarkRow; mark: string }> = [];
+        const marksFromForm = getValues("studentMarks");
+        const absencesFromForm = getValues("isAbsentStudents");
+        const currentMarks = marksFromForm
+          ? [...marksFromForm]
+          : deriveMarksFromRows(rows);
+        const currentAbsences = absencesFromForm
+          ? [...absencesFromForm]
+          : deriveAbsencesFromRows(rows);
+        const pendingUpdates: Array<{
+          row: StudentMarkRow;
+          mark: string;
+          isAbsent: boolean;
+        }> = [];
         let appliedCount = 0;
         rows.forEach((row, index) => {
           const rowKey = getStudentKey(
@@ -280,9 +339,21 @@ const StudentMarksTable = ({
           }
           if (markMap.has(rowKey)) {
             appliedCount += 1;
-            const markValue = markMap.get(rowKey) ?? "";
-            currentMarks[index] = markValue;
-            pendingUpdates.push({ row, mark: markValue });
+            const mappedValue = markMap.get(rowKey);
+            const hasExcelAbsent =
+              mappedValue?.isAbsent !== undefined &&
+              mappedValue?.isAbsent !== null;
+            const resolvedAbsent = hasExcelAbsent
+              ? Boolean(mappedValue?.isAbsent)
+              : currentAbsences[index] ?? Boolean(row.isAbsentStudent);
+              const markValue = resolvedAbsent ? "" : mappedValue?.mark ?? "";
+              currentMarks[index] = markValue;
+            currentAbsences[index] = resolvedAbsent;
+            pendingUpdates.push({
+              row,
+              mark: markValue,
+              isAbsent: resolvedAbsent,
+            });
           }
         });
         if (!appliedCount) {
@@ -295,8 +366,12 @@ const StudentMarksTable = ({
           shouldDirty: true,
           shouldValidate: true,
         });
-        pendingUpdates.forEach(({ row, mark }) => {
-          triggerMarkMutation(row, mark);
+        setValue("isAbsentStudents", currentAbsences, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+        pendingUpdates.forEach(({ row, mark, isAbsent }) => {
+          triggerMarkMutation(row, mark, isAbsent, { immediate: true });
         });
         enqueueSnackbar(
           `Applied marks for ${appliedCount} student${
@@ -343,6 +418,7 @@ const StudentMarksTable = ({
       { key: "grade", label: "Grade" },
       { key: "className", label: "Class" },
       { key: "subjectName", label: "Subject" },
+      { key: "isAbsentStudent", label: "Is Absent" },
       { key: "studentMark", label: "Mark" },
       { key: "markGrade", label: "Grade Mark" },
     ],
@@ -361,9 +437,15 @@ const StudentMarksTable = ({
     return rows.map((row, index) => {
       const watchedValue = watchedMarks[index];
       const hasWatchedValue = watchedValue !== undefined;
+      const watchedAbsent = watchedAbsences[index];
+      const hasAbsentValue = watchedAbsent !== undefined;
+      const isAbsentValue = hasAbsentValue
+        ? watchedAbsent
+        : Boolean(row.isAbsentStudent);
       const markValue = hasWatchedValue ? watchedValue : row.studentMark;
-      const gradeValue =
-        hasWatchedValue && watchedValue !== ""
+      const gradeValue = isAbsentValue
+        ? "Absent"
+        : hasWatchedValue && watchedValue !== ""
           ? getMarkGrade(watchedValue)
           : row.markGrade ??
             (row.studentMark !== undefined
@@ -373,9 +455,10 @@ const StudentMarksTable = ({
         ...row,
         studentMark: markValue,
         markGrade: gradeValue,
+        isAbsentStudent: isAbsentValue,
       };
     });
-  }, [rows, watchedMarks]);
+  }, [rows, watchedAbsences, watchedMarks]);
 
   return (
     <Box>
@@ -460,6 +543,9 @@ const StudentMarksTable = ({
                 {visibility.grade && <TableCell>Grade</TableCell>}
                 {visibility.className && <TableCell>Class</TableCell>}
                 {visibility.subjectName && <TableCell>Subject</TableCell>}
+                {visibility.isAbsentStudent && (
+                  <TableCell>Is Absent</TableCell>
+                )}
                 {visibility.studentMark && <TableCell>Mark</TableCell>}
                 {visibility.markGrade && <TableCell>Grade Mark</TableCell>}
               </TableRow>
@@ -469,13 +555,19 @@ const StudentMarksTable = ({
               {rows.length ? (
                 rows.map((row, index) => {
                   const watchedValue = watchedMarks[index];
-                  const computedGrade =
+                  const watchedAbsent = watchedAbsences[index];
+                  const hasAbsentValue = watchedAbsent !== undefined;
+                  const currentIsAbsent = hasAbsentValue
+                    ? watchedAbsent
+                    : Boolean(row.isAbsentStudent);
+                  const baseGrade =
                     watchedValue !== undefined && watchedValue !== ""
                       ? getMarkGrade(watchedValue)
                       : row.markGrade ??
                         (row.studentMark !== undefined
                           ? getMarkGrade(row.studentMark)
                           : "-");
+                  const displayGrade = currentIsAbsent ? "Absent" : baseGrade;
 
                   return (
                     <TableRow
@@ -533,6 +625,46 @@ const StudentMarksTable = ({
                         <TableCell>{row.subject?.subjectName ?? "-"}</TableCell>
                       )}
 
+                      {visibility.isAbsentStudent && (
+                        <TableCell>
+                          <Controller
+                            name={`isAbsentStudents.${index}` as const}
+                            control={control}
+                            render={({ field }) => (
+                              <Switch
+                                {...field}
+                                size="small"
+                                checked={Boolean(field.value)}
+                                onChange={(event) => {
+                                  const checked = event.target.checked;
+                                  field.onChange(checked);
+                                  const markFieldName =
+                                    `studentMarks.${index}` as const;
+                                  if (checked) {
+                                    setValue(markFieldName, "", {
+                                      shouldDirty: true,
+                                      shouldValidate: true,
+                                    });
+                                  }
+                                  const latestMark = checked
+                                    ? ""
+                                    : normalizeMarkValue(
+                                        getValues(markFieldName) ??
+                                          row.studentMark
+                                      );
+                                  triggerMarkMutation(
+                                    row,
+                                    latestMark,
+                                    checked,
+                                    { immediate: true }
+                                  );
+                                }}
+                              />
+                            )}
+                          />
+                        </TableCell>
+                      )}
+
                       {visibility.studentMark && (
                         <TableCell sx={{ minWidth: 160 }}>
                           <Controller
@@ -552,6 +684,7 @@ const StudentMarksTable = ({
                                 inputRef={(el) => {
                                   inputRefs.current[index] = el;
                                 }}
+                                disabled={currentIsAbsent}
                                 onKeyDown={(event) => {
                                   if (event.key === "Enter") {
                                     event.preventDefault();
@@ -562,7 +695,11 @@ const StudentMarksTable = ({
                                   const val = e.target.value;
                                   if (val === "" || /^-?\d*\.?\d*$/.test(val)) {
                                     field.onChange(val);
-                                    triggerMarkMutation(row, val);
+                                    triggerMarkMutation(
+                                      row,
+                                      val,
+                                      currentIsAbsent
+                                    );
                                   }
                                 }}
                                 value={field.value ?? ""}
@@ -574,16 +711,23 @@ const StudentMarksTable = ({
 
                       {visibility.markGrade && (
                         <TableCell>
-                          {computedGrade ? (
+                          {displayGrade && displayGrade !== "-" ? (
                             <Chip
-                              label={computedGrade}
-                              color={gradeColorMap[computedGrade] ?? "default"}
+                              label={displayGrade}
+                              color={
+                                displayGrade === "Absent"
+                                  ? "default"
+                                  : gradeColorMap[displayGrade] ?? "default"
+                              }
                               size="small"
                               sx={{
                                 fontWeight: 600,
-                                color: "#fff",
+                                color:
+                                  displayGrade === "Absent"
+                                    ? undefined
+                                    : "#fff",
                                 backgroundColor:
-                                  computedGrade === "S" ? "orange" : undefined,
+                                  displayGrade === "S" ? "orange" : undefined,
                               }}
                             />
                           ) : (

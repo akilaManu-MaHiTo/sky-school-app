@@ -84,6 +84,7 @@ export async function submitStudentMarks(payload: {
   markGrade: string;
   academicYear: string;
   academicTerm: string;
+  isAbsentStudent?: boolean;
 }) {
   const {
     studentProfileId,
@@ -92,6 +93,7 @@ export async function submitStudentMarks(payload: {
     markGrade,
     academicYear,
     academicTerm,
+    isAbsentStudent,
   } = payload;
 
   const marksData = {
@@ -101,6 +103,7 @@ export async function submitStudentMarks(payload: {
     markGrade,
     academicYear,
     academicTerm,
+    isAbsentStudent,
   };
 
   const res = await axios.post(`/api/student-marks`, marksData);
@@ -115,6 +118,7 @@ export async function UpdateStudentMarks(payload: {
   academicYear: string;
   academicTerm: string;
   markId: string;
+  isAbsentStudent?: boolean;
 }) {
   const {
     studentProfileId,
@@ -124,6 +128,7 @@ export async function UpdateStudentMarks(payload: {
     academicYear,
     academicTerm,
     markId,
+    isAbsentStudent,
   } = payload;
 
   const marksData = {
@@ -133,6 +138,7 @@ export async function UpdateStudentMarks(payload: {
     markGrade,
     academicYear,
     academicTerm,
+    isAbsentStudent,
   };
 
   const res = await axios.post(`/api/student-marks/${markId}`, marksData);

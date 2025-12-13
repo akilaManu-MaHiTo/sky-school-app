@@ -14,6 +14,7 @@ export interface StudentMarkRow {
   studentMark?: string | number | null;
   markGrade?: string | null;
   employeeNumber?: string | null;
+  isAbsentStudent?: boolean | null;
 }
 
 export const getMarkGrade = (
@@ -33,11 +34,39 @@ export interface ParsedStudentMarkRecord {
   normalizedName: string;
   admissionNumber: string;
   studentMark: string | number;
+  isAbsentStudent?: boolean;
 }
 
 const NAME_COLUMN = "Name";
 const ADMISSION_COLUMN = "Admission Number";
 const MARK_COLUMN = "Mark";
+const ABSENT_COLUMN = "Is Absent Student";
+
+const normalizeAbsentValue = (value: unknown): boolean | undefined => {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "number") {
+    if (value === 1) return true;
+    if (value === 0) return false;
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (!normalized) {
+      return undefined;
+    }
+    if (["true", "yes", "1", "absent"].includes(normalized)) {
+      return true;
+    }
+    if (["false", "no", "0", "present"].includes(normalized)) {
+      return false;
+    }
+  }
+
+  return undefined;
+};
 
 export const parseStudentMarksExcel = async (
   file: File
@@ -64,6 +93,7 @@ export const parseStudentMarksExcel = async (
         typeof row[NAME_COLUMN] === "string" ? row[NAME_COLUMN] : "";
       const admissionValue = row[ADMISSION_COLUMN];
       const mark = row[MARK_COLUMN];
+      const absentValue = normalizeAbsentValue(row[ABSENT_COLUMN]);
 
       const normalizedName = nameValue.trim().toLowerCase();
       const normalizedAdmission =
@@ -79,6 +109,7 @@ export const parseStudentMarksExcel = async (
         normalizedName,
         admissionNumber: normalizedAdmission,
         studentMark: mark ?? "",
+        isAbsentStudent: absentValue,
       } as ParsedStudentMarkRecord;
     })
     .filter((row): row is ParsedStudentMarkRecord => row !== null);

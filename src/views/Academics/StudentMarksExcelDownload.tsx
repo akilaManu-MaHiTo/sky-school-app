@@ -29,6 +29,12 @@ const columnValueSelector: Record<
     row.grade?.grade ? `Grade ${row.grade.grade}` : "-",
   className: (row) => row.class?.className ?? "-",
   subjectName: (row) => row.subject?.subjectName ?? "-",
+  isAbsentStudent: (row) =>
+    row.isAbsentStudent === undefined || row.isAbsentStudent === null
+      ? "-"
+      : row.isAbsentStudent
+        ? "Yes"
+        : "No",
   studentMark: (row) =>
     row.studentMark === null || row.studentMark === undefined || row.studentMark === ""
       ? "-"
