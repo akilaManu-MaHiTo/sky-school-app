@@ -102,6 +102,37 @@ const gradeColorMap: Record<
   D: "warning", // Orange-ish (MUI warning leans yellow-orange)
   F: "error", // Red
 };
+
+const MARK_RANGE_ERROR_MESSAGE = "Marks must be between 0 and 100";
+
+const validateMarkRange = (
+  value: string | number | null | undefined
+): true | string => {
+  if (value === "" || value === null || value === undefined) {
+    return true;
+  }
+
+  if (typeof value === "string" && value.trim() === "") {
+    return true;
+  }
+
+  const numericValue =
+    typeof value === "number" ? value : Number(String(value).trim());
+
+  if (!Number.isFinite(numericValue) || Number.isNaN(numericValue)) {
+    return MARK_RANGE_ERROR_MESSAGE;
+  }
+
+  if (numericValue < 0 || numericValue > 100) {
+    return MARK_RANGE_ERROR_MESSAGE;
+  }
+
+  return true;
+};
+
+const isMarkValueWithinRange = (
+  value: string | number | null | undefined
+): boolean => validateMarkRange(value) === true;
 const StudentMarksTable = ({
   rows = [],
   selectedTerm,
@@ -117,6 +148,8 @@ const StudentMarksTable = ({
   const successToastTimeout = useRef<NodeJS.Timeout | null>(null);
   const { control, watch, formState, setValue, getValues, reset } =
     useForm<FormValues>({
+      mode: "onChange",
+      reValidateMode: "onChange",
       defaultValues: {
         studentMarks: deriveMarksFromRows(rows),
         isAbsentStudents: deriveAbsencesFromRows(rows),
@@ -247,6 +280,9 @@ const StudentMarksTable = ({
       }
       const studentMarkValue =
         markValue === null || markValue === undefined ? "" : String(markValue);
+      if (!isMarkValueWithinRange(studentMarkValue)) {
+        return;
+      }
       const normalizedAbsent =
         isAbsentStudent === undefined
           ? Boolean(row.isAbsentStudent)
@@ -436,7 +472,8 @@ const StudentMarksTable = ({
     }
     return rows.map((row, index) => {
       const watchedValue = watchedMarks[index];
-      const hasWatchedValue = watchedValue !== undefined;
+      const hasWatchedValue =
+        watchedValue !== undefined && watchedValue !== null;
       const watchedAbsent = watchedAbsences[index];
       const hasAbsentValue = watchedAbsent !== undefined;
       const isAbsentValue = hasAbsentValue
@@ -446,11 +483,13 @@ const StudentMarksTable = ({
       const gradeValue = isAbsentValue
         ? "Absent"
         : hasWatchedValue && watchedValue !== ""
-          ? getMarkGrade(watchedValue)
-          : row.markGrade ??
-            (row.studentMark !== undefined
-              ? getMarkGrade(row.studentMark)
-              : "-");
+            ? isMarkValueWithinRange(watchedValue)
+              ? getMarkGrade(watchedValue)
+              : "-"
+            : row.markGrade ??
+              (row.studentMark !== undefined
+                ? getMarkGrade(row.studentMark)
+                : "-");
       return {
         ...row,
         studentMark: markValue,
@@ -560,14 +599,27 @@ const StudentMarksTable = ({
                   const currentIsAbsent = hasAbsentValue
                     ? watchedAbsent
                     : Boolean(row.isAbsentStudent);
+                  const hasWatchedValue =
+                    watchedValue !== undefined &&
+                    watchedValue !== null &&
+                    watchedValue !== "";
+                  const shouldUseWatchedGrade =
+                    hasWatchedValue && isMarkValueWithinRange(watchedValue);
                   const baseGrade =
-                    watchedValue !== undefined && watchedValue !== ""
-                      ? getMarkGrade(watchedValue)
+                    hasWatchedValue
+                      ? shouldUseWatchedGrade
+                        ? getMarkGrade(watchedValue)
+                        : "-"
                       : row.markGrade ??
                         (row.studentMark !== undefined
                           ? getMarkGrade(row.studentMark)
                           : "-");
                   const displayGrade = currentIsAbsent ? "Absent" : baseGrade;
+                  const markError = formState.errors?.studentMarks?.[index];
+                  const markErrorMessage =
+                    typeof markError?.message === "string"
+                      ? markError.message
+                      : undefined;
 
                   return (
                     <TableRow
@@ -670,6 +722,9 @@ const StudentMarksTable = ({
                           <Controller
                             name={`studentMarks.${index}`}
                             control={control}
+                            rules={{
+                              validate: (value) => validateMarkRange(value),
+                            }}
                             render={({ field }) => (
                               <TextField
                                 {...field}
@@ -677,9 +732,8 @@ const StudentMarksTable = ({
                                 id={`studentMark-${index}`}
                                 label={row.student?.employeeNumber ?? "Mark"}
                                 size="small"
-                                error={
-                                  !!formState.errors?.studentMarks?.[index]
-                                }
+                                error={Boolean(markErrorMessage)}
+                                helperText={markErrorMessage}
                                 fullWidth
                                 inputRef={(el) => {
                                   inputRefs.current[index] = el;
@@ -695,11 +749,13 @@ const StudentMarksTable = ({
                                   const val = e.target.value;
                                   if (val === "" || /^-?\d*\.?\d*$/.test(val)) {
                                     field.onChange(val);
-                                    triggerMarkMutation(
-                                      row,
-                                      val,
-                                      currentIsAbsent
-                                    );
+                                    if (isMarkValueWithinRange(val)) {
+                                      triggerMarkMutation(
+                                        row,
+                                        val,
+                                        currentIsAbsent
+                                      );
+                                    }
                                   }
                                 }}
                                 value={field.value ?? ""}
