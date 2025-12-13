@@ -25,6 +25,7 @@ import {
   IconButton,
   Button,
   Switch,
+  InputAdornment,
 } from "@mui/material";
 import ColumnVisibilitySelector from "../../components/ColumnVisibilitySelector";
 import CustomButton from "../../components/CustomButton";
@@ -40,6 +41,7 @@ import {
 import { useSnackbar } from "notistack";
 import queryClient from "../../state/queryClient";
 import CheckIcon from "@mui/icons-material/Check";
+import ClearIcon from "@mui/icons-material/Clear";
 import StudentMarksExcelDownload from "./StudentMarksExcelDownload";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import {
@@ -281,7 +283,7 @@ const StudentMarksTable = ({
       const timeoutId = setTimeout(() => {
         persistMarkMutation(payload);
         timeoutMap.delete(studentProfileId);
-      }, 2000);
+      }, 750);
       timeoutMap.set(studentProfileId, timeoutId);
     },
     [persistMarkMutation]
@@ -767,46 +769,87 @@ const StudentMarksTable = ({
                             rules={{
                               validate: (value) => validateMarkRange(value),
                             }}
-                            render={({ field }) => (
-                              <TextField
-                                {...field}
-                                defaultValue={row.studentMark}
-                                id={`studentMark-${index}`}
-                                label={row.student?.employeeNumber ?? "Mark"}
-                                size="small"
-                                error={Boolean(markErrorMessage)}
-                                helperText={markErrorMessage}
-                                fullWidth
-                                inputRef={(el) => {
-                                  inputRefs.current[index] = el;
-                                }}
-                                disabled={currentIsAbsent}
-                                onKeyDown={(event) => {
-                                  if (event.key === "Enter") {
-                                    event.preventDefault();
-                                    focusNextField(index);
+                            render={({ field }) => {
+                              const showClearButton =
+                                !currentIsAbsent &&
+                                field.value !== undefined &&
+                                field.value !== null &&
+                                field.value !== "";
+
+                              const handleClearMark = () => {
+                                field.onChange("");
+                                cancelPendingMutation(row.studentProfileId);
+                                triggerMarkMutation(
+                                  row,
+                                  "",
+                                  currentIsAbsent,
+                                  { immediate: true }
+                                );
+                                const input = inputRefs.current[index];
+                                if (input) {
+                                  input.focus();
+                                }
+                              };
+
+                              return (
+                                <TextField
+                                  {...field}
+                                  defaultValue={row.studentMark}
+                                  id={`studentMark-${index}`}
+                                  label={
+                                    row.student?.employeeNumber ?? "Mark"
                                   }
-                                }}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  if (val === "" || /^-?\d*\.?\d*$/.test(val)) {
-                                    field.onChange(val);
-                                    if (isMarkValueWithinRange(val)) {
-                                      triggerMarkMutation(
-                                        row,
-                                        val,
-                                        currentIsAbsent
-                                      );
-                                    } else {
-                                      cancelPendingMutation(
-                                        row.studentProfileId
-                                      );
+                                  size="small"
+                                  error={Boolean(markErrorMessage)}
+                                  helperText={markErrorMessage}
+                                  fullWidth
+                                  inputRef={(el) => {
+                                    inputRefs.current[index] = el;
+                                  }}
+                                  disabled={currentIsAbsent}
+                                  onKeyDown={(event) => {
+                                    if (event.key === "Enter") {
+                                      event.preventDefault();
+                                      focusNextField(index);
                                     }
-                                  }
-                                }}
-                                value={field.value ?? ""}
-                              />
-                            )}
+                                  }}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (
+                                      val === "" ||
+                                      /^-?\d*\.?\d*$/.test(val)
+                                    ) {
+                                      field.onChange(val);
+                                      if (isMarkValueWithinRange(val)) {
+                                        triggerMarkMutation(
+                                          row,
+                                          val,
+                                          currentIsAbsent
+                                        );
+                                      } else {
+                                        cancelPendingMutation(
+                                          row.studentProfileId
+                                        );
+                                      }
+                                    }
+                                  }}
+                                  value={field.value ?? ""}
+                                  InputProps={{
+                                    endAdornment: showClearButton ? (
+                                      <InputAdornment position="end">
+                                        <IconButton
+                                          aria-label="Clear mark"
+                                          size="small"
+                                          onClick={handleClearMark}
+                                        >
+                                          <ClearIcon fontSize="small" />
+                                        </IconButton>
+                                      </InputAdornment>
+                                    ) : undefined,
+                                  }}
+                                />
+                              );
+                            }}
                           />
                         </TableCell>
                       )}
