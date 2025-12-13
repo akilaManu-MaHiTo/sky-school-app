@@ -1,4 +1,11 @@
-import { useCallback, useMemo, useRef, ChangeEvent, useEffect } from "react";
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  ChangeEvent,
+  useEffect,
+  useState,
+} from "react";
 import {
   Table,
   TableHead,
@@ -78,9 +85,8 @@ const normalizeMarkValue = (
 const deriveMarksFromRows = (rows: StudentMarkRow[] | null | undefined) =>
   (rows ?? []).map((row) => normalizeMarkValue(row.studentMark));
 
-const deriveAbsencesFromRows = (
-  rows: StudentMarkRow[] | null | undefined
-) => (rows ?? []).map((row) => Boolean(row.isAbsentStudent));
+const deriveAbsencesFromRows = (rows: StudentMarkRow[] | null | undefined) =>
+  (rows ?? []).map((row) => Boolean(row.isAbsentStudent));
 
 const buildRowSignature = (
   rows: StudentMarkRow[] | null | undefined
@@ -159,6 +165,7 @@ const StudentMarksTable = ({
   const isMobile = useMediaQuery((theme: Theme) =>
     theme.breakpoints.down("md")
   );
+  const [searchQuery, setSearchQuery] = useState("");
   const focusNextField = (currentIndex: number) => {
     for (
       let nextIndex = currentIndex + 1;
@@ -175,6 +182,26 @@ const StudentMarksTable = ({
   };
   const watchedMarks = watch("studentMarks") || [];
   const watchedAbsences = watch("isAbsentStudents") || [];
+  const filteredRowEntries = useMemo(() => {
+    const indexedRows = (rows ?? []).map((row, index) => ({ row, index }));
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) {
+      return indexedRows;
+    }
+    return indexedRows.filter(({ row }) => {
+      const haystack = [
+        row.student?.employeeNumber,
+        row.student?.name,
+        row.grade?.grade ? `Grade ${row.grade.grade}` : "",
+        row.class?.className,
+        row.subject?.subjectName,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+  }, [rows, searchQuery]);
   useEffect(() => {
     const signatureEntries = buildRowSignature(rows);
     const nextSignature = JSON.stringify(signatureEntries);
@@ -221,26 +248,28 @@ const StudentMarksTable = ({
       successToastTimeout.current = null;
     }, 800);
   }, [enqueueSnackbar]);
-  const { mutate: persistMarkMutation, isPending: isSavingMarks } = useMutation({
-    mutationFn: (payload: MarkMutationPayload) => {
-      if (payload.markId !== undefined && payload.markId !== null) {
-        const { markId, ...rest } = payload;
-        return UpdateStudentMarks({
-          ...rest,
-          markId: String(markId),
-        });
-      }
-      return submitStudentMarks(payload);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["academic-student-marks"] });
-      scheduleSuccessToast();
-    },
-    onError: (error: any) => {
-      const message = error?.data?.message || error?.message || "Failed";
-      enqueueSnackbar(message, { variant: "error" });
-    },
-  });
+  const { mutate: persistMarkMutation, isPending: isSavingMarks } = useMutation(
+    {
+      mutationFn: (payload: MarkMutationPayload) => {
+        if (payload.markId !== undefined && payload.markId !== null) {
+          const { markId, ...rest } = payload;
+          return UpdateStudentMarks({
+            ...rest,
+            markId: String(markId),
+          });
+        }
+        return submitStudentMarks(payload);
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["academic-student-marks"] });
+        scheduleSuccessToast();
+      },
+      onError: (error: any) => {
+        const message = error?.data?.message || error?.message || "Failed";
+        enqueueSnackbar(message, { variant: "error" });
+      },
+    }
+  );
   // Debounced Mutation Function
   const debouncedMutation = useCallback(
     (studentProfileId: number, payload: MarkMutationPayload) => {
@@ -382,8 +411,8 @@ const StudentMarksTable = ({
             const resolvedAbsent = hasExcelAbsent
               ? Boolean(mappedValue?.isAbsent)
               : currentAbsences[index] ?? Boolean(row.isAbsentStudent);
-              const markValue = resolvedAbsent ? "" : mappedValue?.mark ?? "";
-              currentMarks[index] = markValue;
+            const markValue = resolvedAbsent ? "" : mappedValue?.mark ?? "";
+            currentMarks[index] = markValue;
             currentAbsences[index] = resolvedAbsent;
             pendingUpdates.push({
               row,
@@ -467,10 +496,10 @@ const StudentMarksTable = ({
   );
 
   const marksDataForExport = useMemo<StudentMarkRow[]>(() => {
-    if (!rows?.length) {
+    if (!filteredRowEntries.length) {
       return [];
     }
-    return rows.map((row, index) => {
+    return filteredRowEntries.map(({ row, index }) => {
       const watchedValue = watchedMarks[index];
       const hasWatchedValue =
         watchedValue !== undefined && watchedValue !== null;
@@ -483,13 +512,11 @@ const StudentMarksTable = ({
       const gradeValue = isAbsentValue
         ? "Absent"
         : hasWatchedValue && watchedValue !== ""
-            ? isMarkValueWithinRange(watchedValue)
-              ? getMarkGrade(watchedValue)
-              : "-"
-            : row.markGrade ??
-              (row.studentMark !== undefined
-                ? getMarkGrade(row.studentMark)
-                : "-");
+        ? isMarkValueWithinRange(watchedValue)
+          ? getMarkGrade(watchedValue)
+          : "-"
+        : row.markGrade ??
+          (row.studentMark !== undefined ? getMarkGrade(row.studentMark) : "-");
       return {
         ...row,
         studentMark: markValue,
@@ -497,7 +524,7 @@ const StudentMarksTable = ({
         isAbsentStudent: isAbsentValue,
       };
     });
-  }, [rows, watchedAbsences, watchedMarks]);
+  }, [filteredRowEntries, watchedAbsences, watchedMarks]);
 
   return (
     <Box>
@@ -521,6 +548,15 @@ const StudentMarksTable = ({
             {...columnSelectorProps}
             popoverTitle="Hide Columns"
             buttonText="Columns"
+          />
+          <TextField
+            label="Search Students"
+            size="small"
+            type="search"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            sx={{ minWidth: isMobile ? "100%" : 250 }}
+            placeholder="Name or admission no."
           />
           <Stack
             direction={isMobile ? "column" : "row"}
@@ -582,17 +618,15 @@ const StudentMarksTable = ({
                 {visibility.grade && <TableCell>Grade</TableCell>}
                 {visibility.className && <TableCell>Class</TableCell>}
                 {visibility.subjectName && <TableCell>Subject</TableCell>}
-                {visibility.isAbsentStudent && (
-                  <TableCell>Is Absent</TableCell>
-                )}
+                {visibility.isAbsentStudent && <TableCell>Is Absent</TableCell>}
                 {visibility.studentMark && <TableCell>Mark</TableCell>}
                 {visibility.markGrade && <TableCell>Grade Mark</TableCell>}
               </TableRow>
             </TableHead>
 
             <TableBody>
-              {rows.length ? (
-                rows.map((row, index) => {
+              {filteredRowEntries.length ? (
+                filteredRowEntries.map(({ row, index }) => {
                   const watchedValue = watchedMarks[index];
                   const watchedAbsent = watchedAbsences[index];
                   const hasAbsentValue = watchedAbsent !== undefined;
@@ -605,15 +639,14 @@ const StudentMarksTable = ({
                     watchedValue !== "";
                   const shouldUseWatchedGrade =
                     hasWatchedValue && isMarkValueWithinRange(watchedValue);
-                  const baseGrade =
-                    hasWatchedValue
-                      ? shouldUseWatchedGrade
-                        ? getMarkGrade(watchedValue)
-                        : "-"
-                      : row.markGrade ??
-                        (row.studentMark !== undefined
-                          ? getMarkGrade(row.studentMark)
-                          : "-");
+                  const baseGrade = hasWatchedValue
+                    ? shouldUseWatchedGrade
+                      ? getMarkGrade(watchedValue)
+                      : "-"
+                    : row.markGrade ??
+                      (row.studentMark !== undefined
+                        ? getMarkGrade(row.studentMark)
+                        : "-");
                   const displayGrade = currentIsAbsent ? "Absent" : baseGrade;
                   const markError = formState.errors?.studentMarks?.[index];
                   const markErrorMessage =
@@ -801,7 +834,9 @@ const StudentMarksTable = ({
                     align="center"
                   >
                     <Typography variant="body2" color="text.secondary">
-                      No student marks found.
+                      {searchQuery.trim()
+                        ? "No students match the search."
+                        : "No student marks found."}
                     </Typography>
                   </TableCell>
                 </TableRow>
