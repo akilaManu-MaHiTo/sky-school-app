@@ -60,6 +60,7 @@ interface StudentMarksTableProps {
   selectedSubject: { id: number } | null;
   selectedYear: string;
   isDataLoading?: boolean;
+  selectedMonth: string;
   refetchData?: () => void;
 }
 // Interface For Mark Table Rows
@@ -77,6 +78,7 @@ type MarkMutationPayload = {
   academicTerm: string;
   markId?: string | number | null;
   isAbsentStudent?: boolean;
+  selectedMonth: string;
 };
 const normalizeMarkValue = (
   value: string | number | null | undefined
@@ -150,6 +152,7 @@ const StudentMarksTable = ({
   selectedSubject,
   selectedYear,
   isDataLoading,
+  selectedMonth,
   refetchData,
 }: StudentMarksTableProps) => {
   const { organization } = useCurrentOrganization();
@@ -272,6 +275,7 @@ const StudentMarksTable = ({
           return UpdateStudentMarks({
             ...rest,
             markId: String(markId),
+            selectedMonth,
           });
         }
         return submitStudentMarks(payload);
@@ -361,6 +365,7 @@ const StudentMarksTable = ({
         academicTerm: selectedTerm,
         markId: markIdentifier,
         isAbsentStudent: normalizedAbsent,
+        selectedMonth,
       };
       if (options?.immediate) {
         cancelPendingMutation(row.studentProfileId);
@@ -731,9 +736,13 @@ const StudentMarksTable = ({
                 {visibility.academicYear && (
                   <TableCell>Academic Year</TableCell>
                 )}
-                {visibility.academicTerm && (
-                  <TableCell>Academic Term</TableCell>
-                )}
+                {visibility.academicTerm &&
+                  (selectedTerm === "Monthly Exam" ? (
+                    <TableCell>Month</TableCell>
+                  ) : (
+                    <TableCell>Academic Term</TableCell>
+                  ))}
+
                 {visibility.academicMedium && <TableCell>Medium</TableCell>}
                 {visibility.grade && <TableCell>Grade</TableCell>}
                 {visibility.className && <TableCell>Class</TableCell>}

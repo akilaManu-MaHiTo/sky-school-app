@@ -9,7 +9,22 @@ export const dashBoardFilterSchema = z.object({
 
 export type TeacherDashBoardFilter = z.infer<typeof dashBoardFilterSchema>;
 
-export const examTerms = ["Term 1", "Term 2", "Term 3"];
+export const examTerms = ["Term 1", "Term 2", "Term 3", "Monthly Exam"];
+
+export const months = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 export async function fetchStudentMarks(
   gradeId: number,
@@ -17,8 +32,12 @@ export async function fetchStudentMarks(
   year: string,
   medium: string,
   subjectId: number,
-  term: string
+  term: string,
+  month: string
 ) {
+  if (term === "Monthly Exam") {
+    term = month;
+  }
   const res = await axios.get(
     `/api/student-profiles/${gradeId}/${classId}/${year}/${medium}/${subjectId}/${term}marks`
   );
@@ -66,8 +85,12 @@ export async function fetchExamStudentMarks(
   year: string,
   medium: string,
   subject: any,
-  term: string
+  term: string,
+  month: string
 ) {
+  if (term === "Monthly Exam") {
+    term = month;
+  }
   const gradeId = grade.id;
   const classId = className.id;
   const subjectId = subject.id;
@@ -85,7 +108,11 @@ export async function submitStudentMarks(payload: {
   academicYear: string;
   academicTerm: string;
   isAbsentStudent?: boolean;
+  selectedMonth: string;
 }) {
+  if (payload.academicTerm === "Monthly Exam" && payload.selectedMonth) {
+    payload.academicTerm = payload.selectedMonth;
+  }
   const {
     studentProfileId,
     academicSubjectId,
@@ -119,7 +146,11 @@ export async function UpdateStudentMarks(payload: {
   academicTerm: string;
   markId: string;
   isAbsentStudent?: boolean;
+  selectedMonth: string;
 }) {
+  if (payload.academicTerm === "Monthly Exam" && payload.selectedMonth) {
+    payload.academicTerm = payload.selectedMonth;
+  }
   const {
     studentProfileId,
     academicSubjectId,

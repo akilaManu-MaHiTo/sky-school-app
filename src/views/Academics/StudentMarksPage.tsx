@@ -32,6 +32,7 @@ import {
   fetchTeacherMedium,
   fetchTeacherSubject,
   fetchTeacherYears,
+  months,
   TeacherDashBoardFilter,
 } from "../../api/StudentMarks/studentMarksApi";
 import { AcademicMedium } from "../../api/OrganizationSettings/academicDetailsApi";
@@ -56,7 +57,7 @@ import { Controller, useForm } from "react-hook-form";
 import CustomButton from "../../components/CustomButton";
 import StudentMarksTable from "./StudentMarksTable";
 
-const TERM_OPTIONS = ["Term 1", "Term 2", "Term 3"];
+const TERM_OPTIONS = ["Term 1", "Term 2", "Term 3", "Monthly Exam"];
 
 const StudentMarksPage = () => {
   const { isMobile, isTablet } = useIsMobile();
@@ -76,9 +77,15 @@ const StudentMarksPage = () => {
   const selectedMedium = watch("teacherMedium");
   const selectedTerm = watch("examTerm");
   const selectedSubject = watch("teacherSubject");
+  const selectedMonth = watch("monthlyExam");
   console.log("selectedYear", selectedYear);
   console.log("selectedGrade", selectedGrade);
   console.log("selectedClass", selectedClass);
+
+  const enableFetchWithMonth =
+    selectedTerm === "Monthly Exam" ? !!selectedMonth : true;
+
+  const isMonthlyExam = selectedTerm === "Monthly Exam";
 
   const { data: teacherYearData, isFetching: isTeacherYearDataFetching } =
     useQuery({
@@ -142,6 +149,7 @@ const StudentMarksPage = () => {
       selectedMedium,
       selectedSubject,
       selectedTerm,
+      selectedMonth,
     ],
     queryFn: () =>
       fetchExamStudentMarks(
@@ -150,7 +158,8 @@ const StudentMarksPage = () => {
         selectedYear,
         selectedMedium,
         selectedSubject,
-        selectedTerm
+        selectedTerm,
+        selectedMonth
       ),
     enabled:
       !!selectedYear &&
@@ -158,7 +167,8 @@ const StudentMarksPage = () => {
       !!selectedClass &&
       !!selectedMedium &&
       !!selectedSubject &&
-      !!selectedTerm,
+      !!selectedTerm &&
+      enableFetchWithMonth,
   });
   const breadcrumbItems = [
     { title: "Home", href: "/home" },
@@ -188,7 +198,7 @@ const StudentMarksPage = () => {
             borderBottom: "1px solid var(--pallet-lighter-grey)",
           }}
         >
-          <Typography variant="subtitle2">Student Filters</Typography>
+          <Typography variant="subtitle2">Exam Marks Filter</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Box
@@ -202,7 +212,7 @@ const StudentMarksPage = () => {
               sx={{
                 display: "flex",
                 flex: 1,
-                minWidth: "250px",
+                // minWidth: "250px",
               }}
             >
               <Controller
@@ -251,7 +261,7 @@ const StudentMarksPage = () => {
               sx={{
                 display: "flex",
                 flex: 1,
-                minWidth: "250px",
+                // minWidth: "250px",
               }}
             >
               <Controller
@@ -290,7 +300,7 @@ const StudentMarksPage = () => {
               sx={{
                 display: "flex",
                 flex: 1,
-                minWidth: "250px",
+                // minWidth: "250px",
               }}
             >
               <Controller
@@ -319,6 +329,72 @@ const StudentMarksPage = () => {
                 )}
               />
             </Box>
+            <Box
+              sx={{
+                display: "flex",
+                flex: 1,
+                // minWidth: "250px",
+              }}
+            >
+              <Controller
+                name="examTerm"
+                control={control}
+                render={({ field }) => (
+                  <Autocomplete
+                    {...field}
+                    value={field.value ?? null}
+                    onChange={(event, newValue) => field.onChange(newValue)}
+                    size="small"
+                    options={examTerms?.filter((item) => item != null) ?? []}
+                    sx={{ flex: 1, margin: "0.5rem" }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        required
+                        error={!!errors.examTerm}
+                        helperText={errors.examTerm && "Required"}
+                        label="Select Exam"
+                        name="examTerm"
+                      />
+                    )}
+                  />
+                )}
+              />
+            </Box>
+            {isMonthlyExam && (
+              <Box
+                sx={{
+                  display: "flex",
+                  flex: 1,
+                  // minWidth: "250px",
+                }}
+              >
+                <Controller
+                  name="monthlyExam"
+                  control={control}
+                  render={({ field }) => (
+                    <Autocomplete
+                      {...field}
+                      value={field.value ?? null}
+                      onChange={(event, newValue) => field.onChange(newValue)}
+                      size="small"
+                      options={months?.filter((item) => item != null) ?? []}
+                      sx={{ flex: 1, margin: "0.5rem" }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          required
+                          error={!!errors.monthlyExam}
+                          helperText={errors.monthlyExam && "Required"}
+                          label="Select month"
+                          name="monthlyExam"
+                        />
+                      )}
+                    />
+                  )}
+                />
+              </Box>
+            )}
           </Box>
           <Box
             sx={{
@@ -355,38 +431,6 @@ const StudentMarksPage = () => {
                         helperText={errors.teacherMedium && "Required"}
                         label="Select Medium"
                         name="teacherMedium"
-                      />
-                    )}
-                  />
-                )}
-              />
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                flex: 1,
-                minWidth: "250px",
-              }}
-            >
-              <Controller
-                name="examTerm"
-                control={control}
-                render={({ field }) => (
-                  <Autocomplete
-                    {...field}
-                    value={field.value ?? null}
-                    onChange={(event, newValue) => field.onChange(newValue)}
-                    size="small"
-                    options={examTerms?.filter((item) => item != null) ?? []}
-                    sx={{ flex: 1, margin: "0.5rem" }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        required
-                        error={!!errors.examTerm}
-                        helperText={errors.examTerm && "Required"}
-                        label="Select Term"
-                        name="examTerm"
                       />
                     )}
                   />
@@ -445,19 +489,6 @@ const StudentMarksPage = () => {
             >
               Reset
             </Button>
-            <CustomButton
-              variant="contained"
-              sx={{
-                backgroundColor: "var(--pallet-blue)",
-              }}
-              size="medium"
-              onClick={handleSubmit((data) => {
-                // handleFetch();
-                console.log("data", data);
-              })}
-            >
-              Add Filter
-            </CustomButton>
           </Box>
         </AccordionDetails>
       </Accordion>
@@ -475,6 +506,7 @@ const StudentMarksPage = () => {
             selectedTerm={selectedTerm}
             selectedYear={selectedYear}
             isDataLoading={isStudentExamMarksDataFetching}
+            selectedMonth={selectedMonth}
             refetchData={refetchMarksData}
           />
         )}
