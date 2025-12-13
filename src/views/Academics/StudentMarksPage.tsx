@@ -129,34 +129,37 @@ const StudentMarksPage = () => {
       enabled: !!selectedYear,
     });
 
-  const { data: studentExamData, isFetching: isStudentExamMarksDataFetching } =
-    useQuery({
-      queryKey: [
-        "academic-student-marks",
-        selectedYear,
+  const {
+    data: studentExamData,
+    isFetching: isStudentExamMarksDataFetching,
+    refetch: refetchMarksData,
+  } = useQuery({
+    queryKey: [
+      "academic-student-marks",
+      selectedYear,
+      selectedGrade,
+      selectedClass,
+      selectedMedium,
+      selectedSubject,
+      selectedTerm,
+    ],
+    queryFn: () =>
+      fetchExamStudentMarks(
         selectedGrade,
         selectedClass,
+        selectedYear,
         selectedMedium,
         selectedSubject,
-        selectedTerm,
-      ],
-      queryFn: () =>
-        fetchExamStudentMarks(
-          selectedGrade,
-          selectedClass,
-          selectedYear,
-          selectedMedium,
-          selectedSubject,
-          selectedTerm
-        ),
-      enabled:
-        !!selectedYear &&
-        !!selectedGrade &&
-        !!selectedClass &&
-        !!selectedMedium &&
-        !!selectedSubject &&
-        !!selectedTerm,
-    });
+        selectedTerm
+      ),
+    enabled:
+      !!selectedYear &&
+      !!selectedGrade &&
+      !!selectedClass &&
+      !!selectedMedium &&
+      !!selectedSubject &&
+      !!selectedTerm,
+  });
   const breadcrumbItems = [
     { title: "Home", href: "/home" },
     { title: "Add Student Marks" },
@@ -461,11 +464,9 @@ const StudentMarksPage = () => {
 
       <Box>
         {!studentExamData || studentExamData.length === 0 ? (
-          <Alert
-            severity="info"
-          >
-            No marks data available for the selected filters. Please adjust
-            the filters to view student marks.
+          <Alert severity="info">
+            No marks data available for the selected filters. Please adjust the
+            filters to view student marks.
           </Alert>
         ) : (
           <StudentMarksTable
@@ -474,6 +475,7 @@ const StudentMarksPage = () => {
             selectedTerm={selectedTerm}
             selectedYear={selectedYear}
             isDataLoading={isStudentExamMarksDataFetching}
+            refetchData={refetchMarksData}
           />
         )}
       </Box>
