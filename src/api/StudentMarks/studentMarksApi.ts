@@ -106,3 +106,35 @@ export async function submitStudentMarks(payload: {
   const res = await axios.post(`/api/student-marks`, marksData);
   return res.data;
 }
+
+export async function UpdateStudentMarks(payload: {
+  studentProfileId: number;
+  academicSubjectId: number;
+  studentMark: string;
+  markGrade: string;
+  academicYear: string;
+  academicTerm: string;
+  markId: string;
+}) {
+  const {
+    studentProfileId,
+    academicSubjectId,
+    studentMark,
+    markGrade,
+    academicYear,
+    academicTerm,
+    markId,
+  } = payload;
+
+  const marksData = {
+    studentProfileId,
+    academicSubjectId,
+    studentMark,
+    markGrade,
+    academicYear,
+    academicTerm,
+  };
+
+  const res = await axios.post(`/api/student-marks/${markId}`, marksData);
+  return res.data;
+}

@@ -25,7 +25,10 @@ import useColumnVisibility, {
 } from "../../components/useColumnVisibility";
 import { Controller, useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
-import { submitStudentMarks } from "../../api/StudentMarks/studentMarksApi";
+import {
+  submitStudentMarks,
+  UpdateStudentMarks,
+} from "../../api/StudentMarks/studentMarksApi";
 import { useSnackbar } from "notistack";
 import queryClient from "../../state/queryClient";
 import CheckIcon from "@mui/icons-material/Check";
@@ -50,6 +53,15 @@ interface StudentMarksTableProps {
 // Form Values Interface
 type FormValues = {
   studentMarks: Array<string | number | null>;
+};
+type MarkMutationPayload = {
+  studentProfileId: number;
+  academicSubjectId: number;
+  studentMark: string;
+  markGrade: string;
+  academicYear: string;
+  academicTerm: string;
+  markId?: string | number | null;
 };
 const normalizeMarkValue = (
   value: string | number | null | undefined
@@ -163,15 +175,17 @@ const StudentMarksTable = ({
       successToastTimeout.current = null;
     }, 800);
   }, [enqueueSnackbar]);
-  const { mutate: createMutation, isPending: isCreating } = useMutation({
-    mutationFn: (payload: {
-      studentProfileId: number;
-      academicSubjectId: number;
-      studentMark: string;
-      markGrade: string;
-      academicYear: string;
-      academicTerm: string;
-    }) => submitStudentMarks(payload),
+  const { mutate: persistMarkMutation, isPending: isSavingMarks } = useMutation({
+    mutationFn: (payload: MarkMutationPayload) => {
+      if (payload.markId !== undefined && payload.markId !== null) {
+        const { markId, ...rest } = payload;
+        return UpdateStudentMarks({
+          ...rest,
+          markId: String(markId),
+        });
+      }
+      return submitStudentMarks(payload);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["academic-student-marks"] });
       scheduleSuccessToast();
@@ -183,22 +197,19 @@ const StudentMarksTable = ({
   });
   // Debounced Mutation Function
   const debouncedMutation = useCallback(
-    (
-      studentProfileId: number,
-      payload: Parameters<typeof createMutation>[0]
-    ) => {
+    (studentProfileId: number, payload: MarkMutationPayload) => {
       const timeoutMap = debounceTimeouts.current;
       const existingTimeout = timeoutMap.get(studentProfileId);
       if (existingTimeout) {
         clearTimeout(existingTimeout);
       }
       const timeoutId = setTimeout(() => {
-        createMutation(payload);
+        persistMarkMutation(payload);
         timeoutMap.delete(studentProfileId);
       }, 2000);
       timeoutMap.set(studentProfileId, timeoutId);
     },
-    [createMutation]
+    [persistMarkMutation]
   );
 
   useEffect(() => {
@@ -218,6 +229,10 @@ const StudentMarksTable = ({
       }
       const studentMarkValue =
         markValue === null || markValue === undefined ? "" : String(markValue);
+      const markIdentifier =
+        row.markId === undefined || row.markId === null || row.markId === ""
+          ? undefined
+          : row.markId;
       const payload = {
         studentProfileId: row.studentProfileId,
         academicSubjectId: selectedSubject.id,
@@ -225,6 +240,7 @@ const StudentMarksTable = ({
         markGrade: getMarkGrade(studentMarkValue),
         academicYear: selectedYear,
         academicTerm: selectedTerm,
+        markId: markIdentifier,
       };
       debouncedMutation(row.studentProfileId, payload);
     },
@@ -393,7 +409,7 @@ const StudentMarksTable = ({
               marksData={marksDataForExport}
               columns={columns}
               visibility={visibility}
-              isLoading={isDataLoading || isCreating}
+              isLoading={isDataLoading || isSavingMarks}
               sx={{
                 backgroundColor: "var(--pallet-blue)",
               }}

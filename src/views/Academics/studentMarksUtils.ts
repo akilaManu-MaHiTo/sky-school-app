@@ -2,7 +2,7 @@ import * as XLSX from "xlsx";
 
 export interface StudentMarkRow {
   studentProfileId?: number;
-  markId?: boolean;
+  markId?: string | number | null;
   id?: number | string;
   academicYear?: string;
   academicTerm?: string;
