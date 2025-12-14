@@ -249,7 +249,9 @@ const AddOrEditAcademicDetailsDialog = ({
               <Autocomplete
                 {...field}
                 options={subjectData ?? []}
-                getOptionLabel={(option) => option.subjectName}
+                getOptionLabel={(option) =>
+                  option.subjectName + ` - ` + option.subjectMedium + ` Medium`
+                }
                 isOptionEqualToValue={(option, value) =>
                   option?.id === value?.id
                 }
@@ -321,36 +323,6 @@ const AddOrEditAcademicDetailsDialog = ({
                     helperText={errors.academicYear && "Required"}
                     label="Academic Year"
                     name="academicYear"
-                  />
-                )}
-              />
-            )}
-          />
-
-          <Controller
-            name="academicMedium"
-            control={control}
-            defaultValue={defaultValues?.academicMedium ?? ""}
-            {...register("academicMedium", { required: true })}
-            render={({ field }) => (
-              <Autocomplete
-                {...field}
-                onChange={(event, newValue) => field.onChange(newValue)}
-                size="small"
-                options={
-                  AcademicMedium?.length
-                    ? AcademicMedium.map((medium) => medium.academicMedium)
-                    : []
-                }
-                sx={{ flex: 1, margin: "0.5rem" }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    required
-                    error={!!errors.academicMedium}
-                    helperText={errors.academicMedium && "Required"}
-                    label="Academic Medium"
-                    name="academicMedium"
                   />
                 )}
               />
