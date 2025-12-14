@@ -126,7 +126,7 @@ export const generateStudentMarksPdf = (
       valign: "middle",
     },
     headStyles: {
-      fillColor: [245, 245, 245],
+      fillColor: [169, 227, 229],
       textColor: [0, 0, 0],
       fontStyle: "bold",
     },
