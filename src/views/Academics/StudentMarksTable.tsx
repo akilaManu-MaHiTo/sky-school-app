@@ -63,12 +63,14 @@ interface StudentMarksTableProps {
   selectedMonth: string;
   refetchData?: () => void;
 }
-// Interface For Mark Table Rows
+
 // Form Values Interface
 type FormValues = {
   studentMarks: Array<string | number | null>;
   isAbsentStudents: Array<boolean>;
 };
+
+// Interface For Mark Table Rows
 type MarkMutationPayload = {
   studentProfileId: number;
   academicSubjectId: number;
@@ -105,15 +107,17 @@ const buildRowSignature = (
     mark: normalizeMarkValue(row.studentMark),
     isAbsent: Boolean(row.isAbsentStudent),
   }));
+
+// Color for marking grades
 const gradeColorMap: Record<
   string,
   "success" | "info" | "warning" | "error" | "default"
 > = {
-  A: "success", // Green
-  B: "info", // Blue
-  C: "warning", // Yellow
-  D: "warning", // Orange-ish (MUI warning leans yellow-orange)
-  F: "error", // Red
+  A: "success",
+  B: "info",
+  C: "warning",
+  D: "warning",
+  F: "error",
 };
 
 const MARK_RANGE_ERROR_MESSAGE = "Marks must be between 0 and 100";
@@ -124,28 +128,24 @@ const validateMarkRange = (
   if (value === "" || value === null || value === undefined) {
     return true;
   }
-
   if (typeof value === "string" && value.trim() === "") {
     return true;
   }
-
   const numericValue =
     typeof value === "number" ? value : Number(String(value).trim());
-
   if (!Number.isFinite(numericValue) || Number.isNaN(numericValue)) {
     return MARK_RANGE_ERROR_MESSAGE;
   }
-
   if (numericValue < 0 || numericValue > 100) {
     return MARK_RANGE_ERROR_MESSAGE;
   }
-
   return true;
 };
-
 const isMarkValueWithinRange = (
   value: string | number | null | undefined
 ): boolean => validateMarkRange(value) === true;
+
+// Main Function
 const StudentMarksTable = ({
   rows = [],
   selectedTerm,
@@ -155,13 +155,24 @@ const StudentMarksTable = ({
   selectedMonth,
   refetchData,
 }: StudentMarksTableProps) => {
+  //Utils
+  const { enqueueSnackbar } = useSnackbar();
+  const isMobile = useMediaQuery((theme: Theme) =>
+    theme.breakpoints.down("md")
+  );
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Organization Details for PDF Header
   const { organization } = useCurrentOrganization();
   const organizationName = organization?.organizationName;
+
   // Input Refs and Debounce Setup
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const excelInputRef = useRef<HTMLInputElement | null>(null);
   const debounceTimeouts = useRef<Map<number, NodeJS.Timeout>>(new Map());
   const successToastTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  //Use Form For the mutation
   const { control, watch, formState, setValue, getValues, reset } =
     useForm<FormValues>({
       mode: "onChange",
@@ -171,11 +182,8 @@ const StudentMarksTable = ({
         isAbsentStudents: deriveAbsencesFromRows(rows),
       },
     });
-  const { enqueueSnackbar } = useSnackbar();
-  const isMobile = useMediaQuery((theme: Theme) =>
-    theme.breakpoints.down("md")
-  );
-  const [searchQuery, setSearchQuery] = useState("");
+
+  // Enter Button For next textfield
   const focusNextField = (currentIndex: number) => {
     for (
       let nextIndex = currentIndex + 1;
@@ -190,6 +198,8 @@ const StudentMarksTable = ({
       }
     }
   };
+
+  // Watched Variables
   const watchedMarks = watch("studentMarks") || [];
   const watchedAbsences = watch("isAbsentStudents") || [];
   const filteredRowEntries = useMemo(() => {
@@ -297,6 +307,7 @@ const StudentMarksTable = ({
       },
     }
   );
+
   // Debounced Mutation Function
   const debouncedMutation = useCallback(
     (studentProfileId: number, payload: MarkMutationPayload) => {

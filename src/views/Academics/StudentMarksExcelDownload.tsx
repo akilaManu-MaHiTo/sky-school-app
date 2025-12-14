@@ -27,20 +27,28 @@ const columnValueSelector: Record<
   academicYear: (row) => row.academicYear ?? "-",
   academicTerm: (row) => row.academicTerm ?? "-",
   academicMedium: (row) => row.academicMedium ?? "-",
-  grade: (row) =>
-    row.grade?.grade ? `Grade ${row.grade.grade}` : "-",
+  grade: (row) => (row.grade?.grade ? `Grade ${row.grade.grade}` : "-"),
   className: (row) => row.class?.className ?? "-",
   subjectName: (row) => row.subject?.subjectName ?? "-",
   isAbsentStudent: (row) =>
     row.isAbsentStudent === undefined || row.isAbsentStudent === null
       ? "-"
       : row.isAbsentStudent
-        ? "Yes"
-        : "No",
-  studentMark: (row) =>
-    row.studentMark === null || row.studentMark === undefined || row.studentMark === ""
-      ? "-"
-      : row.studentMark,
+      ? "Yes"
+      : "No",
+  studentMark: (row) => {
+    if (row.isAbsentStudent) {
+      return "Ab";
+    }
+    if (
+      row.studentMark === null ||
+      row.studentMark === undefined ||
+      row.studentMark === ""
+    ) {
+      return "-";
+    }
+    return row.studentMark;
+  },
   markGrade: (row) => row.markGrade ?? getMarkGrade(row.studentMark ?? null),
 };
 
@@ -62,7 +70,12 @@ const StudentMarksExcelDownload = ({
       return;
     }
 
-    const visibleColumns = columns.filter((column) => visibility[column.key]);
+    const visibleColumns = columns.filter(
+      (column) =>
+        visibility[column.key] &&
+        column.key !== "markGrade" &&
+        column.key !== "isAbsentStudent"
+    );
 
     if (!visibleColumns.length) {
       enqueueSnackbar("Select at least one column to export", {

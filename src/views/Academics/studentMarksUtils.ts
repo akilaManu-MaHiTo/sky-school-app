@@ -42,6 +42,27 @@ const ADMISSION_COLUMN = "Admission Number";
 const MARK_COLUMN = "Mark";
 const ABSENT_COLUMN = "Is Absent Student";
 
+const normalizeMarkValue = (
+  value: unknown
+): { mark: string | number; inferredAbsent: boolean } => {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return { mark: "", inferredAbsent: false };
+    }
+    if (trimmed.toLowerCase() === "ab") {
+      return { mark: "", inferredAbsent: true };
+    }
+    return { mark: trimmed, inferredAbsent: false };
+  }
+
+  if (value === null || value === undefined) {
+    return { mark: "", inferredAbsent: false };
+  }
+
+  return { mark: value as string | number, inferredAbsent: false };
+};
+
 const normalizeAbsentValue = (value: unknown): boolean | undefined => {
   if (typeof value === "boolean") {
     return value;
@@ -92,8 +113,14 @@ export const parseStudentMarksExcel = async (
       const nameValue =
         typeof row[NAME_COLUMN] === "string" ? row[NAME_COLUMN] : "";
       const admissionValue = row[ADMISSION_COLUMN];
-      const mark = row[MARK_COLUMN];
+      const { mark, inferredAbsent } = normalizeMarkValue(row[MARK_COLUMN]);
       const absentValue = normalizeAbsentValue(row[ABSENT_COLUMN]);
+      const hasExplicitMark =
+        typeof mark === "number"
+          ? true
+          : typeof mark === "string"
+          ? mark.trim() !== ""
+          : false;
 
       const normalizedName = nameValue.trim().toLowerCase();
       const normalizedAdmission =
@@ -105,11 +132,17 @@ export const parseStudentMarksExcel = async (
         return null;
       }
 
+      const resolvedAbsent = inferredAbsent
+        ? true
+        : hasExplicitMark
+        ? false
+        : absentValue;
+
       return {
         normalizedName,
         admissionNumber: normalizedAdmission,
         studentMark: mark ?? "",
-        isAbsentStudent: absentValue,
+        isAbsentStudent: resolvedAbsent,
       } as ParsedStudentMarkRecord;
     })
     .filter((row): row is ParsedStudentMarkRecord => row !== null);
