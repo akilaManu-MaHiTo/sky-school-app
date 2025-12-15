@@ -19,6 +19,10 @@ export const AcademicDetailSchema = z.object({
   grades: GradeSchema,
   subjects: SubjectSchema,
   classes: ClassSchema,
+
+  group1: SubjectSchema.optional(),
+  group2: SubjectSchema.optional(),
+  group3: SubjectSchema.optional(),
 });
 
 export type AcademicDetail = z.infer<typeof AcademicDetailSchema>;
@@ -68,7 +72,6 @@ export const deleteAcademicDetail = async (id: number) => {
   const res = await axios.delete(`api/teacher-profiles/${id}`);
   return res.data;
 };
-
 
 export const createAcademicStudentDetail = async (payload: AcademicDetail) => {
   console.log("payload", payload);
