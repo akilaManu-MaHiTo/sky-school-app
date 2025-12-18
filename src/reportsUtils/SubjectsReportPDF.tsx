@@ -90,7 +90,7 @@ export const generatePdf = (
         body: tableData,
         theme: "grid",
         headStyles: {
-          fillColor: [245, 245, 245],
+          fillColor: [169, 227, 229],
           textColor: [0, 0, 0],
           fontSize: 9,
           fontStyle: "bold",

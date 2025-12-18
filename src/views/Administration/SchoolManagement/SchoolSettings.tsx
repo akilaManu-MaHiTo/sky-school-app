@@ -660,19 +660,6 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                 <LinearProgress sx={{ width: "100%" }} />
               )}
 
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                }}
-              >
-                <ColumnVisibilitySelector
-                  {...gradeColumnSelectorProps}
-                  popoverTitle="Show/Hide Grade Columns"
-                />
-              </Box>
-
               <Table aria-label="simple table">
                 <TableHead
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
@@ -684,10 +671,10 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                     {gradeColumnVisibility.grade && (
                       <TableCell align="center">Grade</TableCell>
                     )}
-                    {(gradeColumnVisibility.grade &&
-                      gradeColumnVisibility.id) && (
-                      <TableCell align="center"></TableCell>
-                    )}
+                    {gradeColumnVisibility.grade &&
+                      gradeColumnVisibility.id && (
+                        <TableCell align="center"></TableCell>
+                      )}
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -714,30 +701,30 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                             />
                           </TableCell>
                         )}
-                        {(gradeColumnVisibility.grade &&
-                          gradeColumnVisibility.id) && (
-                          <TableCell align="center">
-                            <IconButton
-                              onClick={() => {
-                                setEditGradeData(row);
-                                setOpenAcademicGradeDialog(true);
-                              }}
-                              disabled={isAcademicGradeDeleting}
-                            >
-                              <EditIcon color="primary" />
-                            </IconButton>
+                        {gradeColumnVisibility.grade &&
+                          gradeColumnVisibility.id && (
+                            <TableCell align="center">
+                              <IconButton
+                                onClick={() => {
+                                  setEditGradeData(row);
+                                  setOpenAcademicGradeDialog(true);
+                                }}
+                                disabled={isAcademicGradeDeleting}
+                              >
+                                <EditIcon color="primary" />
+                              </IconButton>
 
-                            <IconButton
-                              onClick={() => {
-                                setEditGradeData(row);
-                                setOpenDeleteAcademicGradeDialog(true);
-                              }}
-                              disabled={isAcademicGradeDeleting}
-                            >
-                              <DeleteIcon color="error" />
-                            </IconButton>
-                          </TableCell>
-                        )}
+                              <IconButton
+                                onClick={() => {
+                                  setEditGradeData(row);
+                                  setOpenDeleteAcademicGradeDialog(true);
+                                }}
+                                disabled={isAcademicGradeDeleting}
+                              >
+                                <DeleteIcon color="error" />
+                              </IconButton>
+                            </TableCell>
+                          )}
                       </TableRow>
                     ))
                   ) : (
@@ -947,17 +934,13 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
             <Box
               sx={{
                 display: "flex",
-                justifyContent: "space-between",
+                justifyContent: "flex-end",
                 alignItems: "center",
                 flexDirection: isMobile ? "column" : "row",
                 gap: 2,
                 marginBottom: theme.spacing(2),
               }}
             >
-              <ColumnVisibilitySelector
-                {...classColumnSelectorProps}
-                popoverTitle="Show/Hide Class Columns"
-              />
               <CustomButton
                 variant="contained"
                 sx={{ backgroundColor: "var(--pallet-blue)" }}

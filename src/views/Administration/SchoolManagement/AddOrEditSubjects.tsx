@@ -174,6 +174,10 @@ export const AddOrEditSubjects = ({
                   value: true,
                   message: "Subject Name is required",
                 },
+                pattern: {
+                  value: /^[A-Za-z\s]+$/,
+                  message: "Only letters are allowed",
+                },
               })}
               id="subjectName"
               name="subjectName"

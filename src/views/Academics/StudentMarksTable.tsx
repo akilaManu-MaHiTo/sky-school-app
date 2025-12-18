@@ -845,7 +845,7 @@ const StudentMarksTable = ({
                         </TableCell>
                       )}
                       {visibility.name && (
-                        <TableCell>{row.student?.name ?? "-"}</TableCell>
+                        <TableCell>{row.student?.userName ?? "-"}</TableCell>
                       )}
                       {visibility.academicYear && (
                         <TableCell>{row.academicYear ?? "-"}</TableCell>

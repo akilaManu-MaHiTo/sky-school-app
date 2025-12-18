@@ -126,11 +126,16 @@ export const AddOrEditAcademicClass = ({
       </DialogTitle>
       <Divider />
       <DialogContent>
-        <Box sx={{ display: "flex", flexDirection: isMobile ? "column" : "row" }}>
+        <Box
+          sx={{ display: "flex", flexDirection: isMobile ? "column" : "row" }}
+        >
           <TextField
             {...register("className", {
               required: { value: true, message: "Class Name is required" },
-              minLength: { value: 1, message: "Class Name must be at least 1 character" },
+              pattern: {
+                value: /^[A-Za-z\s]+$/,
+                message: "Only letters are allowed",
+              },
             })}
             id="className"
             name="className"
@@ -145,7 +150,10 @@ export const AddOrEditAcademicClass = ({
         </Box>
       </DialogContent>
       <DialogActions sx={{ padding: "1rem" }}>
-        <Button onClick={() => setOpen(false)} sx={{ color: "var(--pallet-blue)" }}>
+        <Button
+          onClick={() => setOpen(false)}
+          sx={{ color: "var(--pallet-blue)" }}
+        >
           Cancel
         </Button>
         <CustomButton
@@ -153,7 +161,9 @@ export const AddOrEditAcademicClass = ({
           sx={{ backgroundColor: "var(--pallet-blue)" }}
           size="medium"
           disabled={isCreating || isUpdating}
-          endIcon={isCreating || isUpdating ? <CircularProgress size={20} /> : null}
+          endIcon={
+            isCreating || isUpdating ? <CircularProgress size={20} /> : null
+          }
           onClick={handleSubmit(handleSubmitClass)}
         >
           {isEdit ? "Save Changes" : "Add New Class"}
