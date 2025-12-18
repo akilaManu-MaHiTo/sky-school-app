@@ -149,21 +149,38 @@ export default function UpdateUserProfile({
 
               <TextField
                 id="mobile"
-                type="text"
+                type="tel"
                 label="Mobile Number"
                 required
                 error={!!errors.mobile}
-                helperText={errors.mobile ? "Required *" : ""}
+                helperText={
+                  typeof errors.mobile?.message === "string"
+                    ? errors.mobile.message
+                    : ""
+                }
                 size="small"
                 sx={{ flex: 1, margin: "0.5rem", width: "full" }}
-                {...register("mobile", { required: true })}
+                {...register("mobile", {
+                  minLength: {
+                    value: 10,
+                    message: "Mobile number must be at least 10 digits",
+                  },
+                  maxLength: {
+                    value: 10,
+                    message: "Mobile number cannot exceed 10 digits",
+                  },
+                  pattern: {
+                    value: /^[0-9]+$/,
+                    message: "Enter a valid mobile number (digits only)",
+                  },
+                })}
               />
 
               <Box>
                 <Box sx={{ mx: "0.5rem", mb: "2rem" }}>
                   <Controller
                     control={control}
-                    {...register("birthDate", { required: true })}
+                    {...register("birthDate")}
                     name={"birthDate"}
                     render={({ field }) => {
                       return (
