@@ -84,6 +84,8 @@ export default function UpdateUserProfile({
     profileUpdateMutation({
       id: data.id!,
       name: data.name!,
+      email: data.email!,
+      nameWithInitials: data.nameWithInitials!,
       gender: data.gender!,
       mobile: data.mobile,
       birthDate: data.birthDate!,
@@ -143,10 +145,39 @@ export default function UpdateUserProfile({
                 size="small"
                 sx={{ flex: 1, margin: "0.5rem", width: "full" }}
                 {...register("name", {
-                  pattern: /^[A-Za-z\s]+$/, // only letters and spaces
+                  pattern: /^[A-Za-z\s]+$/,
                 })}
               />
 
+              <Box sx={{ display: "flex" }}>
+                <TextField
+                  id="nameWithInitials"
+                  label="Name With Initials"
+                  placeholder="J.H.Doe"
+                  required
+                  error={!!errors.nameWithInitials}
+                  fullWidth
+                  size="small"
+                  sx={{ margin: "0.5rem" }}
+                  {...register("nameWithInitials", {
+                    minLength: {
+                      value: 5,
+                      message:
+                        "Name With Initials must be at least 5 characters long",
+                    },
+                    pattern: {
+                      value: /^[A-Za-z.]+$/,
+                      message:
+                        "Only letters and dots are allowed (no spaces or other characters)",
+                    },
+                  })}
+                  helperText={
+                    errors.nameWithInitials
+                      ? errors.nameWithInitials.message
+                      : ""
+                  }
+                />
+              </Box>
               <TextField
                 id="mobile"
                 type="tel"
@@ -175,6 +206,33 @@ export default function UpdateUserProfile({
                   },
                 })}
               />
+              <Box sx={{ display: "flex" }}>
+                <TextField
+                  id="email"
+                  label="Email Address"
+                  placeholder="sample@company.com"
+                  error={!!errors.email}
+                  fullWidth
+                  type="email"
+                  size="small"
+                  sx={{ flex: 1, margin: "0.5rem", width: "full" }}
+                  {...register("email", {
+                    minLength: {
+                      value: 5,
+                      message: "Email must be at least 5 characters long",
+                    },
+                    maxLength: {
+                      value: 320,
+                      message: "Email cannot exceed 320 characters long",
+                    },
+                    pattern: {
+                      value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                      message: "Invalid email format",
+                    },
+                  })}
+                  helperText={errors.email ? errors.email.message : ""}
+                />
+              </Box>
 
               <Box>
                 <Box sx={{ mx: "0.5rem", mb: "2rem" }}>
@@ -231,7 +289,6 @@ export default function UpdateUserProfile({
                     control={control}
                     name="address"
                     rules={{
-                      required: "Address is required",
                       pattern: {
                         value: /[A-Za-z]/,
                         message: "Address must contain at least one letter",

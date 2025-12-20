@@ -53,6 +53,7 @@ export const userSchema = z.object({
   userTypeId: z.number(),
   name: z.string(),
   userName: z.string(),
+  nameWithInitials: z.string(),
   mobile: z.string(),
   emailVerifiedAt: z.string().nullable(),
   role: z.string(),
@@ -115,6 +116,7 @@ export async function userPasswordReset(data: PasswordReset) {
 export async function registerUser({
   name,
   userName,
+  nameWithInitials,
   email,
   mobileNumber: mobile,
   password,
@@ -128,6 +130,7 @@ export async function registerUser({
   mobileNumber: string;
   confirmPassword: string;
   userName: string;
+  nameWithInitials: string;
   employeeType: string;
   employeeNumber: string;
 }) {
@@ -139,6 +142,7 @@ export async function registerUser({
     password_confirmation,
     userName,
     employeeType,
+    nameWithInitials,
     employeeNumber,
   });
   return res.data;
@@ -290,6 +294,8 @@ export async function updateUserProfileDetails({
   mobile,
   birthDate,
   address,
+  email,
+  nameWithInitials,
 }: {
   id: number;
   name: string;
@@ -297,6 +303,8 @@ export async function updateUserProfileDetails({
   mobile: string;
   birthDate: Date;
   address: string;
+  email: string;
+  nameWithInitials: string;
 }) {
   const data = {
     name,
@@ -304,6 +312,8 @@ export async function updateUserProfileDetails({
     mobile,
     birthDate,
     address,
+    email,
+    nameWithInitials,
   };
 
   const res = await axios.post(`/api/user/${id}/profile-update`, data);

@@ -56,6 +56,7 @@ function RegistrationForm() {
       confirmPassword: "",
       employeeType: "",
       employeeNumber: "",
+      nameWithInitials: "",
     },
   });
   const { data: organizationData } = useQuery({
@@ -230,6 +231,31 @@ function RegistrationForm() {
               message: "Required",
             },
           })}
+        />
+
+        <TextField
+          id="nameWithInitials"
+          label="Name With Initials"
+          placeholder="J.H.Doe"
+          required
+          error={!!errors.nameWithInitials}
+          fullWidth
+          size="small"
+          sx={{ marginTop: "1rem" }}
+          {...register("nameWithInitials", {
+            minLength: {
+              value: 5,
+              message: "Name With Initials must be at least 5 characters long",
+            },
+            pattern: {
+              value: /^[A-Za-z.]+$/,
+              message:
+                "Only letters and dots are allowed (no spaces or other characters)",
+            },
+          })}
+          helperText={
+            errors.nameWithInitials ? errors.nameWithInitials.message : ""
+          }
         />
 
         <TextField
