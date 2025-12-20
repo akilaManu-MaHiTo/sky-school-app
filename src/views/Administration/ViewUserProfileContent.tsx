@@ -46,6 +46,39 @@ import { deleteAcademicDetail } from "../../api/OrganizationSettings/academicDet
 import { format } from "date-fns";
 import AddOrEditStudentAcademicDetailsDialog from "./AcademicDetails/AddOrEditStudentAcademicDetailsDialog";
 
+type BasketSubject = {
+  id: number;
+  subjectCode: string;
+  subjectName: string;
+  subjectMedium: string;
+  basketGroup: string;
+  isBasketSubject: boolean;
+};
+
+type StudentProfileEntry = {
+  id: number | string;
+  academicYear?: string;
+  academicMedium?: string;
+  grade?: { id?: number | string; grade?: string } | null;
+  class?: { id?: number | string; className?: string } | null;
+  basketSubjectsIds?: Array<number | string>;
+  basketSubjects?: Record<string, BasketSubject> | null;
+  isStudentApproved?: number | boolean;
+};
+
+const extractStudentSubjectGroups = (profiles: StudentProfileEntry[]) => {
+  const groups = new Set<string>();
+  profiles.forEach((profile) => {
+    const subjectGroups = profile.basketSubjects ?? {};
+    Object.keys(subjectGroups).forEach((groupName) => {
+      if (groupName) {
+        groups.add(groupName);
+      }
+    });
+  });
+  return Array.from(groups);
+};
+
 function ViewUserContent({ selectedUser }: { selectedUser: User }) {
   const { isTablet, isMobile } = useIsMobile();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -133,18 +166,23 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
     }));
   }, [selectedUser]);
 
-  const transformStudentProfileData = useMemo(() => {
+  const transformStudentProfileData = useMemo<
+    { year: string; profiles: StudentProfileEntry[] }[]
+  >(() => {
     if (!selectedUser || !selectedUser.studentProfile) return [];
 
-    const grouped: Record<string, any> = selectedUser.studentProfile.reduce(
+    const typedProfiles = selectedUser.studentProfile as StudentProfileEntry[];
+
+    const grouped = typedProfiles.reduce<Record<string, StudentProfileEntry[]>>(
       (acc, profile) => {
-        const year = profile.academicYear;
+        const year = profile.academicYear ?? "N/A";
         if (!acc[year]) acc[year] = [];
         acc[year].push(profile);
         return acc;
       },
-      {} as Record<string, any>
+      {}
     );
+
     const sortedEntries = Object.entries(grouped).sort((a, b) => {
       const yearA = Number(a[0]);
       const yearB = Number(b[0]);
@@ -517,86 +555,118 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                   Add Academic Details
                 </CustomButton>
               </Box>
-              {transformStudentProfileData.map(({ year, profiles }) => (
-                <Accordion
-                  key={year}
-                  variant="elevation"
-                  sx={{ borderRadius: "8px", mt: "1rem" }}
-                >
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    sx={{
-                      borderBottom: `1px solid ${colors.grey[100]}`,
-                      borderRadius: "8px",
-                    }}
+              {transformStudentProfileData.map(({ year, profiles }) => {
+                const subjectGroups = extractStudentSubjectGroups(profiles);
+                return (
+                  <Accordion
+                    key={year}
+                    variant="elevation"
+                    sx={{ borderRadius: "8px", mt: "1rem" }}
                   >
-                    <Typography sx={{ color: "var(--pallet-blue)" }}>
-                      Year {year}
-                    </Typography>
-                  </AccordionSummary>
-
-                  <AccordionDetails>
-                    <TableContainer
-                      component={Paper}
-                      elevation={2}
+                    <AccordionSummary
+                      expandIcon={<ExpandMoreIcon />}
                       sx={{
-                        overflowX: "auto",
-                        maxWidth: isMobile ? "88vw" : "100%",
+                        borderBottom: `1px solid ${colors.grey[100]}`,
+                        borderRadius: "8px",
                       }}
                     >
-                      {isAcademicDetailDeleting && (
-                        <LinearProgress sx={{ width: "100%" }} />
-                      )}
-                      <Table aria-label="simple table">
-                        <TableHead
-                          sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
-                        >
-                          <TableRow>
-                            <TableCell>Grade</TableCell>
-                            <TableCell>Class</TableCell>
-                            <TableCell>Medium</TableCell>
-                            <TableCell></TableCell>
-                          </TableRow>
-                        </TableHead>
+                      <Typography sx={{ color: "var(--pallet-blue)" }}>
+                        Year {year}
+                      </Typography>
+                    </AccordionSummary>
 
-                        <TableBody>
-                          {profiles.map((p) => (
-                            <TableRow key={p.id}>
-                              <TableCell>{`Grade ` + p.grade?.grade}</TableCell>
-                              <TableCell>{p.class?.className}</TableCell>
-                              <TableCell>{p.academicMedium}</TableCell>
-                              {!p.isStudentApproved && (
-                                <TableCell>
-                                  <IconButton
-                                    onClick={() => {
-                                      setEditAcademicStudentDetails(p);
-                                      setOpenAcademicStudentDetailsDialog(true);
-                                    }}
-                                    disabled={isAcademicDetailDeleting}
-                                  >
-                                    <EditIcon color="primary" />
-                                  </IconButton>
-                                  <IconButton
-                                    onClick={() => {
-                                      setEditAcademicStudentDetails(p);
-                                      setOpenDeleteAcademicStudentDetailsDialog(
-                                        true
-                                      );
-                                    }}
-                                    disabled={isAcademicDetailDeleting}
-                                  >
-                                    <DeleteIcon color="error" />
-                                  </IconButton>
-                                </TableCell>
-                              )}
+                    <AccordionDetails>
+                      <TableContainer
+                        component={Paper}
+                        elevation={2}
+                        sx={{
+                          overflowX: "auto",
+                          maxWidth: isMobile ? "88vw" : "100%",
+                        }}
+                      >
+                        {isAcademicDetailDeleting && (
+                          <LinearProgress sx={{ width: "100%" }} />
+                        )}
+                        <Table aria-label="student profile table">
+                          <TableHead
+                            sx={{
+                              backgroundColor: "var(--pallet-lighter-blue)",
+                            }}
+                          >
+                            <TableRow>
+                              <TableCell>Grade</TableCell>
+                              <TableCell>Class</TableCell>
+                              <TableCell>Medium</TableCell>
+                              {subjectGroups.map((group) => (
+                                <TableCell key={group}>{group}</TableCell>
+                              ))}
+                              <TableCell align="right"></TableCell>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  </AccordionDetails>
-                </Accordion>
-              ))}
+                          </TableHead>
+
+                          <TableBody>
+                            {profiles.map((p) => (
+                              <TableRow key={p.id}>
+                                <TableCell>
+                                  {`Grade ` + (p.grade?.grade ?? "-")}
+                                </TableCell>
+                                <TableCell>
+                                  {p.class?.className ?? "--"}
+                                </TableCell>
+                                <TableCell>
+                                  {p.academicMedium ?? "--"}
+                                </TableCell>
+                                {subjectGroups.map((group) => {
+                                  const subject = p.basketSubjects?.[group];
+                                  return (
+                                    <TableCell key={`${p.id}-${group}`}>
+                                      {subject ? (
+                                        <Typography>
+                                          {subject.subjectName}
+                                        </Typography>
+                                      ) : (
+                                        "--"
+                                      )}
+                                    </TableCell>
+                                  );
+                                })}
+                                <TableCell align="right">
+                                  {!p.isStudentApproved && (
+                                    <>
+                                      <IconButton
+                                        onClick={() => {
+                                          setEditAcademicStudentDetails(p);
+                                          setOpenAcademicStudentDetailsDialog(
+                                            true
+                                          );
+                                        }}
+                                        disabled={isAcademicDetailDeleting}
+                                      >
+                                        <EditIcon color="primary" />
+                                      </IconButton>
+                                      <IconButton
+                                        onClick={() => {
+                                          setEditAcademicStudentDetails(p);
+                                          setOpenDeleteAcademicStudentDetailsDialog(
+                                            true
+                                          );
+                                        }}
+                                        disabled={isAcademicDetailDeleting}
+                                      >
+                                        <DeleteIcon color="error" />
+                                      </IconButton>
+                                    </>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </AccordionDetails>
+                  </Accordion>
+                );
+              })}
             </AccordionDetails>
           </Accordion>
         )}
