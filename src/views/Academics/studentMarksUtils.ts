@@ -10,7 +10,7 @@ export interface StudentMarkRow {
   grade?: { grade?: string } | null;
   class?: { className?: string } | null;
   subject?: { subjectName?: string } | null;
-  student?: { name?: string; employeeNumber?: string } | null;
+  student?: { name?: string; employeeNumber?: string; userName?: string } | null;
   studentMark?: string | number | null;
   markGrade?: string | null;
   employeeNumber?: string | null;

@@ -281,7 +281,16 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
             }}
             gap={2}
           >
-            <CustomButton variant="outlined" component="label" sx={{ mt: 2 }}>
+            <CustomButton
+              variant="outlined"
+              component="label"
+              sx={{ mt: 2 }}
+              endIcon={
+                isPending && (
+                  <CircularProgress size={20} sx={{ color: "gray" }} />
+                )
+              }
+            >
               Change Profile Image
               <input
                 type="file"
@@ -291,7 +300,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
               />
             </CustomButton>
 
-            {imageFile && (
+            {imageFile && !isPending && (
               <CustomButton
                 variant="contained"
                 onClick={saveImage}
