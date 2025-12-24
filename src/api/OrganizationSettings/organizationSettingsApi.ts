@@ -91,12 +91,30 @@ export async function getYearsData() {
   const res = await axios.get(`/api/year`);
   return res.data;
 }
-export async function getSubjectData({query}:{query:string}) {
+export async function getSubjectData({ query }: { query: string }) {
   const res = await axios.get(`/api/subject?search=${query}`);
   return res.data;
 }
 
 export async function getAllSubjectData() {
   const res = await axios.get(`/api/all-subjects`);
+  return res.data;
+}
+
+export async function getUserData({
+  query,
+  role,
+  sortBy,
+}: {
+  query: string;
+  role: string;
+  sortBy: string;
+}) {
+  const res = await axios.get(`/api/users/${role}/${sortBy}/search?keyword=${query}`);
+  return res.data;
+}
+
+export async function updateUserActiveStatus (id: number, availability: boolean) {
+  const res = await axios.post(`/api/users/${id}/active-status`, { availability });
   return res.data;
 }

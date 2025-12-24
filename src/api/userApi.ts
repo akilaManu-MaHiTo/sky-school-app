@@ -153,10 +153,13 @@ export async function validateUser() {
   return res.data;
 }
 
-export async function fetchAllUsers() {
-  const res = await axios.get("/api/all-users");
-  return res.data;
-}
+// export async function fetchAllUsers() {
+//   // Use the unified users search endpoint so that all related
+//   // profile data (including studentProfile) is consistently
+//   // returned for All Users, matching the role-based search API.
+//   const res = await axios.get("/api/users/All/user_id_desc/search?keyword=");
+//   return res.data;
+// }
 
 export async function forgotPassword({ email }: { email: string }) {
   const res = await axios.post("/api/forgot-password", {
@@ -201,39 +204,16 @@ export async function fetchAllAssigneeLevel() {
 export async function updateUserType({
   id,
   userTypeId,
-  assigneeLevel,
-  department,
   availability,
-  jobPosition,
-  assignedFactory,
-  responsibleSection,
 }: {
   id: number;
   userTypeId: number;
-  assigneeLevel: string;
-  department: string;
   availability: boolean;
-  jobPosition: string;
-  assignedFactory: string[];
-  responsibleSection: string[];
 }) {
-  const parsedAssignedFactory = Array.isArray(assignedFactory)
-    ? assignedFactory
-    : JSON.parse(assignedFactory || "[]");
-  const parsedResponsibleSection = Array.isArray(responsibleSection)
-    ? responsibleSection
-    : JSON.parse(responsibleSection || "[]");
-
   const res = await axios.post(`/api/users/${id}/update`, {
-    userType: userTypeId.toString(),
-    assigneeLevel: assigneeLevel.toString(),
-    department,
+    userType: userTypeId,
     availability,
-    jobPosition,
-    assignedFactory: parsedAssignedFactory,
-    responsibleSection: parsedResponsibleSection,
   });
-
   return res.data;
 }
 

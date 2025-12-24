@@ -1,204 +1,696 @@
-import { Avatar, Badge, Box, Button, Stack, Typography } from "@mui/material";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Alert,
+  Badge,
+  Box,
+  colors,
+  IconButton,
+  LinearProgress,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material";
 import { DrawerContentItem } from "../../components/ViewDataDrawer";
 import useIsMobile from "../../customHooks/useIsMobile";
-import { User } from "../../api/userApi";
-import { useState } from "react";
+import { EmployeeType, User } from "../../api/userApi";
 import MultiDrawerContent from "../../components/MultiDrawerContent";
 import ProfileImage from "../../components/ProfileImageComponent";
+import { format } from "date-fns";
+import { useMemo, useState } from "react";
+import CustomButton from "../../components/CustomButton";
+import AddIcon from "@mui/icons-material/Add";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import theme from "../../theme";
+import AddOrEditTeacherAcademicDetailsDialog from "./AcademicDetails/AddOrEditTeacherAcademicDetailsDialog";
+import AddOrEditStudentAcademicDetailsDialog from "./AcademicDetails/AddOrEditStudentAcademicDetailsDialog";
+import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
+import { useMutation } from "@tanstack/react-query";
+import { deleteAcademicDetail } from "../../api/OrganizationSettings/academicDetailsApi";
+import queryClient from "../../state/queryClient";
+import { enqueueSnackbar } from "notistack";
+import { getPlainAddress } from "../../util/plainText.util";
+import AddOrEditAcademicDetailsByAdminDialog from "./AcademicDetails/AddOrEditTeacherAcademicDetailsByAdminDialog";
+import AddOrEditStudentAcademicDetailsByAdminDialog from "./AcademicDetails/AddOrEditStudentAcademicDetailsByAdminDialog";
+
+type BasketSubject = {
+  id: number;
+  subjectCode: string;
+  subjectName: string;
+  subjectMedium: string;
+  basketGroup: string;
+  isBasketSubject: boolean;
+};
+
+type StudentProfileEntry = {
+  id: number | string;
+  academicYear?: string;
+  academicMedium?: string;
+  grade?: { id?: number | string; grade?: string } | null;
+  class?: { id?: number | string; className?: string } | null;
+  basketSubjectsIds?: Array<number | string>;
+  basketSubjects?: Record<string, BasketSubject> | null;
+  isStudentApproved?: number | boolean;
+};
+
+const extractStudentSubjectGroups = (profiles: StudentProfileEntry[]) => {
+  const groups = new Set<string>();
+  profiles.forEach((profile) => {
+    const subjectGroups = profile.basketSubjects ?? {};
+    Object.keys(subjectGroups).forEach((groupName) => {
+      if (groupName) {
+        groups.add(groupName);
+      }
+    });
+  });
+  return Array.from(groups);
+};
 
 function ViewUserContent({ selectedUser }: { selectedUser: User }) {
-  const { isTablet } = useIsMobile();
-  const [image, setImage] = useState(null);
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  const statusColor =
-    selectedUser?.availability == true ? "#44b700" : "#f44336";
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const { isTablet, isMobile } = useIsMobile();
+
+  const [openAcademicDetailsDialog, setOpenAcademicDetailsDialog] =
+    useState(false);
+  const [editAcademicDetails, setEditAcademicDetails] = useState<any>(null);
+  const [openDeleteAcademicDetailsDialog, setOpenDeleteAcademicDetailsDialog] =
+    useState(false);
+
+  const [
+    openAcademicStudentDetailsDialog,
+    setOpenAcademicStudentDetailsDialog,
+  ] = useState(false);
+  const [editAcademicStudentDetails, setEditAcademicStudentDetails] =
+    useState<StudentProfileEntry | null>(null);
+
+  const transformProfileData = useMemo(() => {
+    if (!selectedUser || !selectedUser.userProfile) return [];
+
+    const grouped: Record<string, any> = selectedUser.userProfile.reduce(
+      (acc, profile) => {
+        const year = profile.academicYear;
+        if (!acc[year]) acc[year] = [];
+        acc[year].push(profile);
+        return acc;
+      },
+      {} as Record<string, any>
+    );
+    const sortedEntries = Object.entries(grouped).sort((a, b) => {
+      const yearA = Number(a[0]);
+      const yearB = Number(b[0]);
+      if (!Number.isNaN(yearA) && !Number.isNaN(yearB)) {
+        return yearB - yearA;
+      }
+      return (b[0] as string).localeCompare(a[0] as string);
+    });
+
+    return sortedEntries.map(([year, profiles]) => ({
+      year,
+      profiles,
+    }));
+  }, [selectedUser]);
+
+  const transformStudentProfileData = useMemo<
+    { year: string; profiles: StudentProfileEntry[] }[]
+  >(() => {
+    if (!selectedUser || !selectedUser.studentProfile) return [];
+
+    const typedProfiles = selectedUser.studentProfile as StudentProfileEntry[];
+
+    const grouped = typedProfiles.reduce<Record<string, StudentProfileEntry[]>>(
+      (acc, profile) => {
+        const year = profile.academicYear ?? "N/A";
+        if (!acc[year]) acc[year] = [];
+        acc[year].push(profile);
+        return acc;
+      },
+      {}
+    );
+
+    const sortedEntries = Object.entries(grouped).sort((a, b) => {
+      const yearA = Number(a[0]);
+      const yearB = Number(b[0]);
+      if (!Number.isNaN(yearA) && !Number.isNaN(yearB)) {
+        return yearB - yearA;
+      }
+      return (b[0] as string).localeCompare(a[0] as string);
+    });
+
+    return sortedEntries.map(([year, profiles]) => ({
+      year,
+      profiles,
+    }));
+  }, [selectedUser]);
+
+  console.log("transformStudentProfileData", transformStudentProfileData);
+
+  const {
+    mutate: deleteAcademicDetailMutation,
+    isPending: isAcademicDetailDeleting,
+  } = useMutation({
+    mutationFn: deleteAcademicDetail,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["current-user"],
+      });
+      enqueueSnackbar("Academic Detail Delete Successfully!", {
+        variant: "success",
+      });
+      setOpenDeleteAcademicDetailsDialog(false);
+      setEditAcademicDetails(null);
+    },
+    onError: (error: any) => {
+      const message = error?.data?.message || "Academic Detail Delete Failed";
+      enqueueSnackbar(message, { variant: "error" });
+    },
+  });
+
+  const statusColor = selectedUser?.availability ? "#44b700" : "#f44336";
 
   return (
-    <Stack
-      sx={{
-        display: "flex",
-        marginY: 5,
-        flexDirection: isTablet ? "column" : "row",
-        p: "3rem",
-      }}
-      gap={4}
-    >
-      <Box
-        sx={{
-          flex: 1,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          flexDirection: "column",
-          p: "3rem",
-          boxShadow: 3,
-        }}
-        gap={2}
-      >
-        <Typography
-          variant="h4"
-          sx={{
-            fontSize: "1.5rem",
-            color: "var(--pallet-dark-blue)",
-            marginTop: 2,
-          }}
-        >
-          {selectedUser?.name}
-        </Typography>
-        <Badge
-          overlap="circular"
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          variant="dot"
-          sx={{
-            "& .MuiBadge-badge": {
-              backgroundColor: statusColor,
-              color: statusColor,
-              boxShadow: "0 0 0 2px white",
-              height: "16px",
-              width: "16px",
-              borderRadius: "50%",
-            },
-          }}
-        >
-          <ProfileImage
-            name={selectedUser?.name}
-            files={imageFile ? [imageFile] : selectedUser?.profileImage}
-            fontSize="5rem"
-          />
-        </Badge>
-      </Box>
+    <Stack sx={{ display: "flex", flexDirection: "column", my: 2 }}>
+      {/* Header + basic profile (mirrors ViewUserProfileContent) */}
       <Stack
         sx={{
           display: "flex",
-          flexDirection: "column",
-          backgroundColor: "#fff",
-          flex: 2,
-          boxShadow: 3,
-          p: "3rem",
+          flexDirection: isTablet ? "column" : "row",
+          px: "1rem",
+          boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+          bgcolor: "#fff",
+          py: 3,
         }}
+        gap={2}
       >
-        <Stack
+        <Box
           sx={{
-            display: "flex",
-            flexDirection: "row",
-            backgroundColor: "#fff",
             flex: 1,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexDirection: "column",
+            p: "2rem",
           }}
+          gap={2}
         >
-          <DrawerContentItem
-            label="Employee Id"
-            value={selectedUser?.id}
-            sx={{ flex: 1 }}
-          />
-          <DrawerContentItem
-            label="Email"
-            value={selectedUser?.email}
-            sx={{ flex: 1 }}
-          />
-        </Stack>
+          <Badge
+            overlap="circular"
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            variant="dot"
+            sx={{
+              "& .MuiBadge-badge": {
+                backgroundColor: statusColor,
+                color: statusColor,
+                boxShadow: "0 0 0 2px white",
+                height: "16px",
+                width: "16px",
+                borderRadius: "50%",
+              },
+            }}
+          >
+            <ProfileImage
+              name={selectedUser?.name}
+              files={selectedUser?.profileImage}
+              fontSize="5rem"
+            />
+          </Badge>
+          <Typography
+            variant="h4"
+            textAlign={"center"}
+            sx={{
+              fontSize: "1.5rem",
+              color: "var(--pallet-dark-blue)",
+            }}
+          >
+            {selectedUser?.name}
+          </Typography>
+        </Box>
 
         <Stack
           sx={{
             display: "flex",
-            flexDirection: "row",
+            flexDirection: "column",
             backgroundColor: "#fff",
-            flex: 1,
+            flex: 2,
+            p: "3rem",
+            justifyContent: "center",
           }}
+          gap={1.5}
         >
-          <DrawerContentItem
-            label="Full Name"
-            value={selectedUser?.name}
-            sx={{ flex: 1 }}
-          />
-          <DrawerContentItem
-            label="Mobile Number"
-            value={selectedUser?.mobile}
-            sx={{ flex: 1 }}
-          />
-        </Stack>
+          <Stack direction={isTablet ? "column" : "row"}>
+            <DrawerContentItem
+              label={
+                selectedUser?.employeeType === EmployeeType.TEACHER
+                  ? "Staff ID"
+                  : selectedUser?.employeeType === EmployeeType.STUDENT
+                  ? "Student ID"
+                  : "User ID"
+              }
+              value={selectedUser?.employeeNumber}
+              sx={{ flex: 1 }}
+            />
+            <DrawerContentItem
+              label="Email"
+              value={selectedUser?.email}
+              sx={{ flex: 1 }}
+            />
+          </Stack>
 
-        <Stack
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            backgroundColor: "#fff",
-            flex: 1,
-          }}
-        >
-          <DrawerContentItem
-            label="Designation"
-            value={selectedUser?.jobPosition}
-            sx={{ flex: 1 }}
-          />
-          <DrawerContentItem
-            label="Gender"
-            value={selectedUser?.gender}
-            sx={{ flex: 1 }}
-          />
-        </Stack>
-        <Stack
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            backgroundColor: "#fff",
-            flex: 1,
-          }}
-        >
-          <DrawerContentItem
-            label="User Level"
-            value={selectedUser?.userLevel?.levelName}
-            sx={{ flex: 1 }}
-          />
-          <DrawerContentItem
-            label="User Type"
-            value={selectedUser?.userType?.userType}
-            sx={{ flex: 1 }}
-          />
-        </Stack>
-        <Stack
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            backgroundColor: "#fff",
-            flex: 1,
-          }}
-        >
-          <DrawerContentItem
-            label="Department"
-            value={selectedUser?.department}
-            sx={{ flex: 1 }}
-          />
-        </Stack>
-        <Stack
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            backgroundColor: "#fff",
-            flex: 1,
-          }}
-        >
-          <MultiDrawerContent
-            label="Assigned Factories"
-            value={selectedUser?.assignedFactory}
-            sx={{ flex: 1 }}
-          />
-          <MultiDrawerContent
-            label="Responsible Sections"
-            value={selectedUser?.responsibleSection}
-            sx={{ flex: 1 }}
-          />
+          <Stack direction={isTablet ? "column" : "row"}>
+            <DrawerContentItem
+              label="Full Name"
+              value={selectedUser?.name}
+              sx={{ flex: 1 }}
+            />
+
+            <DrawerContentItem
+              label="Name With Initials"
+              value={selectedUser?.nameWithInitials}
+              sx={{ flex: 1 }}
+            />
+          </Stack>
+
+          <Stack direction={isTablet ? "column" : "row"}>
+            <DrawerContentItem
+              label="Birth Date"
+              value={
+                selectedUser?.birthDate
+                  ? format(new Date(selectedUser?.birthDate), "yyyy-MM-dd")
+                  : "--"
+              }
+              sx={{ flex: 1 }}
+            />
+            <DrawerContentItem
+              label="Gender"
+              value={selectedUser?.gender}
+              sx={{ flex: 1 }}
+            />
+          </Stack>
+
+          <Stack direction={isTablet ? "column" : "row"}>
+            <DrawerContentItem
+              label="Mobile Number"
+              value={selectedUser?.mobile}
+              sx={{ flex: 1 }}
+            />
+            <DrawerContentItem
+              label="Address"
+              value={getPlainAddress(selectedUser?.address)}
+              sx={{ flex: 1 }}
+            />
+          </Stack>
+
+          <Stack direction={isTablet ? "column" : "row"}>
+            <DrawerContentItem
+              label="User Type"
+              value={selectedUser?.userType?.userType}
+              sx={{ flex: 1 }}
+            />
+          </Stack>
         </Stack>
       </Stack>
+      <Stack
+        sx={{
+          my: 1,
+        }}
+      >
+        {selectedUser.employeeType === EmployeeType.STUDENT && (
+          <Accordion
+            variant="elevation"
+            sx={{
+              paddingTop: 0,
+              borderRadius: "8px",
+              marginTop: "1rem",
+            }}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="panel1a-content"
+              style={{
+                borderBottom: `1px solid${colors.grey[100]}`,
+                borderRadius: "8px",
+              }}
+              id="panel1a-header"
+            >
+              <Box
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  margin: "10px 0",
+                }}
+              >
+                <Typography
+                  color="textSecondary"
+                  variant="body2"
+                  sx={{
+                    color: "black",
+                    fontWeight: "semi-bold",
+                  }}
+                >
+                  MY ACADEMIC DETAILS
+                </Typography>
+              </Box>
+            </AccordionSummary>
+
+            <AccordionDetails>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  mt: "1rem",
+                  marginBottom: theme.spacing(2),
+                }}
+              >
+                <CustomButton
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "var(--pallet-blue)",
+                  }}
+                  size="medium"
+                  startIcon={<AddIcon />}
+                  onClick={() => {
+                    setEditAcademicStudentDetails(null);
+                    setOpenAcademicStudentDetailsDialog(true);
+                  }}
+                >
+                  Add Academic Details
+                </CustomButton>
+              </Box>
+              {transformStudentProfileData.map(({ year, profiles }) => {
+                const subjectGroups = extractStudentSubjectGroups(profiles);
+                return (
+                  <Accordion
+                    key={year}
+                    variant="elevation"
+                    sx={{ borderRadius: "8px", mt: "1rem" }}
+                  >
+                    <AccordionSummary
+                      expandIcon={<ExpandMoreIcon />}
+                      sx={{
+                        borderBottom: `1px solid ${colors.grey[100]}`,
+                        borderRadius: "8px",
+                      }}
+                    >
+                      <Typography sx={{ color: "var(--pallet-blue)" }}>
+                        Year {year}
+                      </Typography>
+                    </AccordionSummary>
+
+                    <AccordionDetails>
+                      <TableContainer
+                        component={Paper}
+                        elevation={2}
+                        sx={{
+                          overflowX: "auto",
+                          maxWidth: isMobile ? "88vw" : "100%",
+                        }}
+                      >
+                        {isAcademicDetailDeleting && (
+                          <LinearProgress sx={{ width: "100%" }} />
+                        )}
+                        <Table aria-label="student profile table">
+                          <TableHead
+                            sx={{
+                              backgroundColor: "var(--pallet-lighter-blue)",
+                            }}
+                          >
+                            <TableRow>
+                              <TableCell>Grade</TableCell>
+                              <TableCell>Class</TableCell>
+                              <TableCell>Medium</TableCell>
+                              {subjectGroups.map((group) => (
+                                <TableCell key={group}>{group}</TableCell>
+                              ))}
+                              <TableCell align="right"></TableCell>
+                            </TableRow>
+                          </TableHead>
+
+                          <TableBody>
+                            {profiles.map((p) => (
+                              <TableRow key={p.id}>
+                                <TableCell>
+                                  {`Grade ` + (p.grade?.grade ?? "-")}
+                                </TableCell>
+                                <TableCell>
+                                  {p.class?.className ?? "--"}
+                                </TableCell>
+                                <TableCell>
+                                  {p.academicMedium ?? "--"}
+                                </TableCell>
+                                {subjectGroups.map((group) => {
+                                  const subject = p.basketSubjects?.[group];
+                                  return (
+                                    <TableCell key={`${p.id}-${group}`}>
+                                      {subject ? (
+                                        <Typography>
+                                          {subject.subjectName}
+                                        </Typography>
+                                      ) : (
+                                        "--"
+                                      )}
+                                    </TableCell>
+                                  );
+                                })}
+                                <TableCell align="right">
+                                  {!p.isStudentApproved && (
+                                    <>
+                                      <IconButton
+                                        onClick={() => {
+                                          setEditAcademicStudentDetails(p);
+                                          setOpenAcademicStudentDetailsDialog(
+                                            true
+                                          );
+                                        }}
+                                        disabled={isAcademicDetailDeleting}
+                                      >
+                                        <EditIcon color="primary" />
+                                      </IconButton>
+                                      {/* <IconButton
+                                        onClick={() => {
+                                          setEditAcademicStudentDetails(p);
+                                          // this dialog just sets state; deletion confirmation handled below
+                                          // in DeleteConfirmationModal
+                                          // we mirror profile behavior
+                                          setOpenDeleteAcademicStudentDetailsDialog(
+                                            true as any
+                                          );
+                                        }}
+                                        disabled={isAcademicDetailDeleting}
+                                      >
+                                        <DeleteIcon color="error" />
+                                      </IconButton> */}
+                                    </>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </AccordionDetails>
+                  </Accordion>
+                );
+              })}
+            </AccordionDetails>
+          </Accordion>
+        )}
+
+        {selectedUser.employeeType === EmployeeType.TEACHER && (
+          <Accordion
+            variant="elevation"
+            sx={{
+              paddingTop: 0,
+              borderRadius: "8px",
+              marginTop: "1rem",
+            }}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="panel1a-content"
+              style={{
+                borderBottom: `1px solid${colors.grey[100]}`,
+                borderRadius: "8px",
+              }}
+              id="panel1a-header"
+            >
+              <Box
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  margin: "10px 0",
+                }}
+              >
+                <Typography
+                  color="textSecondary"
+                  variant="body2"
+                  sx={{
+                    color: "black",
+                    fontWeight: "semi-bold",
+                  }}
+                >
+                  ACADEMIC DETAILS
+                </Typography>
+              </Box>
+            </AccordionSummary>
+
+            <AccordionDetails>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  mt: "1rem",
+                  marginBottom: theme.spacing(2),
+                }}
+              >
+                <CustomButton
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "var(--pallet-blue)",
+                  }}
+                  size="medium"
+                  startIcon={<AddIcon />}
+                  onClick={() => {
+                    setEditAcademicDetails(null);
+                    setOpenAcademicDetailsDialog(true);
+                  }}
+                >
+                  Add Academic Details
+                </CustomButton>
+              </Box>
+              {transformProfileData.map(({ year, profiles }) => (
+                <Accordion
+                  key={year}
+                  variant="elevation"
+                  sx={{ borderRadius: "8px", mt: "1rem" }}
+                >
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    sx={{
+                      borderBottom: `1px solid ${colors.grey[100]}`,
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <Typography sx={{ color: "var(--pallet-blue)" }}>
+                      Year {year}
+                    </Typography>
+                  </AccordionSummary>
+
+                  <AccordionDetails>
+                    <TableContainer
+                      component={Paper}
+                      elevation={2}
+                      sx={{
+                        overflowX: "auto",
+                        maxWidth: isMobile ? "88vw" : "100%",
+                      }}
+                    >
+                      {isAcademicDetailDeleting && (
+                        <LinearProgress sx={{ width: "100%" }} />
+                      )}
+                      <Table aria-label="simple table">
+                        <TableHead
+                          sx={{
+                            backgroundColor: "var(--pallet-lighter-blue)",
+                          }}
+                        >
+                          <TableRow>
+                            <TableCell>Grade</TableCell>
+                            <TableCell>Subject</TableCell>
+                            <TableCell>Class</TableCell>
+                            <TableCell>Medium</TableCell>
+                            <TableCell></TableCell>
+                          </TableRow>
+                        </TableHead>
+
+                        <TableBody>
+                          {profiles.map((p: any) => (
+                            <TableRow key={p.id}>
+                              <TableCell>{`Grade ` + p.grade?.grade}</TableCell>
+                              <TableCell>{p.subject?.subjectName}</TableCell>
+                              <TableCell>{p.class?.className}</TableCell>
+                              <TableCell>{p.academicMedium}</TableCell>
+                              <TableCell>
+                                <IconButton
+                                  onClick={() => {
+                                    setEditAcademicDetails(p);
+                                    setOpenAcademicDetailsDialog(true);
+                                  }}
+                                  disabled={isAcademicDetailDeleting}
+                                >
+                                  <EditIcon color="primary" />
+                                </IconButton>
+                                <IconButton
+                                  onClick={() => {
+                                    setEditAcademicDetails(p);
+                                    setOpenDeleteAcademicDetailsDialog(true);
+                                  }}
+                                  disabled={isAcademicDetailDeleting}
+                                >
+                                  <DeleteIcon color="error" />
+                                </IconButton>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </AccordionDetails>
+                </Accordion>
+              ))}
+            </AccordionDetails>
+          </Accordion>
+        )}
+      </Stack>
+
+      {openAcademicDetailsDialog && (
+        <AddOrEditAcademicDetailsByAdminDialog
+          open={openAcademicDetailsDialog}
+          setOpen={setOpenAcademicDetailsDialog}
+          defaultValues={editAcademicDetails}
+        />
+      )}
+
+      {openAcademicStudentDetailsDialog && (
+        <AddOrEditStudentAcademicDetailsByAdminDialog
+          open={openAcademicStudentDetailsDialog}
+          setOpen={setOpenAcademicStudentDetailsDialog}
+          defaultValues={editAcademicStudentDetails}
+        />
+      )}
+
+      {openDeleteAcademicDetailsDialog && (
+        <DeleteConfirmationModal
+          open={openDeleteAcademicDetailsDialog}
+          title="Remove Academic Details Confirmation"
+          content={
+            <>
+              Are you sure you want to remove this Academic Details?
+              <Alert severity="warning" style={{ marginTop: "1rem" }}>
+                This action is not reversible.
+              </Alert>
+            </>
+          }
+          handleClose={() => setOpenDeleteAcademicDetailsDialog(false)}
+          deleteFunc={async () => {
+            deleteAcademicDetailMutation(editAcademicDetails.id);
+          }}
+          onSuccess={() => {
+            setOpenDeleteAcademicDetailsDialog(false);
+            setEditAcademicDetails(null);
+          }}
+          handleReject={() => {
+            setOpenDeleteAcademicDetailsDialog(false);
+            setEditAcademicDetails(null);
+          }}
+        />
+      )}
     </Stack>
   );
 }

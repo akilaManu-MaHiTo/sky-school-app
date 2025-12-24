@@ -28,6 +28,7 @@ import {
   createAcademicStudentDetail,
   updateAcademicDetail,
   updateAcademicStudentDetail,
+  updateAcademicStudentDetailsByAdmin,
 } from "../../../api/OrganizationSettings/academicDetailsApi";
 import {
   getAllSubjectData,
@@ -36,7 +37,7 @@ import {
 } from "../../../api/OrganizationSettings/organizationSettingsApi";
 import { getClassesData } from "../../../api/OrganizationSettings/academicGradeApi";
 
-const AddOrEditStudentAcademicDetailsDialog = ({
+const AddOrEditStudentAcademicDetailsByAdminDialog = ({
   open,
   setOpen,
   defaultValues,
@@ -121,7 +122,9 @@ const AddOrEditStudentAcademicDetailsDialog = ({
         defaultValues?.class ??
         null;
 
-      const matchBasketSubject = (groupKey: "Group 1" | "Group 2" | "Group 3") => {
+      const matchBasketSubject = (
+        groupKey: "Group 1" | "Group 2" | "Group 3"
+      ) => {
         const basketSubject = defaultValues?.basketSubjects?.[groupKey];
         if (!basketSubject) {
           return null;
@@ -178,9 +181,10 @@ const AddOrEditStudentAcademicDetailsDialog = ({
   });
 
   const { mutate: updateMutation, isPending: isUpdating } = useMutation({
-    mutationFn: updateAcademicStudentDetail,
+    mutationFn: updateAcademicStudentDetailsByAdmin,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["current-user"] });
+      queryClient.invalidateQueries({ queryKey: ["user-data"] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
       enqueueSnackbar("Academic detail updated successfully!", {
         variant: "success",
       });
@@ -201,7 +205,7 @@ const AddOrEditStudentAcademicDetailsDialog = ({
       return;
     }
 
-    createMutation(data);
+    // createMutation(data);
   };
   return (
     <Dialog
@@ -357,7 +361,7 @@ const AddOrEditStudentAcademicDetailsDialog = ({
             name="group1"
             control={control}
             defaultValue={defaultValues?.group1 ?? ""}
-            {...register("group1", )}
+            {...register("group1")}
             render={({ field }) => (
               <Autocomplete
                 {...field}
@@ -388,7 +392,7 @@ const AddOrEditStudentAcademicDetailsDialog = ({
             name="group2"
             control={control}
             defaultValue={defaultValues?.group2 ?? ""}
-            {...register("group2", )}
+            {...register("group2")}
             render={({ field }) => (
               <Autocomplete
                 {...field}
@@ -419,7 +423,7 @@ const AddOrEditStudentAcademicDetailsDialog = ({
             name="group3"
             control={control}
             defaultValue={defaultValues?.group3 ?? ""}
-            {...register("group3",)}
+            {...register("group3")}
             render={({ field }) => (
               <Autocomplete
                 {...field}
@@ -471,4 +475,4 @@ const AddOrEditStudentAcademicDetailsDialog = ({
   );
 };
 
-export default AddOrEditStudentAcademicDetailsDialog;
+export default AddOrEditStudentAcademicDetailsByAdminDialog;

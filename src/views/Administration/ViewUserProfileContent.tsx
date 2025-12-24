@@ -45,6 +45,7 @@ import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
 import { deleteAcademicDetail } from "../../api/OrganizationSettings/academicDetailsApi";
 import { format } from "date-fns";
 import AddOrEditStudentAcademicDetailsDialog from "./AcademicDetails/AddOrEditStudentAcademicDetailsDialog";
+import { getPlainAddress } from "../../util/plainText.util";
 
 type BasketSubject = {
   id: number;
@@ -417,7 +418,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
             />
             <DrawerContentItem
               label="Address"
-              value={selectedUser?.address}
+              value={getPlainAddress(selectedUser?.address)}
               sx={{ flex: 1 }}
             />
           </Stack>
