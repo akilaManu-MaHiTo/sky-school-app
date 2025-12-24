@@ -175,3 +175,22 @@ export async function UpdateStudentMarks(payload: {
   const res = await axios.post(`/api/student-marks/${markId}`, marksData);
   return res.data;
 }
+
+export async function getClassReportBarChart(
+  year: any,
+  grade: any,
+  className: any,
+  term: string,
+  month: string
+) {
+  const yearId = year.year;
+  const gradeId = grade.id;
+  const classId = className.id;
+  if (term === "Monthly Exam") {
+    term = month;
+  }
+  const res = await axios.get(
+    `/api/class-report/${yearId}/${gradeId}/${classId}/${term}/bar-chart`
+  );
+  return res.data;
+}
