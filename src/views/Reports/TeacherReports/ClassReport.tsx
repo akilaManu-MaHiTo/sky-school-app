@@ -41,6 +41,7 @@ import HourglassEmptyOutlinedIcon from "@mui/icons-material/HourglassEmptyOutlin
 import {
   examReportTerms,
   examTerms,
+  getAllClassReportAllBarChart,
   getAllClassReportCard,
   getClassReportBarChart,
   getClassReportCard,
@@ -52,6 +53,7 @@ import {
   getGradesData,
 } from "../../../api/OrganizationSettings/academicGradeApi";
 import ApexBarChart from "./ApexBarChart";
+import ApexStackedBarChart from "./ApexStackedBarChart";
 import ClassReportTable from "./ClassReportTable";
 import AllClassReportTable from "./AllClassReportTable";
 
@@ -123,6 +125,27 @@ function RagDashboard() {
       !disableFetch,
   });
   const {
+    data: classAllReportBarChartData,
+    refetch: refetchClassAllReportBarChart,
+    isFetching: isClassAllReportBarChartFetching,
+  } = useQuery({
+    queryKey: [
+      "class-report-all-bar-chart",
+      year,
+      selectedGrade,
+      selectedClass,
+    ],
+    queryFn: () =>
+      getAllClassReportAllBarChart(year, selectedGrade, selectedClass),
+    enabled:
+      !!selectedGrade &&
+      !!selectedClass &&
+      !!year &&
+      !!selectedTerm &&
+      (selectedTerm !== "Monthly Exam" || !!selectedMonthlyExam) &&
+      disableFetch,
+  });
+  const {
     data: classReportCardData,
     refetch: refetchClassReportCardData,
     isFetching: isClassReportCardFetching,
@@ -166,6 +189,7 @@ function RagDashboard() {
       (selectedTerm !== "Monthly Exam" || !!selectedMonthlyExam) &&
       disableFetch,
   });
+
   const isMonthlyExam = selectedTerm === "Monthly Exam";
 
   const barChartReportData = useMemo(() => {
@@ -175,7 +199,6 @@ function RagDashboard() {
         series: [],
       };
     }
-
     return {
       categories: classReportBarChartData.map((item: any) => item.subjectName),
       series: [
@@ -189,12 +212,52 @@ function RagDashboard() {
     };
   }, [classReportBarChartData]);
 
+  const allTermsStackedBarData = useMemo(() => {
+    if (!classAllReportBarChartData || !classAllReportBarChartData.data) {
+      return { categories: [], series: [] };
+    }
+
+    const terms = Object.keys(classAllReportBarChartData.data);
+
+    if (terms.length === 0) {
+      return { categories: [], series: [] };
+    }
+
+    const subjectSet = new Set<string>();
+    terms.forEach((termKey) => {
+      const termArr = (classAllReportBarChartData.data as any)[termKey] || [];
+      termArr.forEach((item: any) => {
+        if (item?.subjectName) {
+          subjectSet.add(item.subjectName);
+        }
+      });
+    });
+
+    const subjects = Array.from(subjectSet);
+
+    const series = subjects.map((subject) => ({
+      name: subject,
+      data: terms.map((termKey) => {
+        const termArr = (classAllReportBarChartData.data as any)[termKey] || [];
+        const found = termArr.find((item: any) => item.subjectName === subject);
+        return found ? Number(found.average.toFixed(2)) : 0;
+      }),
+    }));
+
+    return {
+      categories: terms,
+      series,
+    };
+  }, [classAllReportBarChartData]);
+
+  
+
   const classReportTitle = useMemo(() => {
     if (!selectedTerm) return "Class Overall Report";
     if (selectedTerm === "Monthly Exam" && selectedMonthlyExam) {
       return `Class Overall Report - ${selectedMonthlyExam}`;
     }
-    return `Grade ${selectedGrade.grade} ${selectedClass.className } Class Overall Report - ${selectedTerm}`;
+    return `Grade ${selectedGrade.grade} ${selectedClass.className} Class Overall Report - ${selectedTerm}`;
   }, [selectedTerm, selectedMonthlyExam]);
 
   return (
@@ -213,7 +276,7 @@ function RagDashboard() {
         <Breadcrumb breadcrumbs={breadcrumbItems} />
       </Box>
 
-      <Accordion>
+      <Accordion expanded={true}>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
           aria-controls="panel1-content"
@@ -403,19 +466,6 @@ function RagDashboard() {
             >
               Reset
             </Button>
-            <CustomButton
-              variant="contained"
-              sx={{
-                backgroundColor: "var(--pallet-blue)",
-              }}
-              size="medium"
-              onClick={handleSubmit((data) => {
-                // handleFetch();
-                console.log("data", data);
-              })}
-            >
-              Add Filter
-            </CustomButton>
           </Box>
         </AccordionDetails>
       </Accordion>
@@ -423,7 +473,7 @@ function RagDashboard() {
       <Box
         sx={{
           display: "flex",
-          flexDirection: isMobile ? "column" : "row",
+          flexDirection: isMobile || isTablet ? "column" : "row",
           gap: "1rem",
         }}
       >
@@ -447,16 +497,24 @@ function RagDashboard() {
                 textAlign: "center",
               }}
             >
-              {`Subject Percentage`}
+              {disableFetch ? "Term-wise Subject Percentages" : "Subject Percentage"}
             </Typography>
           </Box>
 
           <ResponsiveContainer width="100%" height={500}>
-            <ApexBarChart
-              categories={barChartReportData.categories}
-              series={barChartReportData.series}
-              loading={isClassReportBarChartFetching}
-            />
+            {disableFetch ? (
+              <ApexStackedBarChart
+                categories={allTermsStackedBarData.categories}
+                series={allTermsStackedBarData.series as any}
+                isMobile={isMobile}
+              />
+            ) : (
+              <ApexBarChart
+                categories={barChartReportData.categories}
+                series={barChartReportData.series as any}
+                loading={isClassReportBarChartFetching}
+              />
+            )}
           </ResponsiveContainer>
         </Box>
 
@@ -500,13 +558,15 @@ function RagDashboard() {
             <AllClassReportTable
               reportData={classAllReportCardData}
               isLoading={isClassAllReportCardFetching}
-              isMobile={isMobile}
+              isMobile={isMobile }
+              isTablet={isTablet}
             />
           ) : (
             <ClassReportTable
               reportData={classReportCardData}
               isLoading={isClassReportCardFetching}
               isMobile={isMobile}
+              isTablet={isTablet}
               title={classReportTitle}
             />
           )}

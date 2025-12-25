@@ -233,3 +233,17 @@ export async function getAllClassReportCard(
   );
   return res.data;
 }
+
+export async function getAllClassReportAllBarChart(
+  year: any,
+  grade: any,
+  className: any
+) {
+  const yearId = year.year;
+  const gradeId = grade.id;
+  const classId = className.id;
+  const res = await axios.get(
+    `/api/class-report/${yearId}/${gradeId}/${classId}/All/all-bar-chart`
+  );
+  return res.data;
+}

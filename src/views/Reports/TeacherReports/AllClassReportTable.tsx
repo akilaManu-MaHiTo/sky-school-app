@@ -17,9 +17,10 @@ interface AllClassReportTableProps {
 	reportData?: any;
 	isLoading: boolean;
 	isMobile: boolean;
+    isTablet?: boolean;
 }
 
-function AllClassReportTable({ reportData, isLoading, isMobile }: AllClassReportTableProps) {
+function AllClassReportTable({ reportData, isLoading, isMobile, isTablet }: AllClassReportTableProps) {
 	const termReports = useMemo(() => {
 		if (!reportData || !reportData.data) return [] as any[];
 
@@ -59,6 +60,7 @@ function AllClassReportTable({ reportData, isLoading, isMobile }: AllClassReport
 							reportData={{ data: termData }}
 							isLoading={isLoading}
 							isMobile={isMobile}
+                            isTablet={isTablet}
 							title={title}
 						/>
 					</Box>

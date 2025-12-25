@@ -20,15 +20,28 @@ interface ClassReportTableProps {
   reportData?: any;
   isLoading: boolean;
   isMobile: boolean;
+  isTablet?: boolean;
   title: string;
 }
 
 const GROUP_NAMES: string[] = ["Group 1", "Group 2", "Group 3"];
 
-function ClassReportTable({ reportData, isLoading, isMobile, title }: ClassReportTableProps) {
-  const [groupFilter, setGroupFilter] = useState<Record<string, string | null>>({});
-  const [groupMenuAnchor, setGroupMenuAnchor] = useState<null | HTMLElement>(null);
-  const [activeGroupForMenu, setActiveGroupForMenu] = useState<string | null>(null);
+function ClassReportTable({
+  reportData,
+  isLoading,
+  isMobile,
+  title,
+  isTablet,
+}: ClassReportTableProps) {
+  const [groupFilter, setGroupFilter] = useState<Record<string, string | null>>(
+    {}
+  );
+  const [groupMenuAnchor, setGroupMenuAnchor] = useState<null | HTMLElement>(
+    null
+  );
+  const [activeGroupForMenu, setActiveGroupForMenu] = useState<string | null>(
+    null
+  );
 
   const classReportTableData = useMemo(() => {
     if (!reportData || !reportData.data) {
@@ -42,7 +55,9 @@ function ClassReportTable({ reportData, isLoading, isMobile, title }: ClassRepor
 
     const allSubjects = reportData.data.subjects ?? [];
 
-    const subjects = allSubjects.filter((subject: any) => !subject.isBasketSubject);
+    const subjects = allSubjects.filter(
+      (subject: any) => !subject.isBasketSubject
+    );
 
     const basketSubjectsByGroup: Record<string, any[]> = {
       "Group 1": [],
@@ -138,7 +153,7 @@ function ClassReportTable({ reportData, isLoading, isMobile, title }: ClassRepor
         elevation={2}
         sx={{
           overflowX: "auto",
-          maxWidth: isMobile ? "75vw" : "100%",
+          maxWidth: isMobile ? "75vw" : isTablet ? "88vW" : "100%",
         }}
       >
         {isLoading && <LinearProgress sx={{ width: "100%" }} />}
@@ -227,10 +242,7 @@ function ClassReportTable({ reportData, isLoading, isMobile, title }: ClassRepor
                   {classReportTableData.subjects.map((subject: any) => {
                     const value = row.subjectMarks[subject.subjectName] ?? null;
                     return (
-                      <TableCell
-                        key={`${row.id}-${subject.id}`}
-                        align="right"
-                      >
+                      <TableCell key={`${row.id}-${subject.id}`} align="right">
                         {value ?? "--"}
                       </TableCell>
                     );
@@ -276,14 +288,16 @@ function ClassReportTable({ reportData, isLoading, isMobile, title }: ClassRepor
         {activeGroupForMenu && (
           <>
             {(
-              classReportTableData.basketSubjectsByGroup?.[activeGroupForMenu] ??
-              []
+              classReportTableData.basketSubjectsByGroup?.[
+                activeGroupForMenu
+              ] ?? []
             ).map((subject: any) => (
               <MenuItem
                 key={subject.id}
                 dense
                 selected={
-                  groupFilter[activeGroupForMenu as string] === subject.subjectName
+                  groupFilter[activeGroupForMenu as string] ===
+                  subject.subjectName
                 }
                 onClick={() => {
                   setGroupFilter((prev) => ({
