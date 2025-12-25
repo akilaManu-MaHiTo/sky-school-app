@@ -39,8 +39,11 @@ import MoodOutlinedIcon from "@mui/icons-material/MoodOutlined";
 import SentimentVerySatisfiedOutlinedIcon from "@mui/icons-material/SentimentVerySatisfiedOutlined";
 import HourglassEmptyOutlinedIcon from "@mui/icons-material/HourglassEmptyOutlined";
 import {
+  examReportTerms,
   examTerms,
+  getAllClassReportCard,
   getClassReportBarChart,
+  getClassReportCard,
   months,
 } from "../../../api/StudentMarks/studentMarksApi";
 import { getYearsData } from "../../../api/OrganizationSettings/organizationSettingsApi";
@@ -49,6 +52,8 @@ import {
   getGradesData,
 } from "../../../api/OrganizationSettings/academicGradeApi";
 import ApexBarChart from "./ApexBarChart";
+import ClassReportTable from "./ClassReportTable";
+import AllClassReportTable from "./AllClassReportTable";
 
 const breadcrumbItems = [
   { title: "Home", href: "/home" },
@@ -73,6 +78,8 @@ function RagDashboard() {
   const selectedClass = watch("class");
   const selectedMonthlyExam = watch("monthlyExam");
 
+  const disableFetch = selectedTerm === "All";
+
   const { data: yearData, isFetching: isYearDataFetching } = useQuery({
     queryKey: ["academic-years"],
     queryFn: getYearsData,
@@ -91,7 +98,14 @@ function RagDashboard() {
     refetch: refetchClassReportBarChart,
     isFetching: isClassReportBarChartFetching,
   } = useQuery({
-    queryKey: ["class-report-bar-chart"],
+    queryKey: [
+      "class-report-bar-chart",
+      year,
+      selectedGrade,
+      selectedClass,
+      selectedTerm,
+      selectedMonthlyExam,
+    ],
     queryFn: () =>
       getClassReportBarChart(
         year,
@@ -105,7 +119,52 @@ function RagDashboard() {
       !!selectedClass &&
       !!year &&
       !!selectedTerm &&
-      (selectedTerm !== "Monthly Exam" || !!selectedMonthlyExam),
+      (selectedTerm !== "Monthly Exam" || !!selectedMonthlyExam) &&
+      !disableFetch,
+  });
+  const {
+    data: classReportCardData,
+    refetch: refetchClassReportCardData,
+    isFetching: isClassReportCardFetching,
+  } = useQuery({
+    queryKey: [
+      "class-report-card",
+      year,
+      selectedGrade,
+      selectedClass,
+      selectedTerm,
+      selectedMonthlyExam,
+    ],
+    queryFn: () =>
+      getClassReportCard(
+        year,
+        selectedGrade,
+        selectedClass,
+        selectedTerm,
+        selectedMonthlyExam
+      ),
+    enabled:
+      !!selectedGrade &&
+      !!selectedClass &&
+      !!year &&
+      !!selectedTerm &&
+      (selectedTerm !== "Monthly Exam" || !!selectedMonthlyExam) &&
+      !disableFetch,
+  });
+  const {
+    data: classAllReportCardData,
+    refetch: refetchClassAllReportCardData,
+    isFetching: isClassAllReportCardFetching,
+  } = useQuery({
+    queryKey: ["class-report-all-card", year, selectedGrade, selectedClass],
+    queryFn: () => getAllClassReportCard(year, selectedGrade, selectedClass),
+    enabled:
+      !!selectedGrade &&
+      !!selectedClass &&
+      !!year &&
+      !!selectedTerm &&
+      (selectedTerm !== "Monthly Exam" || !!selectedMonthlyExam) &&
+      disableFetch,
   });
   const isMonthlyExam = selectedTerm === "Monthly Exam";
 
@@ -129,6 +188,14 @@ function RagDashboard() {
       ],
     };
   }, [classReportBarChartData]);
+
+  const classReportTitle = useMemo(() => {
+    if (!selectedTerm) return "Class Overall Report";
+    if (selectedTerm === "Monthly Exam" && selectedMonthlyExam) {
+      return `Class Overall Report - ${selectedMonthlyExam}`;
+    }
+    return `Grade ${selectedGrade.grade} ${selectedClass.className } Class Overall Report - ${selectedTerm}`;
+  }, [selectedTerm, selectedMonthlyExam]);
 
   return (
     <Stack>
@@ -158,12 +225,13 @@ function RagDashboard() {
           <Typography variant="subtitle2">Dashboard Filters</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Box
+          <Stack
             sx={{
               display: "flex",
               justifyContent: "flex-start",
               flexWrap: "wrap",
               marginTop: "0.5rem",
+              flexDirection: isMobile || isTablet ? "column" : "row",
             }}
           >
             <Controller
@@ -266,7 +334,9 @@ function RagDashboard() {
                     });
                   }}
                   size="small"
-                  options={examTerms?.filter((item) => item != null) ?? []}
+                  options={
+                    examReportTerms?.filter((item) => item != null) ?? []
+                  }
                   sx={{ flex: 1, margin: "0.5rem" }}
                   renderInput={(params) => (
                     <TextField
@@ -316,7 +386,7 @@ function RagDashboard() {
                 />
               </Box>
             )}
-          </Box>
+          </Stack>
           <Box
             sx={{
               display: "flex",
@@ -403,15 +473,43 @@ function RagDashboard() {
             height: "auto",
             marginTop: "1rem",
           }}
+        ></Box>
+      </Box>
+
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          gap: "1rem",
+        }}
+      >
+        <Box
+          sx={{
+            width: "100%",
+            height: "auto",
+            marginTop: "1rem",
+            flex: 2,
+            boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+            padding: "1rem",
+            borderRadius: "0.3rem",
+            border: "1px solid var(--pallet-border-blue)",
+            backgroundColor: "#fff",
+          }}
         >
-          {/* <ResponsiveContainer
-            width="100%"
-            height={500}
-            style={{
-              overflowY: "scroll",
-              scrollbarWidth: "none",
-            }}
-          ></ResponsiveContainer> */}
+          {disableFetch ? (
+            <AllClassReportTable
+              reportData={classAllReportCardData}
+              isLoading={isClassAllReportCardFetching}
+              isMobile={isMobile}
+            />
+          ) : (
+            <ClassReportTable
+              reportData={classReportCardData}
+              isLoading={isClassReportCardFetching}
+              isMobile={isMobile}
+              title={classReportTitle}
+            />
+          )}
         </Box>
       </Box>
     </Stack>
