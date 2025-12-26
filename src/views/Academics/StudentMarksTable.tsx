@@ -299,6 +299,9 @@ const StudentMarksTable = ({
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["academic-student-marks"] });
+        queryClient.invalidateQueries({ queryKey: ["class-report-bar-chart"] });
+        queryClient.invalidateQueries({ queryKey: ["class-report-card"] });
+        queryClient.invalidateQueries({ queryKey: ["class-report-all-card"] });
         scheduleSuccessToast();
       },
       onError: (error: any) => {

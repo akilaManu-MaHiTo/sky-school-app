@@ -10,7 +10,13 @@ export const dashBoardFilterSchema = z.object({
 export type TeacherDashBoardFilter = z.infer<typeof dashBoardFilterSchema>;
 
 export const examTerms = ["Term 1", "Term 2", "Term 3", "Monthly Exam"];
-
+export const examReportTerms = [
+  "Term 1",
+  "Term 2",
+  "Term 3",
+  "Monthly Exam",
+  "All",
+];
 export const months = [
   "January",
   "February",
@@ -173,5 +179,71 @@ export async function UpdateStudentMarks(payload: {
   };
 
   const res = await axios.post(`/api/student-marks/${markId}`, marksData);
+  return res.data;
+}
+
+export async function getClassReportBarChart(
+  year: any,
+  grade: any,
+  className: any,
+  term: string,
+  month: string
+) {
+  const yearId = year.year;
+  const gradeId = grade.id;
+  const classId = className.id;
+  if (term === "Monthly Exam") {
+    term = month;
+  }
+  const res = await axios.get(
+    `/api/class-report/${yearId}/${gradeId}/${classId}/${term}/bar-chart`
+  );
+  return res.data;
+}
+
+export async function getClassReportCard(
+  year: any,
+  grade: any,
+  className: any,
+  term: string,
+  month: string
+) {
+  const yearId = year.year;
+  const gradeId = grade.id;
+  const classId = className.id;
+  if (term === "Monthly Exam") {
+    term = month;
+  }
+  const res = await axios.get(
+    `/api/class-report/${yearId}/${gradeId}/${classId}/${term}/report-card`
+  );
+  return res.data;
+}
+
+export async function getAllClassReportCard(
+  year: any,
+  grade: any,
+  className: any
+) {
+  const yearId = year.year;
+  const gradeId = grade.id;
+  const classId = className.id;
+  const res = await axios.get(
+    `/api/class-report/${yearId}/${gradeId}/${classId}/All/all-report-card`
+  );
+  return res.data;
+}
+
+export async function getAllClassReportAllBarChart(
+  year: any,
+  grade: any,
+  className: any
+) {
+  const yearId = year.year;
+  const gradeId = grade.id;
+  const classId = className.id;
+  const res = await axios.get(
+    `/api/class-report/${yearId}/${gradeId}/${classId}/All/all-bar-chart`
+  );
   return res.data;
 }
