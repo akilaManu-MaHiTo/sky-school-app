@@ -53,6 +53,7 @@ export const userSchema = z.object({
   userTypeId: z.number(),
   name: z.string(),
   userName: z.string(),
+  nameWithInitials: z.string(),
   mobile: z.string(),
   emailVerifiedAt: z.string().nullable(),
   role: z.string(),
@@ -115,6 +116,7 @@ export async function userPasswordReset(data: PasswordReset) {
 export async function registerUser({
   name,
   userName,
+  nameWithInitials,
   email,
   mobileNumber: mobile,
   password,
@@ -128,6 +130,7 @@ export async function registerUser({
   mobileNumber: string;
   confirmPassword: string;
   userName: string;
+  nameWithInitials: string;
   employeeType: string;
   employeeNumber: string;
 }) {
@@ -139,6 +142,7 @@ export async function registerUser({
     password_confirmation,
     userName,
     employeeType,
+    nameWithInitials,
     employeeNumber,
   });
   return res.data;
@@ -149,10 +153,13 @@ export async function validateUser() {
   return res.data;
 }
 
-export async function fetchAllUsers() {
-  const res = await axios.get("/api/all-users");
-  return res.data;
-}
+// export async function fetchAllUsers() {
+//   // Use the unified users search endpoint so that all related
+//   // profile data (including studentProfile) is consistently
+//   // returned for All Users, matching the role-based search API.
+//   const res = await axios.get("/api/users/All/user_id_desc/search?keyword=");
+//   return res.data;
+// }
 
 export async function forgotPassword({ email }: { email: string }) {
   const res = await axios.post("/api/forgot-password", {
@@ -197,39 +204,16 @@ export async function fetchAllAssigneeLevel() {
 export async function updateUserType({
   id,
   userTypeId,
-  assigneeLevel,
-  department,
   availability,
-  jobPosition,
-  assignedFactory,
-  responsibleSection,
 }: {
   id: number;
   userTypeId: number;
-  assigneeLevel: string;
-  department: string;
   availability: boolean;
-  jobPosition: string;
-  assignedFactory: string[];
-  responsibleSection: string[];
 }) {
-  const parsedAssignedFactory = Array.isArray(assignedFactory)
-    ? assignedFactory
-    : JSON.parse(assignedFactory || "[]");
-  const parsedResponsibleSection = Array.isArray(responsibleSection)
-    ? responsibleSection
-    : JSON.parse(responsibleSection || "[]");
-
   const res = await axios.post(`/api/users/${id}/update`, {
-    userType: userTypeId.toString(),
-    assigneeLevel: assigneeLevel.toString(),
-    department,
+    userType: userTypeId,
     availability,
-    jobPosition,
-    assignedFactory: parsedAssignedFactory,
-    responsibleSection: parsedResponsibleSection,
   });
-
   return res.data;
 }
 
@@ -290,6 +274,8 @@ export async function updateUserProfileDetails({
   mobile,
   birthDate,
   address,
+  email,
+  nameWithInitials,
 }: {
   id: number;
   name: string;
@@ -297,6 +283,8 @@ export async function updateUserProfileDetails({
   mobile: string;
   birthDate: Date;
   address: string;
+  email: string;
+  nameWithInitials: string;
 }) {
   const data = {
     name,
@@ -304,6 +292,8 @@ export async function updateUserProfileDetails({
     mobile,
     birthDate,
     address,
+    email,
+    nameWithInitials,
   };
 
   const res = await axios.post(`/api/user/${id}/profile-update`, data);

@@ -25,9 +25,8 @@ import {
   AcademicDetail,
   AcademicMedium,
   createAcademicDetail,
-  createAcademicStudentDetail,
   updateAcademicDetail,
-  updateAcademicStudentDetail,
+  updateAcademicDetailsByAdmin,
 } from "../../../api/OrganizationSettings/academicDetailsApi";
 import {
   getAllSubjectData,
@@ -36,7 +35,7 @@ import {
 } from "../../../api/OrganizationSettings/organizationSettingsApi";
 import { getClassesData } from "../../../api/OrganizationSettings/academicGradeApi";
 
-const AddOrEditStudentAcademicDetailsDialog = ({
+const AddOrEditAcademicDetailsByAdminDialog = ({
   open,
   setOpen,
   defaultValues,
@@ -121,48 +120,22 @@ const AddOrEditStudentAcademicDetailsDialog = ({
         defaultValues?.class ??
         null;
 
-      const matchBasketSubject = (groupKey: "Group 1" | "Group 2" | "Group 3") => {
-        const basketSubject = defaultValues?.basketSubjects?.[groupKey];
-        if (!basketSubject) {
-          return null;
-        }
-
-        return (
-          subjectData?.find(
-            (subject: any) => subject?.id === basketSubject?.id
-          ) ?? basketSubject
-        );
-      };
-
-      const matchedGroup1 = matchBasketSubject("Group 1");
-      const matchedGroup2 = matchBasketSubject("Group 2");
-      const matchedGroup3 = matchBasketSubject("Group 3");
-
       reset({
         ...defaultValues,
         grades: matchedGrade,
         subjects: matchedSubject,
         classes: matchedClass,
-        group1: matchedGroup1,
-        group2: matchedGroup2,
-        group3: matchedGroup3,
       });
     } else {
-      reset({
-        grades: null,
-        subjects: null,
-        classes: null,
-        group1: null,
-        group2: null,
-        group3: null,
-      });
+      reset({ grades: null, subjects: null, classes: null });
     }
   }, [open, defaultValues, gradeData, subjectData, classData, reset]);
 
   const { mutate: createMutation, isPending: isCreating } = useMutation({
-    mutationFn: createAcademicStudentDetail,
+    mutationFn: createAcademicDetail,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["current-user"] });
+      queryClient.invalidateQueries({ queryKey: ["user-data"] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
       enqueueSnackbar("Academic detail created successfully!", {
         variant: "success",
       });
@@ -178,9 +151,10 @@ const AddOrEditStudentAcademicDetailsDialog = ({
   });
 
   const { mutate: updateMutation, isPending: isUpdating } = useMutation({
-    mutationFn: updateAcademicStudentDetail,
+    mutationFn: updateAcademicDetailsByAdmin,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["current-user"] });
+      queryClient.invalidateQueries({ queryKey: ["user-data"] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
       enqueueSnackbar("Academic detail updated successfully!", {
         variant: "success",
       });
@@ -201,7 +175,7 @@ const AddOrEditStudentAcademicDetailsDialog = ({
       return;
     }
 
-    createMutation(data);
+    // createMutation(data);
   };
   return (
     <Dialog
@@ -271,6 +245,37 @@ const AddOrEditStudentAcademicDetailsDialog = ({
           />
 
           <Controller
+            name="subjects"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <Autocomplete
+                {...field}
+                options={subjectData ?? []}
+                getOptionLabel={(option) =>
+                  option.subjectName + ` - ` + option.subjectMedium + ` Medium`
+                }
+                isOptionEqualToValue={(option, value) =>
+                  option?.id === value?.id
+                }
+                onChange={(event, newValue) => field.onChange(newValue)}
+                value={field.value || null}
+                size="small"
+                sx={{ flex: 1, margin: "0.5rem" }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    required
+                    error={!!errors.subjects}
+                    helperText={errors.subjects && "Required"}
+                    label="Subject"
+                  />
+                )}
+              />
+            )}
+          />
+
+          <Controller
             name="classes"
             control={control}
             rules={{ required: true }}
@@ -326,125 +331,6 @@ const AddOrEditStudentAcademicDetailsDialog = ({
               />
             )}
           />
-
-          <Controller
-            name="academicMedium"
-            control={control}
-            defaultValue={defaultValues?.academicMedium ?? ""}
-            {...register("academicMedium", { required: true })}
-            render={({ field }) => (
-              <Autocomplete
-                {...field}
-                onChange={(event, newValue) => field.onChange(newValue)}
-                size="small"
-                options={AcademicMedium.map((medium) => medium.academicMedium)}
-                sx={{ flex: 1, margin: "0.5rem" }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    required
-                    error={!!errors.academicMedium}
-                    helperText={errors.academicMedium && "Required"}
-                    label="Academic Medium"
-                    name="academicMedium"
-                  />
-                )}
-              />
-            )}
-          />
-
-          <Controller
-            name="group1"
-            control={control}
-            defaultValue={defaultValues?.group1 ?? ""}
-            {...register("group1", )}
-            render={({ field }) => (
-              <Autocomplete
-                {...field}
-                onChange={(event, newValue) => field.onChange(newValue)}
-                size="small"
-                options={subjectData ?? []}
-                getOptionLabel={(option) =>
-                  option.subjectName + ` - ` + option.subjectMedium + ` Medium`
-                }
-                isOptionEqualToValue={(option, value) =>
-                  option?.id === value?.id
-                }
-                sx={{ flex: 1, margin: "0.5rem" }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    error={!!errors.group1}
-                    helperText={errors.group1 && "Required"}
-                    label="Group 1"
-                    name="group1"
-                  />
-                )}
-              />
-            )}
-          />
-
-          <Controller
-            name="group2"
-            control={control}
-            defaultValue={defaultValues?.group2 ?? ""}
-            {...register("group2", )}
-            render={({ field }) => (
-              <Autocomplete
-                {...field}
-                onChange={(event, newValue) => field.onChange(newValue)}
-                size="small"
-                options={subjectData ?? []}
-                getOptionLabel={(option) =>
-                  option.subjectName + ` - ` + option.subjectMedium + ` Medium`
-                }
-                isOptionEqualToValue={(option, value) =>
-                  option?.id === value?.id
-                }
-                sx={{ flex: 1, margin: "0.5rem" }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    error={!!errors.group2}
-                    helperText={errors.group2 && "Required"}
-                    label="Group 2"
-                    name="group2"
-                  />
-                )}
-              />
-            )}
-          />
-
-          <Controller
-            name="group3"
-            control={control}
-            defaultValue={defaultValues?.group3 ?? ""}
-            {...register("group3",)}
-            render={({ field }) => (
-              <Autocomplete
-                {...field}
-                onChange={(event, newValue) => field.onChange(newValue)}
-                size="small"
-                options={subjectData ?? []}
-                getOptionLabel={(option) =>
-                  option.subjectName + ` - ` + option.subjectMedium + ` Medium`
-                }
-                isOptionEqualToValue={(option, value) =>
-                  option?.id === value?.id
-                }
-                sx={{ flex: 1, margin: "0.5rem" }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    error={!!errors.group3}
-                    helperText={errors.group3 && "Required"}
-                    label="Group 3"
-                    name="group3"
-                  />
-                )}
-              />
-            )}
-          />
         </Box>
       </DialogContent>
       <DialogActions sx={{ padding: "1rem" }}>
@@ -471,4 +357,4 @@ const AddOrEditStudentAcademicDetailsDialog = ({
   );
 };
 
-export default AddOrEditStudentAcademicDetailsDialog;
+export default AddOrEditAcademicDetailsByAdminDialog;

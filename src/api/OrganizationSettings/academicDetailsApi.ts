@@ -23,6 +23,8 @@ export const AcademicDetailSchema = z.object({
   group1: SubjectSchema.optional(),
   group2: SubjectSchema.optional(),
   group3: SubjectSchema.optional(),
+
+  basketSubjectsIds: z.array(z.number()).optional(),
 });
 
 export type AcademicDetail = z.infer<typeof AcademicDetailSchema>;
@@ -68,6 +70,21 @@ export const updateAcademicDetail = async (payload: AcademicDetail) => {
   return res.data;
 };
 
+export const updateAcademicDetailsByAdmin = async (payload: AcademicDetail) => {
+  const submitData = {
+    ...payload,
+    academicGradeId: Number(payload.grades.id),
+    academicSubjectId: Number(payload.subjects.id),
+    academicClassId: Number(payload.classes.id),
+    academicMedium: payload.subjects.subjectMedium,
+  };
+  const res = await axios.post(
+    `api/teacher-profiles/admin/${payload.id}`,
+    submitData
+  );
+  return res.data;
+};
+
 export const deleteAcademicDetail = async (id: number) => {
   const res = await axios.delete(`api/teacher-profiles/${id}`);
   return res.data;
@@ -75,10 +92,19 @@ export const deleteAcademicDetail = async (id: number) => {
 
 export const createAcademicStudentDetail = async (payload: AcademicDetail) => {
   console.log("payload", payload);
+  let basketSubjectsIds: number[] = [];
+  if (payload.group1 || payload.group2 || payload.group3) {
+    basketSubjectsIds = [
+      payload?.group1?.id,
+      payload?.group2?.id,
+      payload?.group3?.id,
+    ].filter((id) => id !== undefined);
+  }
   const submitData = {
     ...payload,
     academicGradeId: Number(payload.grades.id),
     academicClassId: Number(payload.classes.id),
+    basketSubjectsIds,
   };
   console.log("submitData", submitData);
   const res = await axios.post(`api/student-profiles`, submitData);
@@ -90,9 +116,34 @@ export const updateAcademicStudentDetail = async (payload: AcademicDetail) => {
     ...payload,
     academicGradeId: Number(payload.grades.id),
     academicClassId: Number(payload.classes.id),
+    basketSubjectsIds: [
+      payload.group1.id,
+      payload.group2.id,
+      payload.group3.id,
+    ],
   };
   const res = await axios.post(
     `api/student-profiles/${payload.id}`,
+    submitData
+  );
+  return res.data;
+};
+
+export const updateAcademicStudentDetailsByAdmin = async (
+  payload: AcademicDetail
+) => {
+  const submitData = {
+    ...payload,
+    academicGradeId: Number(payload.grades.id),
+    academicClassId: Number(payload.classes.id),
+    basketSubjectsIds: [
+      payload.group1.id,
+      payload.group2.id,
+      payload.group3.id,
+    ],
+  };
+  const res = await axios.post(
+    `api/student-profiles/admin/${payload.id}`,
     submitData
   );
   return res.data;

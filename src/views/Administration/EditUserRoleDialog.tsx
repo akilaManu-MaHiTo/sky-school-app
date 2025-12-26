@@ -43,12 +43,7 @@ type DialogProps = {
   onSubmit: (data: {
     id: number;
     userTypeId: number;
-    assigneeLevel: string;
-    department: string;
     availability: boolean;
-    jobPosition: string;
-    assignedFactory: string[];
-    responsibleSection: string[];
   }) => void;
   isSubmitting?: boolean;
 };
@@ -65,28 +60,6 @@ export default function EditUserRoleDialog({
     queryKey: ["access-roles"],
     queryFn: getAccessRolesList,
   });
-  const { data: levels, isFetching: isFetchingLevels } = useQuery<UserLevel[]>({
-    queryKey: ["access-levels"],
-    queryFn: fetchAllAssigneeLevel,
-  });
-  const { data: departmentData, isFetching: isDepartmentDataFetching } =
-    useQuery({
-      queryKey: ["departments"],
-      queryFn: fetchDepartmentData,
-    });
-  const { data: jobPositions, isFetched: isJobPositionsFetched } = useQuery({
-    queryKey: ["jobPositions"],
-    queryFn: fetchJobPositionData,
-  });
-  const { data: factories, isFetched: isFactoryFetched } = useQuery({
-    queryKey: ["factories"],
-    queryFn: fetchFactoryData,
-  });
-  const { data: sections, isFetched: isSectionsFetched } = useQuery({
-    queryKey: ["sections"],
-    queryFn: fetchResponsibleSectionData,
-  });
-  const { enqueueSnackbar } = useSnackbar();
 
   const {
     handleSubmit,
@@ -94,17 +67,8 @@ export default function EditUserRoleDialog({
     formState: { errors },
     reset,
     watch,
-  } = useForm<User>({
-    defaultValues: {
-      userType: defaultValues?.userType,
-      userLevel: defaultValues?.userLevel,
-      assignedFactory: defaultValues?.assignedFactory || [],
-      ...defaultValues,
-    },
-  });
+  } = useForm<User>();
 
-  const [selectedFactories, setSelectedFactories] = useState([]);
-  const [selectedSections, setSelectedSections] = useState([]);
   const isAvailability = watch("availability");
 
   useEffect(() => {
@@ -210,139 +174,6 @@ export default function EditUserRoleDialog({
                   )}
                 />
               </Box>
-
-              <Box sx={{ flex: 1 }}>
-                <Controller
-                  name="userLevel"
-                  control={control}
-                  defaultValue={defaultValues?.userLevel}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <Autocomplete
-                      {...field}
-                      onChange={(_, data) => field.onChange(data)}
-                      getOptionLabel={(option) => option?.levelName || ""}
-                      size="small"
-                      options={levels || []}
-                      sx={{ flex: 1, margin: "0.5rem" }}
-                      renderOption={(props, option) => (
-                        <li {...props} key={option.id}>
-                          {option.levelName}
-                        </li>
-                      )}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          required
-                          error={!!errors.userLevel}
-                          label="User Level"
-                          name="userLevel"
-                        />
-                      )}
-                    />
-                  )}
-                />
-              </Box>
-
-              <Box sx={{ flex: 1 }}>
-                <Controller
-                  name="department"
-                  control={control}
-                  defaultValue={defaultValues?.department ?? ""}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <Autocomplete
-                      {...field}
-                      onChange={(event, newValue) => field.onChange(newValue)}
-                      size="small"
-                      options={
-                        departmentData?.length
-                          ? departmentData.map(
-                              (department) => department.department
-                            )
-                          : []
-                      }
-                      sx={{ flex: 1, margin: "0.5rem" }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          required
-                          error={!!errors.department}
-                          helperText={errors.department && "Required"}
-                          label="Department"
-                          name="department"
-                        />
-                      )}
-                    />
-                  )}
-                />
-              </Box>
-
-              <Box sx={{ flex: 1 }}>
-                <Controller
-                  name="jobPosition"
-                  control={control}
-                  defaultValue={defaultValues?.jobPosition ?? ""}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <Autocomplete
-                      {...field}
-                      onChange={(event, newValue) => field.onChange(newValue)}
-                      size="small"
-                      options={
-                        jobPositions?.length
-                          ? jobPositions.map(
-                              (jobPositions) => jobPositions.jobPosition
-                            )
-                          : []
-                      }
-                      sx={{ flex: 1, margin: "0.5rem" }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          required
-                          error={!!errors.jobPosition}
-                          helperText={errors.jobPosition && "Required"}
-                          label="Job Position"
-                          name="jobPosition"
-                        />
-                      )}
-                    />
-                  )}
-                />
-              </Box>
-
-              <Box sx={{ flex: 1, margin: 1 }}>
-                <AutoCheckBox
-                  control={control}
-                  required={true}
-                  name="assignedFactory"
-                  label="Select Factories"
-                  options={factories}
-                  selectedValues={selectedFactories}
-                  setSelectedValues={setSelectedFactories}
-                  getOptionLabel={(option) => option.factoryName}
-                  getOptionValue={(option) => option.factoryName}
-                  placeholder="Choose Factories"
-                  limitTags={2}
-                />
-              </Box>
-
-              <Box sx={{ flex: 1, margin: 1 }}>
-                <AutoCheckBox
-                  control={control}
-                  required={true}
-                  name="responsibleSection"
-                  label="Select Responsible Sections"
-                  options={sections}
-                  selectedValues={selectedSections}
-                  setSelectedValues={setSelectedSections}
-                  getOptionLabel={(option) => option.sectionName}
-                  getOptionValue={(option) => option.sectionName}
-                  placeholder="Select Sections"
-                  limitTags={2}
-                />
-              </Box>
             </>
           ) : null}
         </Stack>
@@ -367,14 +198,9 @@ export default function EditUserRoleDialog({
           size="medium"
           onClick={handleSubmit((data) => {
             onSubmit({
-              id: defaultValues?.id,
-              userTypeId: data.userType?.id,
-              assigneeLevel: data.userLevel?.id,
-              department: data.department,
+              id: data.id,
+              userTypeId: data.userType.id,
               availability: data.availability,
-              jobPosition: data.jobPosition,
-              assignedFactory: data.assignedFactory,
-              responsibleSection: data.responsibleSection,
             });
           })}
         >
