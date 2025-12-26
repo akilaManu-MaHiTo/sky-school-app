@@ -9,6 +9,7 @@ import {
   Alert,
   AppBar,
   Box,
+  Button,
   Chip,
   IconButton,
   LinearProgress,
@@ -44,6 +45,10 @@ import { getPlainAddress } from "../../util/plainText.util";
 import EditIcon from "@mui/icons-material/Edit";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
+import DownloadIcon from "@mui/icons-material/Download";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import { exportUsersToExcel } from "../../reportsUtils/UserReportExcel";
+import { generateUsersPdf } from "../../reportsUtils/UserReportPDF";
 interface TabPanelProps {
   children?: React.ReactNode;
   dir?: string;
@@ -193,6 +198,40 @@ function UserTable() {
     },
   });
 
+  const handleExportExcel = () => {
+    if (!currentUserList.length) {
+      enqueueSnackbar("No users available to export", { variant: "info" });
+      return;
+    }
+    const isProfileExportRole = userRole === "Teacher" || userRole === "Student";
+    exportUsersToExcel({
+      users: currentUserList,
+      options: {
+        mode: isProfileExportRole ? "profileRows" : "summary",
+      },
+    });
+  };
+
+  const handleExportPdf = () => {
+    if (!currentUserList.length) {
+      enqueueSnackbar("No users available to export", { variant: "info" });
+      return;
+    }
+    try {
+      const isProfileExportRole =
+        userRole === "Teacher" || userRole === "Student";
+      generateUsersPdf({
+        users: currentUserList,
+        headerData: {
+          title: "Users Report",
+          mode: isProfileExportRole ? "profileRows" : "summary",
+        },
+      });
+    } catch (error) {
+      enqueueSnackbar("Failed to generate PDF", { variant: "error" });
+    }
+  };
+
   return (
     <Stack>
       <Box
@@ -310,7 +349,12 @@ function UserTable() {
           </Tabs>
         </AppBar>
         <TabPanel value={activeTab} index={0} dir={theme.direction}>
-          <Box mb={4} display="flex" justifyContent="flex-start">
+          <Box
+            mb={4}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <SearchInput
               placeholder="Search Users..."
               value={searchQuery}
@@ -318,6 +362,24 @@ function UserTable() {
               onSearch={handleSearch}
               isSearching={isSearchingSubjects}
             />
+            <Box display="flex" gap={1}>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<DownloadIcon fontSize="small" />}
+                onClick={handleExportExcel}
+              >
+                Export Excel
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<PictureAsPdfIcon fontSize="small" />}
+                onClick={handleExportPdf}
+              >
+                Export PDF
+              </Button>
+            </Box>
           </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
@@ -469,7 +531,12 @@ function UserTable() {
           </Stack>
         </TabPanel>
         <TabPanel value={activeTab} index={1} dir={theme.direction}>
-          <Box mb={4} display="flex" justifyContent="flex-start">
+          <Box
+            mb={4}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <SearchInput
               placeholder="Search Users..."
               value={searchQuery}
@@ -477,6 +544,24 @@ function UserTable() {
               onSearch={handleSearch}
               isSearching={isSearchingSubjects}
             />
+            <Box display="flex" gap={1}>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<DownloadIcon fontSize="small" />}
+                onClick={handleExportExcel}
+              >
+                Export Excel
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<PictureAsPdfIcon fontSize="small" />}
+                onClick={handleExportPdf}
+              >
+                Export PDF
+              </Button>
+            </Box>
           </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
@@ -578,7 +663,12 @@ function UserTable() {
           </Stack>
         </TabPanel>
         <TabPanel value={activeTab} index={2} dir={theme.direction}>
-          <Box mb={4} display="flex" justifyContent="flex-start">
+          <Box
+            mb={4}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <SearchInput
               placeholder="Search Users..."
               value={searchQuery}
@@ -586,6 +676,24 @@ function UserTable() {
               onSearch={handleSearch}
               isSearching={isSearchingSubjects}
             />
+            <Box display="flex" gap={1}>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<DownloadIcon fontSize="small" />}
+                onClick={handleExportExcel}
+              >
+                Export Excel
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<PictureAsPdfIcon fontSize="small" />}
+                onClick={handleExportPdf}
+              >
+                Export PDF
+              </Button>
+            </Box>
           </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
@@ -687,7 +795,12 @@ function UserTable() {
           </Stack>
         </TabPanel>
         <TabPanel value={activeTab} index={3} dir={theme.direction}>
-          <Box mb={4} display="flex" justifyContent="flex-start">
+          <Box
+            mb={4}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <SearchInput
               placeholder="Search Users..."
               value={searchQuery}
@@ -695,6 +808,24 @@ function UserTable() {
               onSearch={handleSearch}
               isSearching={isSearchingSubjects}
             />
+            <Box display="flex" gap={1}>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<DownloadIcon fontSize="small" />}
+                onClick={handleExportExcel}
+              >
+                Export Excel
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<PictureAsPdfIcon fontSize="small" />}
+                onClick={handleExportPdf}
+              >
+                Export PDF
+              </Button>
+            </Box>
           </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
