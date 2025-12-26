@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import {
   Box,
+  Button,
   IconButton,
   LinearProgress,
   Menu,
@@ -15,6 +16,10 @@ import {
   Typography,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import DownloadIcon from "@mui/icons-material/Download";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import { exportClassReportToExcel } from "../../../reportsUtils/ClassReportExcel";
+import { generateClassReportPdf } from "../../../reportsUtils/ClassReportPDF";
 
 interface ClassReportTableProps {
   reportData?: any;
@@ -47,6 +52,7 @@ function ClassReportTable({
     if (!reportData || !reportData.data) {
       return {
         subjects: [] as any[],
+        exportSubjects: [] as any[],
         groupNames: GROUP_NAMES,
         rows: [] as any[],
         basketSubjectsByGroup: {} as Record<string, any[]>,
@@ -78,7 +84,7 @@ function ClassReportTable({
       const marksRecord = (student.marks?.[0] ?? {}) as any;
 
       const subjectMarks: Record<string, number | null> = {};
-      subjects.forEach((subject: any) => {
+      allSubjects.forEach((subject: any) => {
         const key = subject.subjectName;
         const subjectEntry = marksRecord[key];
         subjectMarks[key] =
@@ -113,6 +119,7 @@ function ClassReportTable({
 
     return {
       subjects,
+      exportSubjects: allSubjects,
       groupNames: GROUP_NAMES,
       rows,
       basketSubjectsByGroup,
@@ -135,17 +142,72 @@ function ClassReportTable({
     });
   }, [classReportTableData.rows, groupFilter]);
 
+  const handleExportExcel = () => {
+    if (!filteredRows.length) return;
+
+    exportClassReportToExcel({
+      title,
+      subjects: classReportTableData.exportSubjects,
+      groupNames: classReportTableData.groupNames,
+      rows: filteredRows,
+    } as any);
+  };
+
+  const handleExportPdf = () => {
+    if (!filteredRows.length) return;
+
+    try {
+      generateClassReportPdf({
+        headerData: { title },
+        subjects: classReportTableData.exportSubjects,
+        groupNames: classReportTableData.groupNames,
+        rows: filteredRows,
+      } as any);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to generate class report PDF", err);
+    }
+  };
+
   return (
     <Box>
-      <Box mb={3}>
+      <Box
+        mb={3}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 2,
+        }}
+      >
         <Typography
           variant="h6"
           sx={{
-            textAlign: "center",
+            textAlign: "left",
           }}
         >
           {title}
         </Typography>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<DownloadIcon fontSize="small" />}
+            onClick={handleExportExcel}
+            disabled={isLoading || !filteredRows.length}
+          >
+            Excel
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<PictureAsPdfIcon fontSize="small" />}
+            onClick={handleExportPdf}
+            disabled={isLoading || !filteredRows.length}
+          >
+            PDF
+          </Button>
+        </Box>
       </Box>
 
       <TableContainer
