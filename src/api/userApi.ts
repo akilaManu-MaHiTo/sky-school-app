@@ -339,3 +339,11 @@ export async function resetProfileEmailConfirm({
   });
   return res.data;
 }
+
+// Search Student by employeeId (admission number)
+export async function searchStudentByEmployeeId(employeeId: string) {
+  const res = await axios.get(
+    `/api/users/Student/search?employeeId=${encodeURIComponent(employeeId)}`
+  );
+  return res.data;
+}
