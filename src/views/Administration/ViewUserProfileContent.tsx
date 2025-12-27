@@ -43,6 +43,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
 import { deleteAcademicDetail } from "../../api/OrganizationSettings/academicDetailsApi";
+import { deleteParentProfile } from "../../api/parentApi";
 import { format } from "date-fns";
 import AddOrEditStudentAcademicDetailsDialog from "./AcademicDetails/AddOrEditStudentAcademicDetailsDialog";
 import { getPlainAddress } from "../../util/plainText.util";
@@ -74,6 +75,7 @@ type ParentAcademicProfile = StudentProfileEntry & {
 };
 
 type ParentChildProfile = {
+  parentProfileId: number | string;
   id: number | string;
   name?: string | null;
   email?: string | null;
@@ -147,6 +149,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
 
   const [openChildEditDialog, setOpenChildEditDialog] = useState(false);
   const [editChildDetails, setEditChildDetails] = useState(null);
+  const [openDeleteChildDialog, setOpenDeleteChildDialog] = useState(false);
 
   const [
     openAcademicStudentDetailsDialog,
@@ -273,6 +276,27 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
     },
     onError: (error: any) => {
       const message = error?.data?.message || "Academic Detail Delete Failed";
+      enqueueSnackbar(message, { variant: "error" });
+    },
+  });
+
+  const {
+    mutate: deleteParentProfileMutation,
+    isPending: isDeletingParentProfile,
+  } = useMutation({
+    mutationFn: deleteParentProfile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["current-user"],
+      });
+      enqueueSnackbar("Child profile removed successfully!", {
+        variant: "success",
+      });
+      setOpenDeleteChildDialog(false);
+      setEditChildDetails(null);
+    },
+    onError: (error: any) => {
+      const message = error?.data?.message || "Remove child profile failed";
       enqueueSnackbar(message, { variant: "error" });
     },
   });
@@ -963,15 +987,40 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                       borderRadius: "8px",
                     }}
                   >
-                    <Box sx={{ display: "flex", flexDirection: "column" }}>
-                      <Typography sx={{ color: "var(--pallet-blue)" }}>
-                        {child.name + ` | ${child.employeeId}` ||
-                          `Child ${child.id}`}
-                      </Typography>
-                      <Typography variant="body2" color="textSecondary">
-                        {child.gender ? `${child.gender} ` : ""}
-                        {child.mobile ? `| ${child.mobile}` : ""}
-                      </Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: isMobile ? "flex-start" : "space-between",
+                        width: isMobile ?"100%": "30%",
+                        flexDirection: isMobile ? "column" : "row",
+                        alignItems: isMobile ? "flex-start" : "center",
+                        gap: 1,
+                      }}
+                    >
+                      <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+                        <Typography sx={{ color: "var(--pallet-blue)" }} noWrap>
+                          {child.name
+                            ? `${child.name}${child.employeeId ? ` | ${child.employeeId}` : ""}`
+                            : `Child ${child.id}`}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" noWrap>
+                          {child.gender ? `${child.gender}` : ""}
+                          {child.mobile ? (child.gender ? ` | ${child.mobile}` : `${child.mobile}`) : ""}
+                        </Typography>
+                      </Box>
+                      <IconButton
+                        size="small"
+                        color="error"
+                        aria-label="delete-child"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          setEditChildDetails(child);
+                          setOpenDeleteChildDialog(true);
+                        }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
                     </Box>
                   </AccordionSummary>
 
@@ -1147,6 +1196,36 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
           handleReject={() => {
             setOpenDeleteAcademicDetailsDialog(false);
             setEditAcademicDetails(null);
+          }}
+        />
+      )}
+      {openDeleteChildDialog && (
+        <DeleteConfirmationModal
+          open={openDeleteChildDialog}
+          title="Remove Child Confirmation"
+          content={
+            <>
+              Are you sure you want to remove this child profile?
+              <Alert severity="warning" style={{ marginTop: "1rem" }}>
+                This action is not reversible.
+              </Alert>
+            </>
+          }
+          handleClose={() => setOpenDeleteChildDialog(false)}
+          deleteFunc={async () => {
+            // use parentProfileId to delete
+            const id =
+              (editChildDetails as any)?.parentProfileId ??
+              (editChildDetails as any)?.id;
+            deleteParentProfileMutation(id);
+          }}
+          onSuccess={() => {
+            setOpenDeleteChildDialog(false);
+            setEditChildDetails(null);
+          }}
+          handleReject={() => {
+            setOpenDeleteChildDialog(false);
+            setEditChildDetails(null);
           }}
         />
       )}

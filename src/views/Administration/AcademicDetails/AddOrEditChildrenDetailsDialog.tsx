@@ -70,20 +70,18 @@ const AddOrEditChildrenDetailsDialog = ({
     isFetching: isSearchingStudents,
   } = useQuery({
     queryKey: ["student-search", searchQuery],
-    queryFn: ({ queryKey }) =>
-      searchStudentByEmployeeId(queryKey[1] as string),
+    queryFn: ({ queryKey }) => searchStudentByEmployeeId(queryKey[1] as string),
     enabled: false,
   });
   const studentsArray = searchedStudents ? [searchedStudents] : [];
 
-  const {
-    mutate: addParentProfile,
-    isPending: isAddingParent,
-  } = useMutation({
-    mutationFn: (studentId: number) => createParentProfile({ studentId: studentId }),
+  const { mutate: addParentProfile, isPending: isAddingParent } = useMutation({
+    mutationFn: (studentId: number) =>
+      createParentProfile({ studentId: studentId }),
     onSuccess: () => {
       enqueueSnackbar("Student added successfully!", { variant: "success" });
       setOpenAddStudentModal(false);
+      setOpen(false);
       setSelectedStudent(null);
       queryClient.invalidateQueries({ queryKey: ["current-user"] });
     },
@@ -190,7 +188,7 @@ const AddOrEditChildrenDetailsDialog = ({
         }}
       >
         <Typography variant="h6" component="div">
-          {isEdit ? "Edit Academic Detail" : "Add New Academic Detail"}
+          {isEdit ? "Edit Academic Detail" : "Add New Child Detail"}
         </Typography>
         <IconButton
           aria-label="close"
@@ -221,7 +219,9 @@ const AddOrEditChildrenDetailsDialog = ({
           {studentsArray.length > 0 && (
             <TableContainer component={Paper} sx={{ mt: 2 }}>
               <Table size="small">
-                <TableHead sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}>
+                <TableHead
+                  sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
+                >
                   <TableRow>
                     <TableCell>Admission No</TableCell>
                     <TableCell>Name</TableCell>
@@ -278,18 +278,6 @@ const AddOrEditChildrenDetailsDialog = ({
         >
           Cancel
         </Button>
-        <CustomButton
-          variant="contained"
-          sx={{ backgroundColor: "var(--pallet-blue)" }}
-          size="medium"
-          disabled={isCreating || isUpdating}
-          endIcon={
-            isCreating || isUpdating ? <CircularProgress size={20} /> : null
-          }
-          onClick={handleSubmit(handleSubmitDetails)}
-        >
-          {isEdit ? "Save Changes" : "Add Details"}
-        </CustomButton>
       </DialogActions>
     </Dialog>
   );

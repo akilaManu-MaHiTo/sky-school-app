@@ -35,11 +35,11 @@ const StudentAddConfirmationModal = ({
       aria-labelledby="add-student-dialog"
     >
       <DialogTitle id="add-student-dialog">
-        <Typography variant="h6">Add Student</Typography>
+        <Typography variant="h6">Add Child</Typography>
       </DialogTitle>
       <DialogContent dividers>
         <DialogContentText>
-          {`Do you want to add this student${
+          {`Do you want to add this Child${
             studentName ? ` (${studentName})` : ""
           }${studentAdmissionNumber ? ` - ${studentAdmissionNumber}` : ""}?`}
         </DialogContentText>
@@ -57,7 +57,7 @@ const StudentAddConfirmationModal = ({
             isLoading ? <CircularProgress size={14} color="inherit" /> : null
           }
         >
-          {isLoading ? "Adding..." : "Add Student"}
+          {isLoading ? "Adding..." : "Add Child"}
         </CustomButton>
       </DialogActions>
     </Dialog>
