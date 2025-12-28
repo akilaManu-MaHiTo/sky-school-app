@@ -203,7 +203,8 @@ function UserTable() {
       enqueueSnackbar("No users available to export", { variant: "info" });
       return;
     }
-    const isProfileExportRole = userRole === "Teacher" || userRole === "Student";
+    const isProfileExportRole =
+      userRole === "Teacher" || userRole === "Student" || userRole === "Parent";
     exportUsersToExcel({
       users: currentUserList,
       options: {
@@ -219,7 +220,7 @@ function UserTable() {
     }
     try {
       const isProfileExportRole =
-        userRole === "Teacher" || userRole === "Student";
+        userRole === "Teacher" || userRole === "Student" || userRole === "Parent";
       generateUsersPdf({
         users: currentUserList,
         headerData: {

@@ -40,6 +40,9 @@ const getUserProfileSummary = (user: User) => {
   const rawProfiles: ProfileLike[] = [
     ...(((user as any).userProfile ?? []) as ProfileLike[]),
     ...(((user as any).studentProfile ?? []) as ProfileLike[]),
+    // include child academic profiles for parents
+    ...(((user as any).parentProfile ?? [])
+      .flatMap((pp: any) => pp.academicProfiles ?? []) as ProfileLike[]),
   ];
 
   if (!rawProfiles.length) {
@@ -144,6 +147,9 @@ export const generateUsersPdf = ({ users, headerData }: ExportPayload) => {
   if (mode === "profileRows") {
     headRow = [
       ...commonHeader,
+      "Student Name",
+      "Student Email",
+      "Student Mobile",
       "Year",
       "Grade",
       "Class",
@@ -159,6 +165,9 @@ export const generateUsersPdf = ({ users, headerData }: ExportPayload) => {
 
       const teacherProfiles = (((user as any).userProfile ?? []) as ProfileLike[]);
       const studentProfiles = (((user as any).studentProfile ?? []) as ProfileLike[]);
+      const parentProfiles = (((user as any).parentProfile ?? []) as any[]);
+      const parentChildProfiles = (((user as any).parentProfile ?? []) as any[])
+        .flatMap((pp) => pp.academicProfiles ?? []) as ProfileLike[];
 
       let isFirstRowForUser = true;
 
@@ -167,7 +176,10 @@ export const generateUsersPdf = ({ users, headerData }: ExportPayload) => {
         grade?: string,
         className?: string,
         subject?: string,
-        medium?: string
+        medium?: string,
+        studentName?: string,
+        studentEmail?: string,
+        studentMobile?: string
       ) => {
         rowIndex += 1;
         const commonPart = isFirstRowForUser
@@ -176,6 +188,9 @@ export const generateUsersPdf = ({ users, headerData }: ExportPayload) => {
         body.push([
           rowIndex.toString(),
           ...commonPart,
+          formatCellValue(studentName ?? "-"),
+          formatCellValue(studentEmail ?? "-"),
+          formatCellValue(studentMobile ?? "-"),
           formatCellValue(year ?? "-"),
           formatCellValue(grade ?? "-"),
           formatCellValue(className ?? "-"),
@@ -213,7 +228,58 @@ export const generateUsersPdf = ({ users, headerData }: ExportPayload) => {
         }
       });
 
-      if (!teacherProfiles.length && !studentProfiles.length) {
+      // For Parent users, include their children's academicProfiles
+      parentChildProfiles.forEach((p) => {
+        const year = p.academicYear;
+        const grade = p.grade?.grade;
+        const className = p.class?.className;
+        const medium = p.academicMedium;
+
+        const basketSubjects = p.basketSubjects ?? {};
+        const subjectEntries = Object.values(basketSubjects);
+
+        if (!subjectEntries.length) {
+          pushAcademicRow(year, grade, className, undefined, medium);
+        } else {
+          subjectEntries.forEach((s) => {
+            pushAcademicRow(year, grade, className, s.subjectName, medium);
+          });
+        }
+      });
+
+      // For Parent users, include their children's academicProfiles with student details
+      parentProfiles.forEach((pp: any) => {
+        const studentName = pp.name as string | undefined;
+        const studentEmail = pp.email as string | undefined;
+        const studentMobile = pp.mobile as string | undefined;
+
+        const childProfiles = ((pp.academicProfiles ?? []) as ProfileLike[]);
+
+        if (!childProfiles.length) {
+          pushAcademicRow(undefined, undefined, undefined, undefined, undefined, studentName, studentEmail, studentMobile);
+          return;
+        }
+
+        childProfiles.forEach((p) => {
+          const year = p.academicYear;
+          const grade = p.grade?.grade;
+          const className = p.class?.className;
+          const medium = p.academicMedium;
+
+          const basketSubjects = p.basketSubjects ?? {};
+          const subjectEntries = Object.values(basketSubjects);
+
+          if (!subjectEntries.length) {
+            pushAcademicRow(year, grade, className, undefined, medium, studentName, studentEmail, studentMobile);
+          } else {
+            subjectEntries.forEach((s) => {
+              pushAcademicRow(year, grade, className, s.subjectName, medium, studentName, studentEmail, studentMobile);
+            });
+          }
+        });
+      });
+
+      if (!teacherProfiles.length && !studentProfiles.length && !parentProfiles.length) {
         pushAcademicRow();
       }
     });
