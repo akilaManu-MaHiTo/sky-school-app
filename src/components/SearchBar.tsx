@@ -11,6 +11,7 @@ interface SearchInputProps {
   onChange: (value: string) => void;
   onSearch: (query: string) => void;
   isSearching: boolean;
+  maxWidth?: string | number;
 }
 
 const SearchContainer = styled("div")(({ theme }) => ({
@@ -21,7 +22,6 @@ const SearchContainer = styled("div")(({ theme }) => ({
   padding: "4px 8px",
   boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
   width: "100%",
-  maxWidth: 400,
   transition: "box-shadow 0.3s ease",
   "&:focus-within": {
     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
@@ -38,9 +38,12 @@ const StyledInput = styled(InputBase)(({ theme }) => ({
 }));
 
 const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
-  ({ placeholder, value, onChange, isSearching }, ref) => {
+  ({ placeholder, value, onChange, isSearching, maxWidth }, ref) => {
+    const resolvedMaxWidth =
+      typeof maxWidth === "number" ? `${maxWidth}px` : maxWidth || 400;
+
     return (
-      <SearchContainer>
+      <SearchContainer style={{ maxWidth: resolvedMaxWidth }}>
         <StyledInput
           inputRef={ref}
           placeholder={placeholder || "Search…"}
@@ -49,7 +52,7 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
           inputProps={{ "aria-label": "search input" }}
         />
         <IconButton disabled>
-          <SearchIcon />
+          {isSearching ? <CircularProgress size={20} /> : <SearchIcon />}
         </IconButton>
       </SearchContainer>
     );

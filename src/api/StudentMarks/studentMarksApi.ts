@@ -247,3 +247,18 @@ export async function getAllClassReportAllBarChart(
   );
   return res.data;
 }
+
+export async function marksEntryMonitoring(
+  year: any,
+  gradeId: any,
+  examType: string,
+  keyword: string
+) {
+  const selectedYear = year.year;
+  const selectedGradeId = gradeId.id;
+
+  const res = await axios.get(
+    `/api/mark-check/${selectedYear}/${selectedGradeId}/${examType}/search?search=${keyword}`
+  );
+  return res.data;
+}
