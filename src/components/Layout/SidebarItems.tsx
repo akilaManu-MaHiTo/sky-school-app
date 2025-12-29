@@ -197,7 +197,7 @@ export const sidebarItems: Array<SidebarItem> = [
     accessKeys: [PermissionKeys.ADD_MARKS_VIEW],
   },
   {
-    title: "Add Marks",
+    title: "Student Marks",
     icon: <AddTaskIcon fontSize="small" />,
     href: "/academics/add-marks",
     accessKey: PermissionKeys.ADD_MARKS_VIEW,
