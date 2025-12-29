@@ -9,6 +9,7 @@ import {
   Alert,
   AppBar,
   Box,
+  Button,
   Chip,
   IconButton,
   LinearProgress,
@@ -44,6 +45,10 @@ import { getPlainAddress } from "../../util/plainText.util";
 import EditIcon from "@mui/icons-material/Edit";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
+import DownloadIcon from "@mui/icons-material/Download";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import { exportUsersToExcel } from "../../reportsUtils/UserReportExcel";
+import { generateUsersPdf } from "../../reportsUtils/UserReportPDF";
 interface TabPanelProps {
   children?: React.ReactNode;
   dir?: string;
@@ -193,6 +198,41 @@ function UserTable() {
     },
   });
 
+  const handleExportExcel = () => {
+    if (!currentUserList.length) {
+      enqueueSnackbar("No users available to export", { variant: "info" });
+      return;
+    }
+    const isProfileExportRole =
+      userRole === "Teacher" || userRole === "Student" || userRole === "Parent";
+    exportUsersToExcel({
+      users: currentUserList,
+      options: {
+        mode: isProfileExportRole ? "profileRows" : "summary",
+      },
+    });
+  };
+
+  const handleExportPdf = () => {
+    if (!currentUserList.length) {
+      enqueueSnackbar("No users available to export", { variant: "info" });
+      return;
+    }
+    try {
+      const isProfileExportRole =
+        userRole === "Teacher" || userRole === "Student" || userRole === "Parent";
+      generateUsersPdf({
+        users: currentUserList,
+        headerData: {
+          title: "Users Report",
+          mode: isProfileExportRole ? "profileRows" : "summary",
+        },
+      });
+    } catch (error) {
+      enqueueSnackbar("Failed to generate PDF", { variant: "error" });
+    }
+  };
+
   return (
     <Stack>
       <Box
@@ -310,7 +350,12 @@ function UserTable() {
           </Tabs>
         </AppBar>
         <TabPanel value={activeTab} index={0} dir={theme.direction}>
-          <Box mb={4} display="flex" justifyContent="flex-start">
+          <Box
+            mb={4}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <SearchInput
               placeholder="Search Users..."
               value={searchQuery}
@@ -318,6 +363,24 @@ function UserTable() {
               onSearch={handleSearch}
               isSearching={isSearchingSubjects}
             />
+            <Box display="flex" gap={1}>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<DownloadIcon fontSize="small" />}
+                onClick={handleExportExcel}
+              >
+                Export Excel
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<PictureAsPdfIcon fontSize="small" />}
+                onClick={handleExportPdf}
+              >
+                Export PDF
+              </Button>
+            </Box>
           </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
@@ -469,7 +532,12 @@ function UserTable() {
           </Stack>
         </TabPanel>
         <TabPanel value={activeTab} index={1} dir={theme.direction}>
-          <Box mb={4} display="flex" justifyContent="flex-start">
+          <Box
+            mb={4}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <SearchInput
               placeholder="Search Users..."
               value={searchQuery}
@@ -477,6 +545,24 @@ function UserTable() {
               onSearch={handleSearch}
               isSearching={isSearchingSubjects}
             />
+            <Box display="flex" gap={1}>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<DownloadIcon fontSize="small" />}
+                onClick={handleExportExcel}
+              >
+                Export Excel
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<PictureAsPdfIcon fontSize="small" />}
+                onClick={handleExportPdf}
+              >
+                Export PDF
+              </Button>
+            </Box>
           </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
@@ -493,12 +579,36 @@ function UserTable() {
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
                 >
                   <TableRow>
-                    <TableCell>Id</TableCell>
-                    <TableCell align="left">Name</TableCell>
+                    <TableCell>
+                      Id
+                      <IconButton
+                        sx={{ alignContent: "center" }}
+                        onClick={() => {
+                          if (selectedSortBy === "user_id_asc") {
+                            setSelectedSortBy("user_id_desc");
+                            return;
+                          } else {
+                            setSelectedSortBy("user_id_asc");
+                          }
+                        }}
+                      >
+                        {selectedSortBy === "user_id_asc" ? (
+                          <ArrowDropDownIcon fontSize="small" />
+                        ) : (
+                          <ArrowDropUpIcon fontSize="small" />
+                        )}
+                      </IconButton>
+                    </TableCell>
+                    <TableCell align="left">Name With Initials</TableCell>
                     <TableCell align="left">Email</TableCell>
-                    <TableCell align="left">Role</TableCell>
-                    <TableCell align="right">Job Position</TableCell>
+                    <TableCell align="left">Mobile Number</TableCell>
+                    <TableCell align="left">Address</TableCell>
+                    <TableCell align="left">Birthday</TableCell>
+                    <TableCell align="left">Gender</TableCell>
+                    <TableCell align="center">User Role</TableCell>
+                    <TableCell align="center">Access Role</TableCell>
                     <TableCell align="center">Status</TableCell>
+                    <TableCell align="center">Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -516,13 +626,28 @@ function UserTable() {
                         }}
                       >
                         <TableCell align="left">{row.id}</TableCell>
-                        <TableCell align="left">{row.name}</TableCell>
-                        <TableCell align="left">{row.email}</TableCell>
                         <TableCell align="left">
-                          {row.userType?.userType}
+                          {row.nameWithInitials}
+                        </TableCell>
+                        <TableCell align="left">{row.email}</TableCell>
+                        <TableCell align="left">{row.mobile}</TableCell>
+                        <TableCell align="left">
+                          {getPlainAddress(row.address)}
+                        </TableCell>
+                        <TableCell align="left">
+                          {row?.birthDate
+                            ? format(new Date(row.birthDate), "yyyy-MM-dd")
+                            : "--"}
                         </TableCell>
                         <TableCell align="right">
-                          {row.jobPosition ?? "--"}
+                          {row.gender ?? "--"}
+                        </TableCell>
+
+                        <TableCell align="center">
+                          {row.employeeType ?? "--"}
+                        </TableCell>
+                        <TableCell align="center">
+                          {row.userType.userType ?? "--"}
                         </TableCell>
                         <TableCell align="center">
                           {row.availability ? (
@@ -542,6 +667,17 @@ function UserTable() {
                               }}
                             />
                           )}
+                        </TableCell>
+                        <TableCell align="center">
+                          <IconButton
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOpenEditUserRoleDialog(true);
+                              setSelectedUserId(row.id);
+                            }}
+                          >
+                            <EditIcon />
+                          </IconButton>
                         </TableCell>
                       </TableRow>
                     ))
@@ -578,7 +714,12 @@ function UserTable() {
           </Stack>
         </TabPanel>
         <TabPanel value={activeTab} index={2} dir={theme.direction}>
-          <Box mb={4} display="flex" justifyContent="flex-start">
+          <Box
+            mb={4}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <SearchInput
               placeholder="Search Users..."
               value={searchQuery}
@@ -586,6 +727,24 @@ function UserTable() {
               onSearch={handleSearch}
               isSearching={isSearchingSubjects}
             />
+            <Box display="flex" gap={1}>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<DownloadIcon fontSize="small" />}
+                onClick={handleExportExcel}
+              >
+                Export Excel
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<PictureAsPdfIcon fontSize="small" />}
+                onClick={handleExportPdf}
+              >
+                Export PDF
+              </Button>
+            </Box>
           </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
@@ -602,12 +761,36 @@ function UserTable() {
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
                 >
                   <TableRow>
-                    <TableCell>Id</TableCell>
-                    <TableCell align="left">Name</TableCell>
+                    <TableCell>
+                      Id
+                      <IconButton
+                        sx={{ alignContent: "center" }}
+                        onClick={() => {
+                          if (selectedSortBy === "user_id_asc") {
+                            setSelectedSortBy("user_id_desc");
+                            return;
+                          } else {
+                            setSelectedSortBy("user_id_asc");
+                          }
+                        }}
+                      >
+                        {selectedSortBy === "user_id_asc" ? (
+                          <ArrowDropDownIcon fontSize="small" />
+                        ) : (
+                          <ArrowDropUpIcon fontSize="small" />
+                        )}
+                      </IconButton>
+                    </TableCell>
+                    <TableCell align="left">Name With Initials</TableCell>
                     <TableCell align="left">Email</TableCell>
-                    <TableCell align="left">Role</TableCell>
-                    <TableCell align="right">Job Position</TableCell>
+                    <TableCell align="left">Mobile Number</TableCell>
+                    <TableCell align="left">Address</TableCell>
+                    <TableCell align="left">Birthday</TableCell>
+                    <TableCell align="left">Gender</TableCell>
+                    <TableCell align="center">User Role</TableCell>
+                    <TableCell align="center">Access Role</TableCell>
                     <TableCell align="center">Status</TableCell>
+                    <TableCell align="center">Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -625,13 +808,28 @@ function UserTable() {
                         }}
                       >
                         <TableCell align="left">{row.id}</TableCell>
-                        <TableCell align="left">{row.name}</TableCell>
-                        <TableCell align="left">{row.email}</TableCell>
                         <TableCell align="left">
-                          {row.userType?.userType}
+                          {row.nameWithInitials}
+                        </TableCell>
+                        <TableCell align="left">{row.email}</TableCell>
+                        <TableCell align="left">{row.mobile}</TableCell>
+                        <TableCell align="left">
+                          {getPlainAddress(row.address)}
+                        </TableCell>
+                        <TableCell align="left">
+                          {row?.birthDate
+                            ? format(new Date(row.birthDate), "yyyy-MM-dd")
+                            : "--"}
                         </TableCell>
                         <TableCell align="right">
-                          {row.jobPosition ?? "--"}
+                          {row.gender ?? "--"}
+                        </TableCell>
+
+                        <TableCell align="center">
+                          {row.employeeType ?? "--"}
+                        </TableCell>
+                        <TableCell align="center">
+                          {row.userType.userType ?? "--"}
                         </TableCell>
                         <TableCell align="center">
                           {row.availability ? (
@@ -651,6 +849,17 @@ function UserTable() {
                               }}
                             />
                           )}
+                        </TableCell>
+                        <TableCell align="center">
+                          <IconButton
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOpenEditUserRoleDialog(true);
+                              setSelectedUserId(row.id);
+                            }}
+                          >
+                            <EditIcon />
+                          </IconButton>
                         </TableCell>
                       </TableRow>
                     ))
@@ -687,7 +896,12 @@ function UserTable() {
           </Stack>
         </TabPanel>
         <TabPanel value={activeTab} index={3} dir={theme.direction}>
-          <Box mb={4} display="flex" justifyContent="flex-start">
+          <Box
+            mb={4}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <SearchInput
               placeholder="Search Users..."
               value={searchQuery}
@@ -695,6 +909,24 @@ function UserTable() {
               onSearch={handleSearch}
               isSearching={isSearchingSubjects}
             />
+            <Box display="flex" gap={1}>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<DownloadIcon fontSize="small" />}
+                onClick={handleExportExcel}
+              >
+                Export Excel
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<PictureAsPdfIcon fontSize="small" />}
+                onClick={handleExportPdf}
+              >
+                Export PDF
+              </Button>
+            </Box>
           </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
@@ -711,12 +943,36 @@ function UserTable() {
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
                 >
                   <TableRow>
-                    <TableCell>Id</TableCell>
-                    <TableCell align="left">Name</TableCell>
+                    <TableCell>
+                      Id
+                      <IconButton
+                        sx={{ alignContent: "center" }}
+                        onClick={() => {
+                          if (selectedSortBy === "user_id_asc") {
+                            setSelectedSortBy("user_id_desc");
+                            return;
+                          } else {
+                            setSelectedSortBy("user_id_asc");
+                          }
+                        }}
+                      >
+                        {selectedSortBy === "user_id_asc" ? (
+                          <ArrowDropDownIcon fontSize="small" />
+                        ) : (
+                          <ArrowDropUpIcon fontSize="small" />
+                        )}
+                      </IconButton>
+                    </TableCell>
+                    <TableCell align="left">Name With Initials</TableCell>
                     <TableCell align="left">Email</TableCell>
-                    <TableCell align="left">Role</TableCell>
-                    <TableCell align="right">Job Position</TableCell>
+                    <TableCell align="left">Mobile Number</TableCell>
+                    <TableCell align="left">Address</TableCell>
+                    <TableCell align="left">Birthday</TableCell>
+                    <TableCell align="left">Gender</TableCell>
+                    <TableCell align="center">User Role</TableCell>
+                    <TableCell align="center">Access Role</TableCell>
                     <TableCell align="center">Status</TableCell>
+                    <TableCell align="center">Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -734,13 +990,28 @@ function UserTable() {
                         }}
                       >
                         <TableCell align="left">{row.id}</TableCell>
-                        <TableCell align="left">{row.name}</TableCell>
-                        <TableCell align="left">{row.email}</TableCell>
                         <TableCell align="left">
-                          {row.userType?.userType}
+                          {row.nameWithInitials}
+                        </TableCell>
+                        <TableCell align="left">{row.email}</TableCell>
+                        <TableCell align="left">{row.mobile}</TableCell>
+                        <TableCell align="left">
+                          {getPlainAddress(row.address)}
+                        </TableCell>
+                        <TableCell align="left">
+                          {row?.birthDate
+                            ? format(new Date(row.birthDate), "yyyy-MM-dd")
+                            : "--"}
                         </TableCell>
                         <TableCell align="right">
-                          {row.jobPosition ?? "--"}
+                          {row.gender ?? "--"}
+                        </TableCell>
+
+                        <TableCell align="center">
+                          {row.employeeType ?? "--"}
+                        </TableCell>
+                        <TableCell align="center">
+                          {row.userType.userType ?? "--"}
                         </TableCell>
                         <TableCell align="center">
                           {row.availability ? (
@@ -760,6 +1031,17 @@ function UserTable() {
                               }}
                             />
                           )}
+                        </TableCell>
+                        <TableCell align="center">
+                          <IconButton
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOpenEditUserRoleDialog(true);
+                              setSelectedUserId(row.id);
+                            }}
+                          >
+                            <EditIcon />
+                          </IconButton>
                         </TableCell>
                       </TableRow>
                     ))

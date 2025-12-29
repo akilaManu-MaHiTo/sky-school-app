@@ -7,6 +7,22 @@ interface Props {
   isMobile?: boolean;
 }
 
+// Shuffled vibrant color palette for better visibility
+const STACKED_BAR_COLORS: string[] = [
+  "#E06B6B", // Warm Coral
+  "#3F95C8", // Medium Blue
+  "#E0C95E", // Golden Yellow
+  "#45B8AF", // Teal Cyan
+  "#E68F5C", // Soft Orange
+  "#9E7DB8", // Muted Violet
+  "#5AB0E0", // Deeper Sky Blue
+  "#A9C65C", // Olive Lime
+  "#E8A96A", // Warm Peach
+  "#63C48F", // Medium Mint
+  "#7FBF6A", // Natural Green
+  "#6FA8DC", // Steel Periwinkle
+];
+
 const ClassReportStackedBarChart: React.FC<Props> = ({
   series,
   categories,
@@ -18,6 +34,9 @@ const ClassReportStackedBarChart: React.FC<Props> = ({
       stacked: true,
       toolbar: { show: false },
     },
+
+    // Apply custom pastel colors to the stacked bars
+    colors: STACKED_BAR_COLORS,
 
     plotOptions: {
       bar: {
@@ -72,8 +91,7 @@ const ClassReportStackedBarChart: React.FC<Props> = ({
         const w = o.w || {};
         const seriesIndex = o.seriesIndex ?? 0;
 
-        const rawSubject: string =
-          w.config?.series?.[seriesIndex]?.name ?? "";
+        const rawSubject: string = w.config?.series?.[seriesIndex]?.name ?? "";
 
         const words = rawSubject.split(" ").filter(Boolean);
         let shortSubject = rawSubject;
