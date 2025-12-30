@@ -46,10 +46,10 @@ export const BasketGroup = [
     id: "1",
     group: "Group 1",
   },
-  { id: "3", group: "Group 2" },
+  { id: "2", group: "Group 2" },
   {
-    id: "2",
-    group: "Group3",
+    id: "3",
+    group: "Group 3",
   },
 ];
 
