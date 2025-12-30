@@ -11,11 +11,14 @@ export type TeacherDashBoardFilter = z.infer<typeof dashBoardFilterSchema>;
 
 export const examTerms = ["Term 1", "Term 2", "Term 3", "Monthly Exam"];
 export const examReportTerms = [
+  "All",
   "Term 1",
   "Term 2",
   "Term 3",
   "Monthly Exam",
-  "All",
+];
+export const markGrades = [
+  "A","B","C","D","F"
 ];
 export const months = [
   "January",
@@ -259,6 +262,47 @@ export async function marksEntryMonitoring(
 
   const res = await axios.get(
     `/api/mark-check/${selectedYear}/${selectedGradeId}/${examType}/search?search=${keyword}`
+  );
+  return res.data;
+}
+
+export async function getClassReportBarChartByGrades(
+  year: any,
+  grade: any,
+  className: any,
+  term: string,
+  month: string,
+  markGrade: string
+) {
+  const yearId = year.year;
+  const gradeId = grade.id;
+  const classId = className.id;
+  if (term === "Monthly Exam") {
+    term = month;
+  }
+  if (markGrade === null || markGrade === undefined) {
+    markGrade = "A";
+  }
+  const res = await axios.get(
+    `/api/class-report/${yearId}/${gradeId}/${classId}/${term}/${markGrade}/bar-chart`
+  );
+  return res.data;
+}
+
+export async function getAllClassReportAllBarChartMarkGrade(
+  year: any,
+  grade: any,
+  className: any,
+  markGrade: string
+) {
+  const yearId = year.year;
+  const gradeId = grade.id;
+  const classId = className.id;
+  if (markGrade === null || markGrade === undefined) {
+    markGrade = "A";
+  }
+  const res = await axios.get(
+    `/api/class-report/${yearId}/${gradeId}/${classId}/All/${markGrade}/all-bar-chart`
   );
   return res.data;
 }

@@ -32,6 +32,9 @@ import {
 import {
   getAllSubjectData,
   getGradesData,
+  getGroup1SubjectData,
+  getGroup2SubjectData,
+  getGroup3SubjectData,
   getYearsData,
 } from "../../../api/OrganizationSettings/organizationSettingsApi";
 import { getClassesData } from "../../../api/OrganizationSettings/academicGradeApi";
@@ -67,6 +70,19 @@ const AddOrEditStudentAcademicDetailsDialog = ({
   const { data: subjectData } = useQuery({
     queryKey: ["subject-data"],
     queryFn: getAllSubjectData,
+  });
+
+  const { data: subjectDataGroup1 } = useQuery({
+    queryKey: ["subject-data-group-1"],
+    queryFn: getGroup1SubjectData,
+  });
+  const { data: subjectDataGroup2 } = useQuery({
+    queryKey: ["subject-data-group-2"],
+    queryFn: getGroup2SubjectData,
+  });
+  const { data: subjectDataGroup3 } = useQuery({
+    queryKey: ["subject-data-group-3"],
+    queryFn: getGroup3SubjectData,
   });
 
   const { data: classData } = useQuery({
@@ -363,7 +379,7 @@ const AddOrEditStudentAcademicDetailsDialog = ({
                 {...field}
                 onChange={(event, newValue) => field.onChange(newValue)}
                 size="small"
-                options={subjectData ?? []}
+                options={subjectDataGroup1 ?? []}
                 getOptionLabel={(option) =>
                   option.subjectName + ` - ` + option.subjectMedium + ` Medium`
                 }
@@ -394,7 +410,7 @@ const AddOrEditStudentAcademicDetailsDialog = ({
                 {...field}
                 onChange={(event, newValue) => field.onChange(newValue)}
                 size="small"
-                options={subjectData ?? []}
+                options={subjectDataGroup2 ?? []}
                 getOptionLabel={(option) =>
                   option.subjectName + ` - ` + option.subjectMedium + ` Medium`
                 }
@@ -425,7 +441,7 @@ const AddOrEditStudentAcademicDetailsDialog = ({
                 {...field}
                 onChange={(event, newValue) => field.onChange(newValue)}
                 size="small"
-                options={subjectData ?? []}
+                options={subjectDataGroup3 ?? []}
                 getOptionLabel={(option) =>
                   option.subjectName + ` - ` + option.subjectMedium + ` Medium`
                 }

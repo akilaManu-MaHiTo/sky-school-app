@@ -21,7 +21,7 @@ function ForgotPasswordDialog({ open, handleClose }: { open: boolean; handleClos
   const [emailDisabled, setEmailDisabled] = React.useState(false);
   const [showOTPField, setShowOTPField] = React.useState(false);
   const [showPasswordFields, setShowPasswordFields] = React.useState(false);
-
+  const [otpExpirySeconds, setOtpExpirySeconds] = React.useState<number | null>(null);
   const {
     register,
     handleSubmit,
@@ -45,6 +45,8 @@ function ForgotPasswordDialog({ open, handleClose }: { open: boolean; handleClos
       enqueueSnackbar("OTP sent to your email", { variant: "success" });
       setEmailDisabled(true);
       setShowOTPField(true);
+      // Start 5-minute countdown when OTP is sent
+      setOtpExpirySeconds(5 * 60);
     },
     onError: () => {
       enqueueSnackbar("OTP sending failed", { variant: "error" });
@@ -56,6 +58,8 @@ function ForgotPasswordDialog({ open, handleClose }: { open: boolean; handleClos
     onSuccess: () => {
       enqueueSnackbar("OTP Verified Successfully", { variant: "success" });
       setShowOTPField(false);
+      // stop countdown on successful verification
+      setOtpExpirySeconds(null);
       setShowPasswordFields(true);
     },
     onError: () => {
@@ -70,6 +74,8 @@ function ForgotPasswordDialog({ open, handleClose }: { open: boolean; handleClos
       reset();
       setEmailDisabled(false);
       setShowOTPField(false);
+      // clear countdown when password reset completes
+      setOtpExpirySeconds(null);
       setShowPasswordFields(false);
       handleClose();
     },
@@ -77,6 +83,32 @@ function ForgotPasswordDialog({ open, handleClose }: { open: boolean; handleClos
       enqueueSnackbar("Password reset failed", { variant: "error" });
     },
   });
+
+  // Helper to format seconds as MM:SS
+  const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60)
+      .toString()
+      .padStart(2, "0");
+    const s = (secs % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  };
+
+  // Countdown effect: decrement every second while otpExpirySeconds is set
+  React.useEffect(() => {
+    if (otpExpirySeconds === null) return;
+    if (otpExpirySeconds <= 0) {
+      enqueueSnackbar("OTP expired", { variant: "error" });
+      setEmailDisabled(false);
+      setShowOTPField(false);
+      setOtpExpirySeconds(null);
+      return;
+    }
+
+    const id = window.setInterval(() => {
+      setOtpExpirySeconds((prev) => (prev !== null ? prev - 1 : null));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [otpExpirySeconds, enqueueSnackbar]);
 
   const onSubmit = (data: { email: string; otp?: string; password?: string; confirmPassword?: string }) => {
     if (!showOTPField && !showPasswordFields) {
@@ -149,6 +181,11 @@ function ForgotPasswordDialog({ open, handleClose }: { open: boolean; handleClos
               helperText={errors.otp?.message}
             />
           )}
+          {showOTPField && otpExpirySeconds !== null && (
+            <Typography variant="caption" sx={{ color: "#525252", marginTop: "0.5rem" }}>
+              Expires in {formatTime(otpExpirySeconds)}
+            </Typography>
+          )}
 
           {/* Password Fields */}
           {showPasswordFields && (
@@ -198,6 +235,7 @@ function ForgotPasswordDialog({ open, handleClose }: { open: boolean; handleClos
               setShowOTPField(false);
               setShowPasswordFields(false);
               reset();
+              setOtpExpirySeconds(null);
               handleClose();
             }}
             disabled={isForgotPasswordPending || isOtpVerificationPending || isResetPasswordPending}

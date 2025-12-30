@@ -33,7 +33,10 @@ import queryClient from "../../../state/queryClient";
 import CloseIcon from "@mui/icons-material/Close";
 import CustomButton from "../../../components/CustomButton";
 import SwitchButton from "../../../components/SwitchButton";
-import { AcademicMedium } from "../../../api/OrganizationSettings/academicDetailsApi";
+import {
+  AcademicMedium,
+  BasketGroup,
+} from "../../../api/OrganizationSettings/academicDetailsApi";
 
 export const AddOrEditSubjects = ({
   open,
@@ -52,12 +55,16 @@ export const AddOrEditSubjects = ({
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
     control,
   } = useForm<AcademicSubject>({
     defaultValues: defaultValues,
   });
   const { isMobile } = useIsMobile();
   console.log("defaultValues", defaultValues);
+
+  const isBasketSubject = defaultValues?.isBasketSubject || false;
+  const watchBasketSubject = watch("isBasketSubject");
 
   const handleCreateNewYear = (data) => {
     if (defaultValues) {
@@ -233,6 +240,36 @@ export const AddOrEditSubjects = ({
               )}
             />
           </Box>
+          {isBasketSubject || watchBasketSubject ? (
+            <Controller
+              name="basketGroup"
+              control={control}
+              defaultValue={defaultValues?.basketGroup ?? ""}
+              render={({ field }) => (
+                <Autocomplete
+                  value={field.value ?? ""}
+                  onChange={(event, newValue) => field.onChange(newValue)}
+                  size="small"
+                  options={
+                    BasketGroup?.length
+                      ? BasketGroup.map((group) => group.group)
+                      : []
+                  }
+                  sx={{ flex: 1, margin: "0.5rem" }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      required
+                      error={!!errors.basketGroup}
+                      helperText={errors.basketGroup && "Required"}
+                      label="Basket Group"
+                      name="basketGroup"
+                    />
+                  )}
+                />
+              )}
+            />
+          ) : null}
         </Box>
       </DialogContent>
       <DialogActions sx={{ padding: "1rem" }}>

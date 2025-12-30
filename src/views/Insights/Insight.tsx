@@ -1,9 +1,19 @@
 import { Box, Stack, Typography } from "@mui/material";
 import useCurrentUser from "../../hooks/useCurrentUser";
 import insightImage from "../../assets/welcomeInsight.png";
+import { useQuery } from "@tanstack/react-query";
+import { getOrganization } from "../../api/OrganizationSettings/organizationSettingsApi";
+import { hasSignedUrl } from "../Administration/SchoolManagement/schoolUtils";
 
 function Insight() {
   const { user } = useCurrentUser();
+  const { data: organizationData } = useQuery({
+    queryKey: ["organization"],
+    queryFn: getOrganization,
+  });
+  const logo = Array.isArray(organizationData?.logoUrl)
+    ? organizationData?.logoUrl[0]
+    : organizationData?.logoUrl;
 
   return (
     <Stack>
@@ -14,19 +24,30 @@ function Insight() {
       >
         {`Welcome ${user?.name || user?.userName}!`}
       </Typography>
-      <Box
-        component="img"
-        src={insightImage}
-        alt="Under Development"
-        sx={{
-          height: "auto",
-          width: "60vw",
-          maxHeight: "50vh",
-          objectFit: "contain",
-          justifySelf: "center",
-          alignSelf: "center",
-        }}
-      />
+
+      {hasSignedUrl(logo) && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            width: "100%",
+          }}
+        >
+          <Box
+            component="img"
+            src={logo.signedUrl}
+            alt="Under Development"
+            sx={{
+              height: "auto",
+              width: "60vw",
+              maxHeight: "50vh",
+              objectFit: "contain",
+              justifySelf: "center",
+              alignSelf: "center",
+            }}
+          />
+        </Box>
+      )}
       <Typography
         variant="body1"
         align="center"

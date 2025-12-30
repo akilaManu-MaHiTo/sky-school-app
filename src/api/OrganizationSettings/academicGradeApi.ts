@@ -25,6 +25,7 @@ export const SubjectSchema= z.object({
   subjectName: z.string(),
   subjectCode: z.string(),
   isBasketSubject: z.boolean(),
+  basketGroup: z.string().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
   subjectMedium: z.string()

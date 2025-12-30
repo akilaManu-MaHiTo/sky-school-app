@@ -9,6 +9,7 @@ import FileUploadIcon from "@mui/icons-material/FileUpload";
 import AssessmentOutlinedIcon from "@mui/icons-material/Assessment";
 import AddTaskIcon from "@mui/icons-material/AddTask";
 import { PermissionKeys } from "../../views/Administration/SectionList";
+import HomeIcon from '@mui/icons-material/Home';
 
 export interface SidebarItem {
   title?: string;
@@ -37,6 +38,16 @@ export interface SidebarItem {
 }
 
 export const sidebarItems: Array<SidebarItem> = [
+  {
+    headline: "Home",
+    accessKeys: [PermissionKeys.INSIGHT_VIEW],
+  },
+  {
+    title: "Home Page",
+    href: "/home",
+    icon: <HomeIcon fontSize="small" />,
+    accessKey: PermissionKeys.INSIGHT_VIEW,
+  },
   {
     headline: "Dashboard",
     accessKeys: [

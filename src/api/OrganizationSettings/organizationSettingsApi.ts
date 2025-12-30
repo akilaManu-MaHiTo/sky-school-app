@@ -100,7 +100,18 @@ export async function getAllSubjectData() {
   const res = await axios.get(`/api/all-subjects`);
   return res.data;
 }
-
+export async function getGroup1SubjectData() {
+  const res = await axios.get(`/api/group1-subjects`);
+  return res.data;
+}
+export async function getGroup2SubjectData() {
+  const res = await axios.get(`/api/group2-subjects`);
+  return res.data;
+}
+export async function getGroup3SubjectData() {
+  const res = await axios.get(`/api/group3-subjects`);
+  return res.data;
+}
 export async function getUserData({
   query,
   role,
