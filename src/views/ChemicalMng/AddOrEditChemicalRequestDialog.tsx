@@ -34,7 +34,7 @@ import DropzoneComponent from "../../components/DropzoneComponent";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { fetchDivision } from "../../api/divisionApi";
 import UserAutoComplete from "../../components/UserAutoComplete";
-import { fetchAllUsers } from "../../api/userApi";
+// import { fetchAllUsers } from "../../api/userApi";
 import AddIcon from "@mui/icons-material/Add";
 
 import queryClient from "../../state/queryClient";
@@ -76,10 +76,10 @@ export default function AddOrEditChemicalRequestDialog({
     queryFn: fetchDivision,
   });
 
-  const { data: userData, isFetching: isUserDataFetching } = useQuery({
-    queryKey: ["users"],
-    queryFn: fetchAllUsers,
-  });
+  // const { data: userData, isFetching: isUserDataFetching } = useQuery({
+  //   queryKey: ["users"],
+  //   queryFn: fetchAllUsers,
+  // });
 
   const { data: chemicalData } = useQuery({
     queryKey: ["chemical-commercial-names"],
@@ -782,7 +782,7 @@ export default function AddOrEditChemicalRequestDialog({
               sx={{ flex: 1, margin: "0.5rem" }}
               {...register("requestedMerchandiser")}
             />
-            <Box>
+            {/* <Box>
               <UserAutoComplete
                 name="reviewer"
                 label="reviewer"
@@ -793,7 +793,7 @@ export default function AddOrEditChemicalRequestDialog({
                 defaultValue={defaultValues?.reviewer}
                 required={true}
               />
-            </Box>
+            </Box> */}
           </Stack>
         </Stack>
       </DialogContent>

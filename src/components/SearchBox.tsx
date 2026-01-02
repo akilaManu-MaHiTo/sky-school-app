@@ -5,13 +5,12 @@ import SearchIcon from "@mui/icons-material/Search";
 import IconButton from "@mui/material/IconButton";
 import { CircularProgress } from "@mui/material";
 
-interface SearchInputProps {
+interface SearchBoxProps {
   placeholder?: string;
   value: string;
   onChange: (value: string) => void;
   onSearch: (query: string) => void;
-  isSearching: boolean;
-  maxWidth?: string | number;
+  isSearching?: boolean;
 }
 
 const SearchContainer = styled("div")(({ theme }) => ({
@@ -22,6 +21,7 @@ const SearchContainer = styled("div")(({ theme }) => ({
   padding: "4px 8px",
   boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
   width: "100%",
+  maxWidth: 400,
   transition: "box-shadow 0.3s ease",
   "&:focus-within": {
     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
@@ -37,21 +37,29 @@ const StyledInput = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
-  ({ placeholder, value, onChange, isSearching, maxWidth }, ref) => {
-    const resolvedMaxWidth =
-      typeof maxWidth === "number" ? `${maxWidth}px` : maxWidth || 400;
+const SearchBox = React.forwardRef<HTMLInputElement, SearchBoxProps>(
+  ({ placeholder, value, onChange, onSearch, isSearching }, ref) => {
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === "Enter") {
+        onSearch(value);
+      }
+    };
 
     return (
-      <SearchContainer style={{ maxWidth: resolvedMaxWidth }}>
+      <SearchContainer>
         <StyledInput
           inputRef={ref}
-          placeholder={placeholder || "Search…"}
+          placeholder={placeholder || "Search"}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleKeyDown}
           inputProps={{ "aria-label": "search input" }}
         />
-        <IconButton disabled>
+        <IconButton
+          onClick={() => onSearch(value)}
+          disabled={isSearching}
+          aria-label="search"
+        >
           {isSearching ? <CircularProgress size={20} /> : <SearchIcon />}
         </IconButton>
       </SearchContainer>
@@ -59,4 +67,4 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
   }
 );
 
-export default SearchInput;
+export default SearchBox;

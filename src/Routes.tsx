@@ -59,7 +59,7 @@ const TeacherStudentReport = React.lazy(
 );
 // Reports > Management Staff Reports > Marks Entry Report
 const MarksEntryReport = React.lazy(
-  () => import("./components/UnderDevelopment")
+  () => import("./views/Reports/ManagementStaffReport/MarksEntryMonitoring")
 );
 // Reports > Management Staff Reports > Student Report
 const ManagementStudentReport = React.lazy(
