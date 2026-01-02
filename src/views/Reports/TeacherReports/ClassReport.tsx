@@ -257,20 +257,26 @@ function RagDashboard() {
   const isMonthlyExam = selectedTerm === "Monthly Exam";
 
   const barChartReportData = useMemo(() => {
-    if (!classReportBarChartData || classReportBarChartData.length === 0) {
-      return {
-        categories: [],
-        series: [],
-      };
+    const candidate: any = classReportBarChartData;
+    const raw: any[] = Array.isArray(candidate)
+      ? candidate
+      : Array.isArray(candidate?.data)
+      ? candidate.data
+      : [];
+
+    if (!raw || raw.length === 0) {
+      return { categories: [], series: [] };
     }
+
     return {
-      categories: classReportBarChartData.map((item: any) => item.subjectName),
+      categories: raw.map((item: any) => item.subjectName),
       series: [
         {
           name: "Average %",
-          data: classReportBarChartData.map((item: any) =>
-            Number(item.average.toFixed(2))
-          ),
+          data: raw.map((item: any) => {
+            const avg = typeof item.average === "number" ? item.average : 0;
+            return Number(avg.toFixed(2));
+          }),
         },
       ],
     };
@@ -289,7 +295,13 @@ function RagDashboard() {
 
     const subjectSet = new Set<string>();
     terms.forEach((termKey) => {
-      const termArr = (classAllReportBarChartData.data as any)[termKey] || [];
+      const termRaw = (classAllReportBarChartData.data as any)[termKey];
+      const termArr: any[] = Array.isArray(termRaw)
+        ? termRaw
+        : Array.isArray(Object.values(termRaw || {}))
+        ? Object.values(termRaw || {})
+        : [];
+
       termArr.forEach((item: any) => {
         if (item?.subjectName) {
           subjectSet.add(item.subjectName);
@@ -302,7 +314,12 @@ function RagDashboard() {
     const series = subjects.map((subject) => ({
       name: subject,
       data: terms.map((termKey) => {
-        const termArr = (classAllReportBarChartData.data as any)[termKey] || [];
+        const termRaw = (classAllReportBarChartData.data as any)[termKey];
+        const termArr: any[] = Array.isArray(termRaw)
+          ? termRaw
+          : Array.isArray(Object.values(termRaw || {}))
+          ? Object.values(termRaw || {})
+          : [];
         const found = termArr.find((item: any) => item.subjectName === subject);
         return found ? Number(found.average.toFixed(2)) : 0;
       }),
@@ -324,7 +341,12 @@ function RagDashboard() {
     // collect subjects across all terms
     const subjectSet = new Set<string>();
     termKeys.forEach((term) => {
-      const arr = (raw as any)[term] || [];
+      const termRaw = (raw as any)[term];
+      const arr: any[] = Array.isArray(termRaw)
+        ? termRaw
+        : Array.isArray(Object.values(termRaw || {}))
+        ? Object.values(termRaw || {})
+        : [];
       arr.forEach((item: any) => {
         if (item?.subjectName) subjectSet.add(item.subjectName);
       });
@@ -336,7 +358,12 @@ function RagDashboard() {
     const series = subjects.map((subject) => ({
       name: subject,
       data: termKeys.map((term) => {
-        const termArr = (raw as any)[term] || [];
+        const termRaw = (raw as any)[term];
+        const termArr: any[] = Array.isArray(termRaw)
+          ? termRaw
+          : Array.isArray(Object.values(termRaw || {}))
+          ? Object.values(termRaw || {})
+          : [];
         const found = termArr.find((it: any) => it.subjectName === subject);
         return found ? Number(found.count ?? 0) : 0;
       }),
@@ -355,7 +382,12 @@ function RagDashboard() {
 
   // Transform `classReportBarChartMarkGradeData` into categories/series for counts chart
   const subjectCountsChart = useMemo(() => {
-    const raw = classReportBarChartMarkGradeData ?? [];
+    const rawCandidate: any = classReportBarChartMarkGradeData;
+    const raw: any[] = Array.isArray(rawCandidate)
+      ? rawCandidate
+      : Array.isArray(rawCandidate?.data)
+      ? rawCandidate.data
+      : [];
 
     if (!raw || raw.length === 0) {
       return { categories: [], series: [] };
