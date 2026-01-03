@@ -62,7 +62,8 @@ function RichTextComponent({
   return (
     <MDXEditor
       ref={ref}
-      markdown={placeholder ?? ""}
+      markdown={""}
+      placeholder={placeholder}
       className={classes.editor}
       plugins={[
         toolbarPlugin({

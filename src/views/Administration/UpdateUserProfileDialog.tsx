@@ -235,27 +235,6 @@ export default function UpdateUserProfile({
               </Box>
 
               <Box>
-                <Box sx={{ mx: "0.5rem", mb: "2rem" }}>
-                  <Controller
-                    control={control}
-                    {...register("birthDate")}
-                    name={"birthDate"}
-                    render={({ field }) => {
-                      return (
-                        <DatePickerComponent
-                          onChange={(e) => field.onChange(e)}
-                          value={
-                            field.value ? new Date(field.value) : undefined
-                          }
-                          label="Birthday"
-                          error={errors?.birthDate ? "Required" : ""}
-                          disableFuture={true}
-                        />
-                      );
-                    }}
-                  />
-                </Box>
-
                 <Controller
                   control={control}
                   name="gender"
@@ -277,6 +256,26 @@ export default function UpdateUserProfile({
                     />
                   )}
                 />
+                <Box sx={{ mx: "0.5rem", mb: "2rem",mt:"1.5rem" }}>
+                  <Controller
+                    control={control}
+                    {...register("birthDate")}
+                    name={"birthDate"}
+                    render={({ field }) => {
+                      return (
+                        <DatePickerComponent
+                          onChange={(e) => field.onChange(e)}
+                          value={
+                            field.value ? new Date(field.value) : undefined
+                          }
+                          label="Birthday"
+                          error={errors?.birthDate ? "Required" : ""}
+                          disableFuture={true}
+                        />
+                      );
+                    }}
+                  />
+                </Box>
                 <Box
                   sx={{
                     display: "flex",
