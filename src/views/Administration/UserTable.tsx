@@ -47,8 +47,13 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import DownloadIcon from "@mui/icons-material/Download";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import { exportUsersToExcel } from "../../reportsUtils/UserReportExcel";
-import { generateUsersPdf } from "../../reportsUtils/UserReportPDF";
+import useCurrentOrganization from "../../hooks/useCurrentOrganization";
+import { exportTeacherDetailsToExcel } from "../../reportsUtils/TeacherDetailsExcel";
+import { exportStudentDetailsToExcel } from "../../reportsUtils/StudentDetailsExcel";
+import { exportParentDetailsToExcel } from "../../reportsUtils/ParentDetailsExcel";
+import { generateTeacherDetailsPdf } from "../../reportsUtils/TeacherDetailsPDF";
+import { generateStudentDetailsPdf } from "../../reportsUtils/StudentDetailsPDF";
+import { generateParentDetailsPdf } from "../../reportsUtils/ParentDetailsPDF";
 interface TabPanelProps {
   children?: React.ReactNode;
   dir?: string;
@@ -108,6 +113,9 @@ function UserTable() {
     setActiveTab(newValue);
   };
   const debouncedQuery = useDebounce(searchQuery, 1000);
+
+  const { organization } = useCurrentOrganization();
+  const organizationName = organization?.organizationName;
 
   const {
     data: searchedUserData,
@@ -177,6 +185,21 @@ function UserTable() {
     return searchedUserData ?? [];
   }, [searchedUserData, userRole, searchQuery]);
 
+  const teacherList = useMemo(
+    () => (currentUserList ?? []).filter((u: any) => u.employeeType === "Teacher"),
+    [currentUserList]
+  );
+
+  const studentList = useMemo(
+    () => (currentUserList ?? []).filter((u: any) => u.employeeType === "Student"),
+    [currentUserList]
+  );
+
+  const parentList = useMemo(
+    () => (currentUserList ?? []).filter((u: any) => u.employeeType === "Parent"),
+    [currentUserList]
+  );
+
   const selectedRow = useMemo(() => {
     if (!selectedUserId) return null;
     return currentUserList.find((u: User) => u.id === selectedUserId) ?? null;
@@ -200,40 +223,87 @@ function UserTable() {
     },
   });
 
-  const handleExportExcel = () => {
-    if (!currentUserList.length) {
-      enqueueSnackbar("No users available to export", { variant: "info" });
+  const handleExportTeachersExcel = () => {
+    if (!teacherList.length) {
+      enqueueSnackbar("No teacher data to export", { variant: "warning" });
       return;
     }
-    const isProfileExportRole =
-      userRole === "Teacher" || userRole === "Student" || userRole === "Parent";
-    exportUsersToExcel({
-      users: currentUserList,
-      options: {
-        mode: isProfileExportRole ? "profileRows" : "summary",
-      },
+    exportTeacherDetailsToExcel(teacherList, {
+      organizationName,
+      title: "Teacher Details",
+      fileName: "teacher-details.xlsx",
     });
   };
 
-  const handleExportPdf = () => {
-    if (!currentUserList.length) {
-      enqueueSnackbar("No users available to export", { variant: "info" });
+  const handleExportTeachersPdf = () => {
+    if (!teacherList.length) {
+      enqueueSnackbar("No teacher data to export", { variant: "warning" });
       return;
     }
     try {
-      const isProfileExportRole =
-        userRole === "Teacher" ||
-        userRole === "Student" ||
-        userRole === "Parent";
-      generateUsersPdf({
-        users: currentUserList,
-        headerData: {
-          title: "Users Report",
-          mode: isProfileExportRole ? "profileRows" : "summary",
-        },
+      generateTeacherDetailsPdf(teacherList, {
+        organizationName,
+        title: "Teacher Details Report",
       });
     } catch (error) {
-      enqueueSnackbar("Failed to generate PDF", { variant: "error" });
+      console.error("Unable to generate teacher PDF:", error);
+      enqueueSnackbar("Unable to generate teacher PDF", { variant: "error" });
+    }
+  };
+
+  const handleExportStudentsExcel = () => {
+    if (!studentList.length) {
+      enqueueSnackbar("No student data to export", { variant: "warning" });
+      return;
+    }
+    exportStudentDetailsToExcel(studentList, {
+      organizationName,
+      title: "Student Details",
+      fileName: "student-details.xlsx",
+    });
+  };
+
+  const handleExportStudentsPdf = () => {
+    if (!studentList.length) {
+      enqueueSnackbar("No student data to export", { variant: "warning" });
+      return;
+    }
+    try {
+      generateStudentDetailsPdf(studentList, {
+        organizationName,
+        title: "Student Details Report",
+      });
+    } catch (error) {
+      console.error("Unable to generate student PDF:", error);
+      enqueueSnackbar("Unable to generate student PDF", { variant: "error" });
+    }
+  };
+
+  const handleExportParentsExcel = () => {
+    if (!parentList.length) {
+      enqueueSnackbar("No parent data to export", { variant: "warning" });
+      return;
+    }
+    exportParentDetailsToExcel(parentList, {
+      organizationName,
+      title: "Parent Details",
+      fileName: "parent-details.xlsx",
+    });
+  };
+
+  const handleExportParentsPdf = () => {
+    if (!parentList.length) {
+      enqueueSnackbar("No parent data to export", { variant: "warning" });
+      return;
+    }
+    try {
+      generateParentDetailsPdf(parentList, {
+        organizationName,
+        title: "Parent Details Report",
+      });
+    } catch (error) {
+      console.error("Unable to generate parent PDF:", error);
+      enqueueSnackbar("Unable to generate parent PDF", { variant: "error" });
     }
   };
 
@@ -358,7 +428,7 @@ function UserTable() {
           <Box
             mb={4}
             display="flex"
-            justifyContent="space-between"
+            justifyContent="flex-start"
             alignItems="center"
           >
             <SearchInput
@@ -368,24 +438,6 @@ function UserTable() {
               onSearch={handleSearch}
               isSearching={isSearchingSubjects}
             />
-            <Box display="flex" gap={1}>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<DownloadIcon fontSize="small" />}
-                onClick={handleExportExcel}
-              >
-                Export Excel
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<PictureAsPdfIcon fontSize="small" />}
-                onClick={handleExportPdf}
-              >
-                Export PDF
-              </Button>
-            </Box>
           </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
@@ -550,22 +602,24 @@ function UserTable() {
               onSearch={handleSearch}
               isSearching={isSearchingSubjects}
             />
-            <Box display="flex" gap={1}>
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button
                 variant="outlined"
                 size="small"
                 startIcon={<DownloadIcon fontSize="small" />}
-                onClick={handleExportExcel}
+                onClick={handleExportTeachersExcel}
+                disabled={!teacherList.length}
               >
-                Export Excel
+                Excel
               </Button>
               <Button
                 variant="outlined"
                 size="small"
                 startIcon={<PictureAsPdfIcon fontSize="small" />}
-                onClick={handleExportPdf}
+                onClick={handleExportTeachersPdf}
+                disabled={!teacherList.length}
               >
-                Export PDF
+                PDF
               </Button>
             </Box>
           </Box>
@@ -732,22 +786,24 @@ function UserTable() {
               onSearch={handleSearch}
               isSearching={isSearchingSubjects}
             />
-            <Box display="flex" gap={1}>
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button
                 variant="outlined"
                 size="small"
                 startIcon={<DownloadIcon fontSize="small" />}
-                onClick={handleExportExcel}
+                onClick={handleExportStudentsExcel}
+                disabled={!studentList.length}
               >
-                Export Excel
+                Excel
               </Button>
               <Button
                 variant="outlined"
                 size="small"
                 startIcon={<PictureAsPdfIcon fontSize="small" />}
-                onClick={handleExportPdf}
+                onClick={handleExportStudentsPdf}
+                disabled={!studentList.length}
               >
-                Export PDF
+                PDF
               </Button>
             </Box>
           </Box>
@@ -914,22 +970,24 @@ function UserTable() {
               onSearch={handleSearch}
               isSearching={isSearchingSubjects}
             />
-            <Box display="flex" gap={1}>
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button
                 variant="outlined"
                 size="small"
                 startIcon={<DownloadIcon fontSize="small" />}
-                onClick={handleExportExcel}
+                onClick={handleExportParentsExcel}
+                disabled={!parentList.length}
               >
-                Export Excel
+                Excel
               </Button>
               <Button
                 variant="outlined"
                 size="small"
                 startIcon={<PictureAsPdfIcon fontSize="small" />}
-                onClick={handleExportPdf}
+                onClick={handleExportParentsPdf}
+                disabled={!parentList.length}
               >
-                Export PDF
+                PDF
               </Button>
             </Box>
           </Box>
