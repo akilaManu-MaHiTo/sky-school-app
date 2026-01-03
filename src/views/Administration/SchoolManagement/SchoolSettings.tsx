@@ -668,9 +668,6 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
                 >
                   <TableRow>
-                    {gradeColumnVisibility.id && (
-                      <TableCell align="center">Id</TableCell>
-                    )}
                     {gradeColumnVisibility.grade && (
                       <TableCell align="center">Grade</TableCell>
                     )}
@@ -690,9 +687,6 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                           cursor: "pointer",
                         }}
                       >
-                        {gradeColumnVisibility.id && (
-                          <TableCell align="center">{row.id}</TableCell>
-                        )}
                         {gradeColumnVisibility.grade && (
                           <TableCell align="center">
                             <Chip
