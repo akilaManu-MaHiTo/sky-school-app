@@ -39,14 +39,7 @@ export const generateClassReportPdf = ({
 
   const doc = new jsPDF("l", "mm", "a4"); // landscape for wide tables
 
-  const title =
-    headerData?.title ||
-    "Class Overall Report";
-
-  const summaryGrade = (headerData as any)?.gradeLabel as string | undefined;
-  const summaryClass = (headerData as any)?.classLabel as string | undefined;
-  const summaryYear = (headerData as any)?.yearLabel as string | undefined;
-  const summaryTerm = (headerData as any)?.termLabel as string | undefined;
+  const title = headerData?.title || "Class Overall Report";
 
   const headRow: string[] = [
     "#",
@@ -94,7 +87,12 @@ export const generateClassReportPdf = ({
       textColor: [0, 0, 0],
       fontStyle: "bold",
     },
-    margin: { top: TABLE_MARGIN_TOP, bottom: TABLE_MARGIN_BOTTOM, left: 10, right: 10 },
+    margin: {
+      top: TABLE_MARGIN_TOP,
+      bottom: TABLE_MARGIN_BOTTOM,
+      left: 10,
+      right: 10,
+    },
     didDrawPage: (dataArg) => {
       drawPdfHeader(doc, { ...headerData, title });
 
@@ -110,11 +108,6 @@ export const generateClassReportPdf = ({
 
       const leftLines: string[] = [];
       const rightLines: string[] = [];
-
-      if (summaryYear) leftLines.push(`Year: ${summaryYear}`);
-      if (summaryGrade) leftLines.push(`Grade: ${summaryGrade}`);
-      if (summaryClass) leftLines.push(`Class: ${summaryClass}`);
-      if (summaryTerm) rightLines.push(`Exam: ${summaryTerm}`);
 
       leftLines.forEach((line, index) => {
         doc.text(line, 15, 56 + index * 5);

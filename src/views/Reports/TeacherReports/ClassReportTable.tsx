@@ -152,11 +152,25 @@ function ClassReportTable({
   const handleExportExcel = () => {
     if (!filteredRows.length) return;
 
+    const meta = reportData?.data ?? {};
+    const gradeLabel = meta.grade ? String(meta.grade) : undefined;
+    const classLabel = meta.className ? String(meta.className) : undefined;
+    const yearLabel = meta.academicYear ?? meta.year ?? undefined;
+    const termLabel = meta.term ?? undefined;
+
     exportClassReportToExcel({
       title,
       subjects: classReportTableData.exportSubjects,
       groupNames: showGroupColumns ? classReportTableData.groupNames : [],
       rows: filteredRows,
+      options: {
+        title,
+        organizationName,
+        gradeLabel,
+        classLabel,
+        yearLabel,
+        termLabel,
+      },
     } as any);
   };
 
