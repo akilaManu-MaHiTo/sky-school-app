@@ -527,6 +527,9 @@ const StudentMarksPage = () => {
             selectedYear={selectedYear}
             isDataLoading={isStudentExamMarksDataFetching}
             selectedMonth={selectedMonth}
+            selectedGrade={selectedGrade}
+            selectedClass={selectedClass}
+            selectedMedium={selectedMedium}
             refetchData={refetchMarksData}
           />
         )}
