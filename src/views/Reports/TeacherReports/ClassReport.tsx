@@ -64,6 +64,8 @@ import AllClassReportTable from "./AllClassReportTable";
 
 const breadcrumbItems = [
   { title: "Home", href: "/home" },
+  { title: "Reports" },
+  { title: "Teacher Reports" },
   { title: "Class Report" },
 ];
 
@@ -404,6 +406,18 @@ function RagDashboard() {
     };
   }, [classReportBarChartMarkGradeData]);
 
+  const showGroupColumns = useMemo(() => {
+    const gradeValue = selectedGrade?.grade;
+    return (
+      gradeValue === 10 ||
+      gradeValue === 11 ||
+      gradeValue === "10" ||
+      gradeValue === "11"
+    );
+  }, [selectedGrade]);
+
+  console.log("hi",selectedGrade);
+
   return (
     <Stack>
       <Box
@@ -636,7 +650,7 @@ function RagDashboard() {
         >
           <Box
             sx={{
-              mb:"3.5rem"
+              mb: "3.5rem",
             }}
           >
             <Typography
@@ -762,6 +776,7 @@ function RagDashboard() {
               isLoading={isClassAllReportCardFetching}
               isMobile={isMobile}
               isTablet={isTablet}
+              showGroupColumns={showGroupColumns}
             />
           ) : (
             <ClassReportTable
@@ -770,6 +785,7 @@ function RagDashboard() {
               isMobile={isMobile}
               isTablet={isTablet}
               title={classReportTitle}
+              showGroupColumns={showGroupColumns}
             />
           )}
         </Box>

@@ -43,11 +43,15 @@ export const generateClassReportPdf = ({
     headerData?.title ||
     "Class Overall Report";
 
+  const summaryGrade = (headerData as any)?.gradeLabel as string | undefined;
+  const summaryClass = (headerData as any)?.classLabel as string | undefined;
+  const summaryYear = (headerData as any)?.yearLabel as string | undefined;
+  const summaryTerm = (headerData as any)?.termLabel as string | undefined;
+
   const headRow: string[] = [
     "#",
+    "Admission Number",
     "Student",
-    "Username",
-    "Email",
     "Average",
     "Position",
     ...subjects.map((s) => s.subjectName),
@@ -56,9 +60,8 @@ export const generateClassReportPdf = ({
   const body: RowInput[] = dataset.map((row, index) => {
     const base = [
       (index + 1).toString(),
+      formatCellValue(row.admissionNumber),
       formatCellValue(row.nameWithInitials ?? row.userName),
-      formatCellValue(row.userName),
-      formatCellValue(row.email),
       formatCellValue(
         typeof row.averageOfMarks === "number"
           ? row.averageOfMarks.toFixed(2)
@@ -94,6 +97,33 @@ export const generateClassReportPdf = ({
     margin: { top: TABLE_MARGIN_TOP, bottom: TABLE_MARGIN_BOTTOM, left: 10, right: 10 },
     didDrawPage: (dataArg) => {
       drawPdfHeader(doc, { ...headerData, title });
+
+      // Draw report title and common summary details below the header
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(6, 66, 115);
+      doc.text(title, 15, 50);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(60, 60, 60);
+
+      const leftLines: string[] = [];
+      const rightLines: string[] = [];
+
+      if (summaryYear) leftLines.push(`Year: ${summaryYear}`);
+      if (summaryGrade) leftLines.push(`Grade: ${summaryGrade}`);
+      if (summaryClass) leftLines.push(`Class: ${summaryClass}`);
+      if (summaryTerm) rightLines.push(`Exam: ${summaryTerm}`);
+
+      leftLines.forEach((line, index) => {
+        doc.text(line, 15, 56 + index * 5);
+      });
+
+      rightLines.forEach((line, index) => {
+        doc.text(line, 140, 56 + index * 5);
+      });
+
       drawPdfFooter(doc, dataArg.pageNumber, headerData?.organizationName);
     },
   });

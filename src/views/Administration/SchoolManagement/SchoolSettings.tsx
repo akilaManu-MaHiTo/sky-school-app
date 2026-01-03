@@ -68,6 +68,7 @@ import {
   LetterSubjects,
 } from "../../../reportsUtils/SubjectsReportPDF";
 import useCurrentOrganization from "../../../hooks/useCurrentOrganization";
+import { title } from "process";
 interface TabPanelProps {
   children?: React.ReactNode;
   dir?: string;
@@ -170,6 +171,8 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
   };
   const breadcrumbItems = [
     { title: "Home", href: "/home" },
+    { title: "Administration" },
+    { title: "School Management" },
     { title: "School Settings" },
   ];
 

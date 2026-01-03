@@ -73,6 +73,8 @@ type TransformedTeacherMark = TeacherMark & {
 
 const breadcrumbItems = [
   { title: "Home", href: "/home" },
+  { title: "Reports" },
+  { title: "Management Staff Reports" },
   { title: "Marks Entry Monitoring" },
 ];
 

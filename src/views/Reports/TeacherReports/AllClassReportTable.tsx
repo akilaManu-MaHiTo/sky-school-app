@@ -6,6 +6,9 @@ import ClassReportTable from "./ClassReportTable";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import useCurrentOrganization from "../../../hooks/useCurrentOrganization";
+import { drawPdfHeader } from "../../../reportsUtils/OrganizationHeaderPDF";
+import { drawPdfFooter } from "../../../reportsUtils/OrganizationFooter";
 
 interface AllClassReportTableProps {
 	/**
@@ -23,9 +26,13 @@ interface AllClassReportTableProps {
 	isLoading: boolean;
 	isMobile: boolean;
     isTablet?: boolean;
+    showGroupColumns?: boolean;
 }
 
-function AllClassReportTable({ reportData, isLoading, isMobile, isTablet }: AllClassReportTableProps) {
+function AllClassReportTable({ reportData, isLoading, isMobile, isTablet, showGroupColumns = true }: AllClassReportTableProps) {
+	const { organization } = useCurrentOrganization();
+	const organizationName = organization?.organizationName;
+
 	const termReports = useMemo(() => {
 		if (!reportData || !reportData.data) return [] as any[];
 
@@ -52,9 +59,8 @@ function AllClassReportTable({ reportData, isLoading, isMobile, isTablet }: AllC
 			const subjects = allSubjects; // include both basket and non-basket subjects
 
 			const header = [
+				"Admission Number",
 				"Student",
-				"Username",
-				"Email",
 				"Average",
 				"Position",
 				...subjects.map((s: any) => s.subjectName),
@@ -71,9 +77,8 @@ function AllClassReportTable({ reportData, isLoading, isMobile, isTablet }: AllC
 				};
 
 				const base = [
+					normalize(student.admissionNumber),
 					normalize(student.nameWithInitials ?? student.userName),
-					normalize(student.userName),
-					normalize(student.email),
 					normalize(
 						typeof student.averageOfMarks === "number"
 							? student.averageOfMarks.toFixed(2)
@@ -131,9 +136,10 @@ function AllClassReportTable({ reportData, isLoading, isMobile, isTablet }: AllC
 				? `Grade ${termData.grade} ${termData.className} Class Overall Report - ${termData.term}`
 				: `Term ${index + 1}`;
 
-			doc.setFontSize(12);
-			doc.setFont("helvetica", "bold");
-			doc.text(sectionTitle, 14, 18);
+			const gradeLabel = hasRequiredFields ? String(termData.grade) : undefined;
+			const classLabel = hasRequiredFields ? String(termData.className) : undefined;
+			const yearLabel = termData.academicYear ?? termData.year ?? undefined;
+			const termLabel = termData.term ?? undefined;
 
 			const allSubjects = termData.subjects ?? [];
 			const subjects = allSubjects; // include both basket and non-basket subjects
@@ -146,9 +152,8 @@ function AllClassReportTable({ reportData, isLoading, isMobile, isTablet }: AllC
 
 			const headRow: string[] = [
 				"#",
+				"Admission Number",
 				"Student",
-				"Username",
-				"Email",
 				"Average",
 				"Position",
 				...subjects.map((s: any) => s.subjectName),
@@ -159,9 +164,8 @@ function AllClassReportTable({ reportData, isLoading, isMobile, isTablet }: AllC
 
 				const base = [
 					(rowIndex + 1).toString(),
+					normalize(student.admissionNumber),
 					normalize(student.nameWithInitials ?? student.userName),
-					normalize(student.userName),
-					normalize(student.email),
 					normalize(
 						typeof student.averageOfMarks === "number"
 							? student.averageOfMarks.toFixed(2)
@@ -184,7 +188,7 @@ function AllClassReportTable({ reportData, isLoading, isMobile, isTablet }: AllC
 			});
 
 			autoTable(doc, {
-				startY: 24,
+				startY: 60,
 				head: [headRow],
 				body,
 				pageBreak: "auto",
@@ -200,7 +204,21 @@ function AllClassReportTable({ reportData, isLoading, isMobile, isTablet }: AllC
 					textColor: [0, 0, 0],
 					fontStyle: "bold",
 				},
-				margin: { top: 24, bottom: 15, left: 10, right: 10 },
+				margin: { top: 60, bottom: 15, left: 10, right: 10 },
+				didDrawPage: (dataArg) => {
+					// Common header with organization name
+					drawPdfHeader(doc, {
+						title: sectionTitle,
+						organizationName,
+						gradeLabel,
+						classLabel,
+						yearLabel,
+						termLabel,
+					});
+
+					// Draw footer with organization name and page number
+					drawPdfFooter(doc, dataArg.pageNumber, organizationName);
+				},
 			});
 
 			isFirstSection = false;
@@ -262,8 +280,9 @@ function AllClassReportTable({ reportData, isLoading, isMobile, isTablet }: AllC
 							reportData={{ data: termData }}
 							isLoading={isLoading}
 							isMobile={isMobile}
-                            isTablet={isTablet}
-							title={title}
+								isTablet={isTablet}
+								title={title}
+								showGroupColumns={showGroupColumns}
 						/>
 					</Box>
 				);

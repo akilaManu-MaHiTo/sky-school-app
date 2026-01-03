@@ -7,6 +7,7 @@ export interface ClassReportSubject {
 
 export interface ClassReportRow {
   id: string;
+  admissionNumber?: string | number | null;
   userName?: string | null;
   nameWithInitials?: string | null;
   email?: string | null;
@@ -50,9 +51,8 @@ export const exportClassReportToExcel = ({
   }
 
   const header = [
+    "Admission Number",
     "Student",
-    "Username",
-    "Email",
     "Average",
     "Position",
     ...subjects.map((s) => s.subjectName),
@@ -60,9 +60,8 @@ export const exportClassReportToExcel = ({
 
   const body = dataset.map((row) => {
     const base = [
+      formatCellValue(row.admissionNumber),
       formatCellValue(row.nameWithInitials ?? row.userName),
-      formatCellValue(row.userName),
-      formatCellValue(row.email),
       formatCellValue(
         typeof row.averageOfMarks === "number"
           ? row.averageOfMarks.toFixed(2)

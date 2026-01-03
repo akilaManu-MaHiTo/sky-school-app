@@ -140,7 +140,9 @@ function UserTable() {
 
   const breadcrumbItems = [
     { title: "Home", href: "/home" },
-    { title: "Users" },
+    { title: "Administration" },
+    { title: "User Management" },
+    { title: "All Users" },
   ];
 
   const isMobile = useMediaQuery((theme: Theme) =>
@@ -220,7 +222,9 @@ function UserTable() {
     }
     try {
       const isProfileExportRole =
-        userRole === "Teacher" || userRole === "Student" || userRole === "Parent";
+        userRole === "Teacher" ||
+        userRole === "Student" ||
+        userRole === "Parent";
       generateUsersPdf({
         users: currentUserList,
         headerData: {
@@ -242,9 +246,10 @@ function UserTable() {
           marginY: 2,
           borderRadius: 1,
           overflowX: "hidden",
+          backgroundColor: "#fff",
         }}
       >
-        <PageTitle title="Users" />
+        <PageTitle title="All Users" />
         <Breadcrumb breadcrumbs={breadcrumbItems} />
       </Box>
       <Box
