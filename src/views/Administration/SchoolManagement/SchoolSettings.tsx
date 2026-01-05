@@ -589,7 +589,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                           />
                         </TableCell>
                         <TableCell align="center">
-                          {row.createdByData.nameWithInitials}
+                          {row?.createdByData?.nameWithInitials ?? "-"}
                         </TableCell>
                         <TableCell align="center">
                           <IconButton
@@ -709,7 +709,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                         )}
                         {gradeColumnVisibility.grade && (
                           <TableCell align="center">
-                            {row.createdByData?.nameWithInitials ?? "-"}
+                            {row?.createdByData?.nameWithInitials ?? "-"}
                           </TableCell>
                         )}
                         {gradeColumnVisibility.grade &&
@@ -1025,7 +1025,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                         )}
                         {classColumnVisibility.className && (
                           <TableCell align="center">
-                            {row.createdByData?.nameWithInitials ?? "-"}
+                            {row?.createdByData?.nameWithInitials ?? "-"}
                           </TableCell>
                         )}
                         <TableCell align="center">
