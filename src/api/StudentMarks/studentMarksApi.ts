@@ -251,6 +251,39 @@ export async function getAllClassReportAllBarChart(
   return res.data;
 }
 
+export async function getClassReportMarkGradesTable(
+  year: any,
+  grade: any,
+  className: any,
+  term: string,
+  month: string
+) {
+  const yearId = year.year;
+  const gradeId = grade.id;
+  const classId = className.id;
+  if (term === "Monthly Exam") {
+    term = month;
+  }
+  const res = await axios.get(
+    `/api/class-report/${yearId}/${gradeId}/${classId}/${term}/mark-grades-table`
+  );
+  return res.data;
+}
+
+export async function getAllClassReportAllMarkGradesTable(
+  year: any,
+  grade: any,
+  className: any
+) {
+  const yearId = year.year;
+  const gradeId = grade.id;
+  const classId = className.id;
+  const res = await axios.get(
+    `/api/class-report/${yearId}/${gradeId}/${classId}/All/all-mark-grades-table`
+  );
+  return res.data;
+}
+
 export async function marksEntryMonitoring(
   year: any,
   gradeId: any,

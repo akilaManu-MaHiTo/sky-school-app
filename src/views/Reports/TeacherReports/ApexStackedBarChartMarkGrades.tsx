@@ -1,5 +1,6 @@
 import React from "react";
 import Chart from "react-apexcharts";
+import { Box } from "@mui/material";
 
 interface Props {
   series: ApexAxisChartSeries;
@@ -59,8 +60,28 @@ const ApexStackedBarChartMarkGrades: React.FC<Props> = ({
       y: { formatter: (val) => `${val}` },
     },
   };
+  const hasSeriesData =
+    Array.isArray(series) &&
+    series.length > 0 &&
+    series.some((s) =>
+      Array.isArray((s as any).data) &&
+      (s as any).data.some((v: number) => Number(v) !== 0)
+    );
 
-  return <Chart options={options} series={series} type="bar" height={380} />;
+  if (!hasSeriesData) {
+    return (
+      <Box
+        height={380}
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+      >
+        No data available
+      </Box>
+    );
+  }
+
+  return <Chart options={options} series={series} type="bar" height={380}  />;
 };
 
 export default ApexStackedBarChartMarkGrades;

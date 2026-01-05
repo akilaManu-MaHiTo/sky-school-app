@@ -370,6 +370,20 @@ const StudentMarksTable = ({
         queryClient.invalidateQueries({ queryKey: ["class-report-bar-chart"] });
         queryClient.invalidateQueries({ queryKey: ["class-report-card"] });
         queryClient.invalidateQueries({ queryKey: ["class-report-all-card"] });
+        // Ensure class report charts that aggregate across all terms and mark grades
+        // are also refreshed after marks are saved/updated.
+        queryClient.invalidateQueries({
+          queryKey: ["class-report-all-bar-chart"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["class-report-all-bar-chart-mark-grades"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["class-report-mark-grades-table"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["class-report-all-mark-grades-table"],
+        });
         scheduleSuccessToast();
       },
       onError: (error: any) => {
