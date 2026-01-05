@@ -301,6 +301,43 @@ export async function updateUserProfileDetails({
   return res.data;
 }
 
+export async function updateUserProfileDetailsByAdmin({
+  id,
+  employeeNumber,
+  name,
+  gender,
+  mobile,
+  birthDate,
+  address,
+  email,
+  nameWithInitials,
+}: {
+  id: number;
+  employeeNumber: string;
+  name: string;
+  gender: string;
+  mobile: string;
+  birthDate: Date;
+  address: string;
+  email: string;
+  nameWithInitials: string;
+}) {
+  const data = {
+    name,
+    employeeNumber,
+    gender,
+    mobile,
+    birthDate,
+    address,
+    email,
+    nameWithInitials,
+  };
+
+  const res = await axios.post(`/api/user/${id}/profile-update-by-admin`, data);
+
+  return res.data;
+}
+
 export async function resetProfileEmail({
   currentEmail,
   id,

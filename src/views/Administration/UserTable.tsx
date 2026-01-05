@@ -13,6 +13,8 @@ import {
   Chip,
   IconButton,
   LinearProgress,
+  Menu,
+  MenuItem,
   Stack,
   Tab,
   TableFooter,
@@ -54,6 +56,8 @@ import { exportParentDetailsToExcel } from "../../reportsUtils/ParentDetailsExce
 import { generateTeacherDetailsPdf } from "../../reportsUtils/TeacherDetailsPDF";
 import { generateStudentDetailsPdf } from "../../reportsUtils/StudentDetailsPDF";
 import { generateParentDetailsPdf } from "../../reportsUtils/ParentDetailsPDF";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 interface TabPanelProps {
   children?: React.ReactNode;
   dir?: string;
@@ -109,9 +113,24 @@ function UserTable() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
+
+  const isActionMenuOpen = Boolean(menuAnchorEl);
+
+  const handleOpenActionMenu = (event: any, userId: number | string) => {
+    event.stopPropagation();
+    setMenuAnchorEl(event.currentTarget);
+    setSelectedUserId(userId);
+  };
+
+  const handleCloseActionMenu = () => {
+    setMenuAnchorEl(null);
+  };
+
   const debouncedQuery = useDebounce(searchQuery, 1000);
 
   const { organization } = useCurrentOrganization();
@@ -120,7 +139,7 @@ function UserTable() {
   const {
     data: searchedUserData,
     refetch: researchUserData,
-    isFetching: isSearchingSubjects,
+    isFetching: isSearchingUsers,
   } = useQuery({
     queryKey: ["user-data", debouncedQuery, userRole, selectedSortBy],
     queryFn: ({ queryKey }) =>
@@ -186,17 +205,20 @@ function UserTable() {
   }, [searchedUserData, userRole, searchQuery]);
 
   const teacherList = useMemo(
-    () => (currentUserList ?? []).filter((u: any) => u.employeeType === "Teacher"),
+    () =>
+      (currentUserList ?? []).filter((u: any) => u.employeeType === "Teacher"),
     [currentUserList]
   );
 
   const studentList = useMemo(
-    () => (currentUserList ?? []).filter((u: any) => u.employeeType === "Student"),
+    () =>
+      (currentUserList ?? []).filter((u: any) => u.employeeType === "Student"),
     [currentUserList]
   );
 
   const parentList = useMemo(
-    () => (currentUserList ?? []).filter((u: any) => u.employeeType === "Parent"),
+    () =>
+      (currentUserList ?? []).filter((u: any) => u.employeeType === "Parent"),
     [currentUserList]
   );
 
@@ -436,7 +458,7 @@ function UserTable() {
               value={searchQuery}
               onChange={setSearchQuery}
               onSearch={handleSearch}
-              isSearching={isSearchingSubjects}
+              isSearching={isSearchingUsers}
             />
           </Box>
           <Stack sx={{ alignItems: "center" }}>
@@ -445,10 +467,10 @@ function UserTable() {
               elevation={2}
               sx={{
                 overflowX: "auto",
-                maxWidth: isMobile ? "88vw" : "100%",
+                maxWidth: isMobile ? "65vw" : "100%",
               }}
             >
-              {/* {isUserDataFetching && <LinearProgress sx={{ width: "100%" }} />} */}
+              {isSearchingUsers && <LinearProgress sx={{ width: "100%" }} />}
               <Table aria-label="simple table">
                 <TableHead
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
@@ -495,10 +517,10 @@ function UserTable() {
                           "&:last-child td, &:last-child th": { border: 0 },
                           cursor: "pointer",
                         }}
-                        onClick={() => {
-                          setSelectedUserId(row.id);
-                          setOpenViewDrawer(true);
-                        }}
+                        // onClick={() => {
+                        //   setSelectedUserId(row.id);
+                        //   setOpenViewDrawer(true);
+                        // }}
                       >
                         <TableCell align="left">{row.id}</TableCell>
                         <TableCell align="left">
@@ -545,13 +567,11 @@ function UserTable() {
                         </TableCell>
                         <TableCell align="center">
                           <IconButton
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              setOpenEditUserRoleDialog(true);
-                              setSelectedUserId(row.id);
-                            }}
+                            onClick={(event) =>
+                              handleOpenActionMenu(event, row.id)
+                            }
                           >
-                            <EditIcon />
+                            <MoreVertIcon />
                           </IconButton>
                         </TableCell>
                       </TableRow>
@@ -590,7 +610,7 @@ function UserTable() {
         </TabPanel>
         <TabPanel value={activeTab} index={1} dir={theme.direction}>
           <Box
-            mb={4}
+            mb={2}
             display="flex"
             justifyContent="space-between"
             alignItems="center"
@@ -600,28 +620,28 @@ function UserTable() {
               value={searchQuery}
               onChange={setSearchQuery}
               onSearch={handleSearch}
-              isSearching={isSearchingSubjects}
+              isSearching={isSearchingUsers}
             />
-            <Box sx={{ display: "flex", gap: 1 }}>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<DownloadIcon fontSize="small" />}
-                onClick={handleExportTeachersExcel}
-                disabled={!teacherList.length}
-              >
-                Excel
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<PictureAsPdfIcon fontSize="small" />}
-                onClick={handleExportTeachersPdf}
-                disabled={!teacherList.length}
-              >
-                PDF
-              </Button>
-            </Box>
+          </Box>
+          <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<DownloadIcon fontSize="small" />}
+              onClick={handleExportTeachersExcel}
+              disabled={!teacherList.length}
+            >
+              Excel
+            </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<PictureAsPdfIcon fontSize="small" />}
+              onClick={handleExportTeachersPdf}
+              disabled={!teacherList.length}
+            >
+              PDF
+            </Button>
           </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
@@ -629,10 +649,10 @@ function UserTable() {
               elevation={2}
               sx={{
                 overflowX: "auto",
-                maxWidth: isMobile ? "88vw" : "100%",
+                maxWidth: isMobile ? "65vw" : "100%",
               }}
             >
-              {/* {isUserDataFetching && <LinearProgress sx={{ width: "100%" }} />} */}
+              {isSearchingUsers && <LinearProgress sx={{ width: "100%" }} />}
               <Table aria-label="simple table">
                 <TableHead
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
@@ -679,10 +699,10 @@ function UserTable() {
                           "&:last-child td, &:last-child th": { border: 0 },
                           cursor: "pointer",
                         }}
-                        onClick={() => {
-                          setSelectedUserId(row.id);
-                          setOpenViewDrawer(true);
-                        }}
+                        // onClick={() => {
+                        //   setSelectedUserId(row.id);
+                        //   setOpenViewDrawer(true);
+                        // }}
                       >
                         <TableCell align="left">{row.id}</TableCell>
                         <TableCell align="left">
@@ -729,13 +749,11 @@ function UserTable() {
                         </TableCell>
                         <TableCell align="center">
                           <IconButton
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              setOpenEditUserRoleDialog(true);
-                              setSelectedUserId(row.id);
-                            }}
+                            onClick={(event) =>
+                              handleOpenActionMenu(event, row.id)
+                            }
                           >
-                            <EditIcon />
+                            <MoreVertIcon />
                           </IconButton>
                         </TableCell>
                       </TableRow>
@@ -774,7 +792,7 @@ function UserTable() {
         </TabPanel>
         <TabPanel value={activeTab} index={2} dir={theme.direction}>
           <Box
-            mb={4}
+            mb={2}
             display="flex"
             justifyContent="space-between"
             alignItems="center"
@@ -784,9 +802,11 @@ function UserTable() {
               value={searchQuery}
               onChange={setSearchQuery}
               onSearch={handleSearch}
-              isSearching={isSearchingSubjects}
+              isSearching={isSearchingUsers}
             />
-            <Box sx={{ display: "flex", gap: 1 }}>
+            
+          </Box>
+          <Box sx={{ display: "flex", gap: 1,mb:2 }}>
               <Button
                 variant="outlined"
                 size="small"
@@ -806,17 +826,16 @@ function UserTable() {
                 PDF
               </Button>
             </Box>
-          </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
               component={Paper}
               elevation={2}
               sx={{
                 overflowX: "auto",
-                maxWidth: isMobile ? "88vw" : "100%",
+                maxWidth: isMobile ? "65vw" : "100%",
               }}
             >
-              {/* {isUserDataFetching && <LinearProgress sx={{ width: "100%" }} />} */}
+              {isSearchingUsers && <LinearProgress sx={{ width: "100%" }} />}
               <Table aria-label="simple table">
                 <TableHead
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
@@ -863,10 +882,10 @@ function UserTable() {
                           "&:last-child td, &:last-child th": { border: 0 },
                           cursor: "pointer",
                         }}
-                        onClick={() => {
-                          setSelectedUserId(row.id);
-                          setOpenViewDrawer(true);
-                        }}
+                        // onClick={() => {
+                        //   setSelectedUserId(row.id);
+                        //   setOpenViewDrawer(true);
+                        // }}
                       >
                         <TableCell align="left">{row.id}</TableCell>
                         <TableCell align="left">
@@ -913,13 +932,11 @@ function UserTable() {
                         </TableCell>
                         <TableCell align="center">
                           <IconButton
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              setOpenEditUserRoleDialog(true);
-                              setSelectedUserId(row.id);
-                            }}
+                            onClick={(event) =>
+                              handleOpenActionMenu(event, row.id)
+                            }
                           >
-                            <EditIcon />
+                            <MoreVertIcon />
                           </IconButton>
                         </TableCell>
                       </TableRow>
@@ -958,7 +975,7 @@ function UserTable() {
         </TabPanel>
         <TabPanel value={activeTab} index={3} dir={theme.direction}>
           <Box
-            mb={4}
+            mb={2}
             display="flex"
             justifyContent="space-between"
             alignItems="center"
@@ -968,9 +985,11 @@ function UserTable() {
               value={searchQuery}
               onChange={setSearchQuery}
               onSearch={handleSearch}
-              isSearching={isSearchingSubjects}
+              isSearching={isSearchingUsers}
             />
-            <Box sx={{ display: "flex", gap: 1 }}>
+            
+          </Box>
+          <Box sx={{ display: "flex", gap: 1,mb:2 }}>
               <Button
                 variant="outlined"
                 size="small"
@@ -990,17 +1009,16 @@ function UserTable() {
                 PDF
               </Button>
             </Box>
-          </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
               component={Paper}
               elevation={2}
               sx={{
                 overflowX: "auto",
-                maxWidth: isMobile ? "88vw" : "100%",
+                maxWidth: isMobile ? "65vw" : "100%",
               }}
             >
-              {/* {isUserDataFetching && <LinearProgress sx={{ width: "100%" }} />} */}
+              {isSearchingUsers && <LinearProgress sx={{ width: "100%" }} />}
               <Table aria-label="simple table">
                 <TableHead
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
@@ -1047,10 +1065,10 @@ function UserTable() {
                           "&:last-child td, &:last-child th": { border: 0 },
                           cursor: "pointer",
                         }}
-                        onClick={() => {
-                          setSelectedUserId(row.id);
-                          setOpenViewDrawer(true);
-                        }}
+                        // onClick={() => {
+                        //   setSelectedUserId(row.id);
+                        //   setOpenViewDrawer(true);
+                        // }}
                       >
                         <TableCell align="left">{row.id}</TableCell>
                         <TableCell align="left">
@@ -1097,13 +1115,11 @@ function UserTable() {
                         </TableCell>
                         <TableCell align="center">
                           <IconButton
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              setOpenEditUserRoleDialog(true);
-                              setSelectedUserId(row.id);
-                            }}
+                            onClick={(event) =>
+                              handleOpenActionMenu(event, row.id)
+                            }
                           >
-                            <EditIcon />
+                            <MoreVertIcon />
                           </IconButton>
                         </TableCell>
                       </TableRow>
@@ -1141,6 +1157,33 @@ function UserTable() {
           </Stack>
         </TabPanel>
       </Box>
+
+      <Menu
+        anchorEl={menuAnchorEl}
+        open={isActionMenuOpen}
+        onClose={handleCloseActionMenu}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <MenuItem
+          onClick={() => {
+            setOpenViewDrawer(true);
+            handleCloseActionMenu();
+          }}
+        >
+          <EditIcon fontSize="small" sx={{ mr: 1 }} color="primary" />
+          Edit
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            setOpenEditUserRoleDialog(true);
+            handleCloseActionMenu();
+          }}
+        >
+          <CheckCircleIcon fontSize="small" sx={{ mr: 1 }} color="success" />
+          Active
+        </MenuItem>
+      </Menu>
 
       <ViewDataDrawer
         open={openViewDrawer}

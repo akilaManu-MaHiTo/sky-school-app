@@ -5,6 +5,7 @@ import {
   Alert,
   Badge,
   Box,
+  CircularProgress,
   colors,
   IconButton,
   LinearProgress,
@@ -20,7 +21,7 @@ import {
 } from "@mui/material";
 import { DrawerContentItem } from "../../components/ViewDataDrawer";
 import useIsMobile from "../../customHooks/useIsMobile";
-import { EmployeeType, User } from "../../api/userApi";
+import { EmployeeType, updateUserProfileImage, User } from "../../api/userApi";
 import MultiDrawerContent from "../../components/MultiDrawerContent";
 import ProfileImage from "../../components/ProfileImageComponent";
 import { format } from "date-fns";
@@ -30,6 +31,8 @@ import AddIcon from "@mui/icons-material/Add";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import UpdateUserProfile from "./UpdateUserProfileByAdminDialog";
 import theme from "../../theme";
 import AddOrEditTeacherAcademicDetailsDialog from "./AcademicDetails/AddOrEditTeacherAcademicDetailsDialog";
 import AddOrEditStudentAcademicDetailsDialog from "./AcademicDetails/AddOrEditStudentAcademicDetailsDialog";
@@ -78,6 +81,9 @@ const extractStudentSubjectGroups = (profiles: StudentProfileEntry[]) => {
 function ViewUserContent({ selectedUser }: { selectedUser: User }) {
   const { isTablet, isMobile } = useIsMobile();
 
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [openEditUserRoleDialog, setOpenEditUserRoleDialog] = useState(false);
+
   const [openAcademicDetailsDialog, setOpenAcademicDetailsDialog] =
     useState(false);
   const [editAcademicDetails, setEditAcademicDetails] = useState<any>(null);
@@ -90,6 +96,33 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
   ] = useState(false);
   const [editAcademicStudentDetails, setEditAcademicStudentDetails] =
     useState<StudentProfileEntry | null>(null);
+
+  const { mutate: profileUpdateMutation, isPending } = useMutation({
+    mutationFn: updateUserProfileImage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-data"] });
+      enqueueSnackbar("Profile updated successfully!", {
+        variant: "success",
+      });
+      setImageFile(null);
+    },
+    onError: () => {
+      enqueueSnackbar("Profile update failed", { variant: "error" });
+    },
+  });
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+    }
+  };
+
+  const saveImage = () => {
+    if (imageFile) {
+      profileUpdateMutation({ id: selectedUser.id, imageFile });
+    }
+  };
 
   const transformProfileData = useMemo(() => {
     if (!selectedUser || !selectedUser.userProfile) return [];
@@ -217,7 +250,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
           >
             <ProfileImage
               name={selectedUser?.name}
-              files={selectedUser?.profileImage}
+              files={imageFile ? [imageFile] : selectedUser?.profileImage}
               fontSize="5rem"
             />
           </Badge>
@@ -229,8 +262,50 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
               color: "var(--pallet-dark-blue)",
             }}
           >
-            {selectedUser?.name}
+            {selectedUser?.nameWithInitials}
           </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: isTablet ? "column" : "row",
+            }}
+            gap={2}
+          >
+            <CustomButton
+              variant="outlined"
+              component="label"
+              sx={{ mt: 2 }}
+              endIcon={
+                isPending && (
+                  <CircularProgress size={20} sx={{ color: "gray" }} />
+                )
+              }
+            >
+              Change Profile Image
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={handleImageChange}
+              />
+            </CustomButton>
+
+            {imageFile && !isPending && (
+              <CustomButton
+                variant="contained"
+                onClick={saveImage}
+                sx={{ mt: 2, backgroundColor: "var(--pallet-blue)" }}
+                disabled={isPending}
+                endIcon={
+                  isPending && (
+                    <CircularProgress size={20} sx={{ color: "gray" }} />
+                  )
+                }
+              >
+                Save
+              </CustomButton>
+            )}
+          </Box>
         </Box>
 
         <Stack
@@ -244,6 +319,71 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
           }}
           gap={1.5}
         >
+          {isMobile && (
+            <Stack
+              mb={4}
+              sx={{
+                display: "flex",
+                alignItems: "flex-end",
+              }}
+            >
+              <Box>
+                <>
+                  {isTablet ? (
+                    <IconButton
+                      aria-label="edit"
+                      onClick={() => setOpenEditUserRoleDialog(true)}
+                    >
+                      <EditOutlinedIcon sx={{ color: "var(--pallet-blue)" }} />
+                    </IconButton>
+                  ) : (
+                    <CustomButton
+                      variant="contained"
+                      sx={{ backgroundColor: "var(--pallet-blue)" }}
+                      size="medium"
+                      onClick={() => setOpenEditUserRoleDialog(true)}
+                      startIcon={<EditOutlinedIcon />}
+                    >
+                      Edit My Profile
+                    </CustomButton>
+                  )}
+                </>
+              </Box>
+            </Stack>
+          )}
+          {!isMobile && (
+            <Stack
+              mb={4}
+              mt={4}
+              sx={{
+                display: "flex",
+                alignItems: "flex-end",
+              }}
+            >
+              <Box>
+                <>
+                  {isTablet ? (
+                    <IconButton
+                      aria-label="edit"
+                      onClick={() => setOpenEditUserRoleDialog(true)}
+                    >
+                      <EditOutlinedIcon sx={{ color: "var(--pallet-blue)" }} />
+                    </IconButton>
+                  ) : (
+                    <CustomButton
+                      variant="contained"
+                      sx={{ backgroundColor: "var(--pallet-blue)" }}
+                      size="medium"
+                      onClick={() => setOpenEditUserRoleDialog(true)}
+                      startIcon={<EditOutlinedIcon />}
+                    >
+                      Edit Profile
+                    </CustomButton>
+                  )}
+                </>
+              </Box>
+            </Stack>
+          )}
           <Stack direction={isTablet ? "column" : "row"}>
             <DrawerContentItem
               label={
@@ -316,6 +456,16 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
           </Stack>
         </Stack>
       </Stack>
+
+      {openEditUserRoleDialog && (
+        <UpdateUserProfile
+          open={openEditUserRoleDialog}
+          handleClose={() => {
+            setOpenEditUserRoleDialog(false);
+          }}
+          defaultValues={selectedUser}
+        />
+      )}
       <Stack
         sx={{
           my: 1,
@@ -354,7 +504,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                     fontWeight: "semi-bold",
                   }}
                 >
-                  MY ACADEMIC DETAILS
+                  STUDENT ACADEMIC DETAILS
                 </Typography>
               </Box>
             </AccordionSummary>
@@ -535,7 +685,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                     fontWeight: "semi-bold",
                   }}
                 >
-                  ACADEMIC DETAILS
+                  TEACHER ACADEMIC DETAILS
                 </Typography>
               </Box>
             </AccordionSummary>
