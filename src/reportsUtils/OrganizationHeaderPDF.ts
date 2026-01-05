@@ -3,6 +3,11 @@ import jsPDF from "jspdf";
 export interface PdfHeaderData {
   title?: string;
   organizationName?: string;
+  // Optional common meta fields used by some reports
+  gradeLabel?: string;
+  classLabel?: string;
+  yearLabel?: string;
+  termLabel?: string;
 }
 
 const HEADER_HEIGHT = 38; // tighter header so divider appears higher

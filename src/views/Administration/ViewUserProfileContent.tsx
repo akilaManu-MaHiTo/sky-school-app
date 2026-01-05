@@ -123,6 +123,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["current-user"] });
       enqueueSnackbar("Profile updated successfully!", { variant: "success" });
+      setImageFile(null);
     },
     onError: () => {
       enqueueSnackbar("Profile update failed", { variant: "error" });
@@ -741,17 +742,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                                       >
                                         <EditIcon color="primary" />
                                       </IconButton>
-                                      <IconButton
-                                        onClick={() => {
-                                          setEditAcademicStudentDetails(p);
-                                          setOpenDeleteAcademicStudentDetailsDialog(
-                                            true
-                                          );
-                                        }}
-                                        disabled={isAcademicDetailDeleting}
-                                      >
-                                        <DeleteIcon color="error" />
-                                      </IconButton>
+                                      
                                     </>
                                   )}
                                 </TableCell>

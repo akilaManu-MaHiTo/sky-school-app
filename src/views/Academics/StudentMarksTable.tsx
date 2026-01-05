@@ -62,6 +62,9 @@ interface StudentMarksTableProps {
   isDataLoading?: boolean;
   selectedMonth: string;
   refetchData?: () => void;
+  selectedGrade: any;
+  selectedClass: any;
+  selectedMedium: any;
 }
 
 // Form Values Interface
@@ -154,6 +157,9 @@ const StudentMarksTable = ({
   isDataLoading,
   selectedMonth,
   refetchData,
+  selectedGrade,
+  selectedClass,
+  selectedMedium,
 }: StudentMarksTableProps) => {
   //Utils
   const { enqueueSnackbar } = useSnackbar();
@@ -171,6 +177,68 @@ const StudentMarksTable = ({
   const excelInputRef = useRef<HTMLInputElement | null>(null);
   const debounceTimeouts = useRef<Map<number, NodeJS.Timeout>>(new Map());
   const successToastTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const filtersForExport = useMemo(
+    () => {
+      const filters: { label: string; value: string }[] = [];
+
+      if (selectedYear) {
+        const yearValue =
+          (selectedYear as any)?.academicYear ??
+          (selectedYear as any)?.year ??
+          selectedYear;
+        filters.push({ label: "Year", value: String(yearValue) });
+      }
+
+      if (selectedGrade) {
+        const gradeValue = (selectedGrade as any)?.grade ?? selectedGrade;
+        filters.push({ label: "Grade", value: `Grade ${gradeValue}` });
+      }
+
+      if (selectedClass) {
+        const className = (selectedClass as any)?.className ?? selectedClass;
+        filters.push({ label: "Class", value: String(className) });
+      }
+
+      if (selectedMedium) {
+        const mediumName =
+          (selectedMedium as any)?.academicMedium ?? selectedMedium;
+        filters.push({ label: "Medium", value: String(mediumName) });
+      }
+
+      if (selectedSubject) {
+        const subjectName =
+          (selectedSubject as any)?.subjectName ??
+          (selectedSubject as any)?.name ??
+          (selectedSubject as any)?.id ??
+          selectedSubject;
+        filters.push({ label: "Subject", value: String(subjectName) });
+      }
+
+      if (selectedTerm) {
+        filters.push({ label: "Exam", value: String(selectedTerm) });
+      }
+
+      if (selectedTerm === "Monthly Exam" && selectedMonth) {
+        const monthLabel =
+          (selectedMonth as any)?.label ??
+          (selectedMonth as any)?.name ??
+          selectedMonth;
+        filters.push({ label: "Month", value: String(monthLabel) });
+      }
+
+      return filters;
+    },
+    [
+      selectedYear,
+      selectedGrade,
+      selectedClass,
+      selectedMedium,
+      selectedSubject,
+      selectedTerm,
+      selectedMonth,
+    ]
+  );
 
   //Use Form For the mutation
   const { control, watch, formState, setValue, getValues, reset } =
@@ -451,7 +519,7 @@ const StudentMarksTable = ({
         rows.forEach((row, index) => {
           const rowKey = getStudentKey(
             row.student?.employeeNumber ?? null,
-            row.student?.name ?? null
+            row.student?.nameWithInitials ?? row.student?.name ?? null
           );
           if (!rowKey) {
             return;
@@ -601,6 +669,9 @@ const StudentMarksTable = ({
         academicYear: selectedYear,
         academicTerm: resolvedMonthlyTermLabel ?? selectedTerm,
         title: "Student Marks Report",
+        columns,
+        visibility,
+        filters: filtersForExport,
       });
     } catch (error) {
       console.error("Unable to generate student marks PDF:", error);
@@ -614,6 +685,9 @@ const StudentMarksTable = ({
     resolvedSubjectName,
     selectedTerm,
     selectedYear,
+    columns,
+    visibility,
+    filtersForExport,
   ]);
 
   return (
@@ -677,6 +751,7 @@ const StudentMarksTable = ({
               isLoading={isDataLoading || isSavingMarks}
               displayMode={isMobile ? "icon" : "button"}
               tooltip="Download Excel"
+              filters={filtersForExport}
             />
             {isMobile ? (
               <Tooltip title="Download PDF">
@@ -848,7 +923,7 @@ const StudentMarksTable = ({
                         </TableCell>
                       )}
                       {visibility.name && (
-                        <TableCell>{row.student?.userName ?? "-"}</TableCell>
+                        <TableCell>{row.student?.nameWithInitials ?? "-"}</TableCell>
                       )}
                       {visibility.academicYear && (
                         <TableCell>{row.academicYear ?? "-"}</TableCell>
