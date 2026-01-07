@@ -32,7 +32,9 @@ const ApexStackedBarChartMarkGrades: React.FC<Props> = ({
       stacked: true,
       toolbar: { show: false },
     },
-    colors: STACKED_BAR_COLORS,
+    colors:
+      (series as any[])?.map((s, index) => s.color || STACKED_BAR_COLORS[index % STACKED_BAR_COLORS.length]) ||
+      STACKED_BAR_COLORS,
     plotOptions: {
       bar: {
         horizontal: false,

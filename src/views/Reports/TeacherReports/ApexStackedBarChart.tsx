@@ -35,8 +35,10 @@ const ClassReportStackedBarChart: React.FC<Props> = ({
       toolbar: { show: false },
     },
 
-    // Apply custom pastel colors to the stacked bars
-    colors: STACKED_BAR_COLORS,
+    // Apply per-subject colors if provided via series, else fallback palette
+    colors:
+      (series as any[])?.map((s, index) => s.color || STACKED_BAR_COLORS[index % STACKED_BAR_COLORS.length]) ||
+      STACKED_BAR_COLORS,
 
     plotOptions: {
       bar: {
