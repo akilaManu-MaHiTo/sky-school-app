@@ -552,6 +552,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                     <TableCell align="center">Id</TableCell>
                     <TableCell align="center">Year</TableCell>
                     <TableCell align="center">Status</TableCell>
+                    <TableCell align="center">Created By</TableCell>
                     <TableCell align="center"></TableCell>
                   </TableRow>
                 </TableHead>
@@ -588,6 +589,9 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                           />
                         </TableCell>
                         <TableCell align="center">
+                          {row?.createdByData?.nameWithInitials ?? "-"}
+                        </TableCell>
+                        <TableCell align="center">
                           <IconButton
                             onClick={() => {
                               setEditAcademicYearData(row);
@@ -607,7 +611,9 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                           >
                             <DeleteIcon color="error" />
                           </IconButton>
+
                         </TableCell>
+                        
                       </TableRow>
                     ))
                   ) : (
@@ -671,6 +677,9 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                     {gradeColumnVisibility.grade && (
                       <TableCell align="center">Grade</TableCell>
                     )}
+                    {gradeColumnVisibility.grade && (
+                      <TableCell align="center">Created By</TableCell>
+                    )}
                     {gradeColumnVisibility.grade &&
                       gradeColumnVisibility.id && (
                         <TableCell align="center"></TableCell>
@@ -696,6 +705,11 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                                 backgroundColor: "var(--pallet-lighter-blue)",
                               }}
                             />
+                          </TableCell>
+                        )}
+                        {gradeColumnVisibility.grade && (
+                          <TableCell align="center">
+                            {row?.createdByData?.nameWithInitials ?? "-"}
                           </TableCell>
                         )}
                         {gradeColumnVisibility.grade &&
@@ -867,6 +881,15 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                                 <SubjectIcon fontSize="small" />
                                 {subject.subjectCode}
                               </Typography>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: "text.secondary",
+                                  mt: 0.5,
+                                }}
+                              >
+                                {subject.createdByData?.nameWithInitials ?? "-"}
+                              </Typography>
                             </Box>
 
                             <Stack
@@ -970,6 +993,9 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                     {classColumnVisibility.className && (
                       <TableCell align="left">Class Name</TableCell>
                     )}
+                    {classColumnVisibility.className && (
+                      <TableCell align="center">Created By</TableCell>
+                    )}
                     <TableCell align="center"></TableCell>
                   </TableRow>
                 </TableHead>
@@ -995,6 +1021,11 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                                 backgroundColor: "var(--pallet-lighter-blue)",
                               }}
                             />
+                          </TableCell>
+                        )}
+                        {classColumnVisibility.className && (
+                          <TableCell align="center">
+                            {row?.createdByData?.nameWithInitials ?? "-"}
                           </TableCell>
                         )}
                         <TableCell align="center">

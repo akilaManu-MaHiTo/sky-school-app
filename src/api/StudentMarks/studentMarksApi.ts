@@ -17,6 +17,11 @@ export const examReportTerms = [
   "Term 3",
   "Monthly Exam",
 ];
+export const examReportStatus = [
+  "All",
+  "Pending",
+  "Done"
+];
 export const markGrades = [
   "A","B","C","D","F"
 ];
@@ -251,17 +256,51 @@ export async function getAllClassReportAllBarChart(
   return res.data;
 }
 
+export async function getClassReportMarkGradesTable(
+  year: any,
+  grade: any,
+  className: any,
+  term: string,
+  month: string
+) {
+  const yearId = year.year;
+  const gradeId = grade.id;
+  const classId = className.id;
+  if (term === "Monthly Exam") {
+    term = month;
+  }
+  const res = await axios.get(
+    `/api/class-report/${yearId}/${gradeId}/${classId}/${term}/mark-grades-table`
+  );
+  return res.data;
+}
+
+export async function getAllClassReportAllMarkGradesTable(
+  year: any,
+  grade: any,
+  className: any
+) {
+  const yearId = year.year;
+  const gradeId = grade.id;
+  const classId = className.id;
+  const res = await axios.get(
+    `/api/class-report/${yearId}/${gradeId}/${classId}/All/all-mark-grades-table`
+  );
+  return res.data;
+}
+
 export async function marksEntryMonitoring(
   year: any,
   gradeId: any,
   examType: string,
+  status: string,
   keyword: string
 ) {
   const selectedYear = year.year;
   const selectedGradeId = gradeId.id;
 
   const res = await axios.get(
-    `/api/mark-check/${selectedYear}/${selectedGradeId}/${examType}/search?search=${keyword}`
+    `/api/mark-check/${selectedYear}/${selectedGradeId}/${examType}/${status}/search?search=${keyword}`
   );
   return res.data;
 }
