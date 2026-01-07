@@ -26,6 +26,7 @@ import {
   Switch,
   InputAdornment,
   Tooltip,
+  Alert,
 } from "@mui/material";
 import ColumnVisibilitySelector from "../../components/ColumnVisibilitySelector";
 import CustomButton from "../../components/CustomButton";
@@ -65,6 +66,7 @@ interface StudentMarksTableProps {
   selectedGrade: any;
   selectedClass: any;
   selectedMedium: any;
+  studentCount: number;
 }
 
 // Form Values Interface
@@ -160,6 +162,7 @@ const StudentMarksTable = ({
   selectedGrade,
   selectedClass,
   selectedMedium,
+  studentCount,
 }: StudentMarksTableProps) => {
   //Utils
   const { enqueueSnackbar } = useSnackbar();
@@ -178,67 +181,64 @@ const StudentMarksTable = ({
   const debounceTimeouts = useRef<Map<number, NodeJS.Timeout>>(new Map());
   const successToastTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const filtersForExport = useMemo(
-    () => {
-      const filters: { label: string; value: string }[] = [];
+  const filtersForExport = useMemo(() => {
+    const filters: { label: string; value: string }[] = [];
 
-      if (selectedYear) {
-        const yearValue =
-          (selectedYear as any)?.academicYear ??
-          (selectedYear as any)?.year ??
-          selectedYear;
-        filters.push({ label: "Year", value: String(yearValue) });
-      }
+    if (selectedYear) {
+      const yearValue =
+        (selectedYear as any)?.academicYear ??
+        (selectedYear as any)?.year ??
+        selectedYear;
+      filters.push({ label: "Year", value: String(yearValue) });
+    }
 
-      if (selectedGrade) {
-        const gradeValue = (selectedGrade as any)?.grade ?? selectedGrade;
-        filters.push({ label: "Grade", value: `Grade ${gradeValue}` });
-      }
+    if (selectedGrade) {
+      const gradeValue = (selectedGrade as any)?.grade ?? selectedGrade;
+      filters.push({ label: "Grade", value: `Grade ${gradeValue}` });
+    }
 
-      if (selectedClass) {
-        const className = (selectedClass as any)?.className ?? selectedClass;
-        filters.push({ label: "Class", value: String(className) });
-      }
+    if (selectedClass) {
+      const className = (selectedClass as any)?.className ?? selectedClass;
+      filters.push({ label: "Class", value: String(className) });
+    }
 
-      if (selectedMedium) {
-        const mediumName =
-          (selectedMedium as any)?.academicMedium ?? selectedMedium;
-        filters.push({ label: "Medium", value: String(mediumName) });
-      }
+    if (selectedMedium) {
+      const mediumName =
+        (selectedMedium as any)?.academicMedium ?? selectedMedium;
+      filters.push({ label: "Medium", value: String(mediumName) });
+    }
 
-      if (selectedSubject) {
-        const subjectName =
-          (selectedSubject as any)?.subjectName ??
-          (selectedSubject as any)?.name ??
-          (selectedSubject as any)?.id ??
-          selectedSubject;
-        filters.push({ label: "Subject", value: String(subjectName) });
-      }
+    if (selectedSubject) {
+      const subjectName =
+        (selectedSubject as any)?.subjectName ??
+        (selectedSubject as any)?.name ??
+        (selectedSubject as any)?.id ??
+        selectedSubject;
+      filters.push({ label: "Subject", value: String(subjectName) });
+    }
 
-      if (selectedTerm) {
-        filters.push({ label: "Exam", value: String(selectedTerm) });
-      }
+    if (selectedTerm) {
+      filters.push({ label: "Exam", value: String(selectedTerm) });
+    }
 
-      if (selectedTerm === "Monthly Exam" && selectedMonth) {
-        const monthLabel =
-          (selectedMonth as any)?.label ??
-          (selectedMonth as any)?.name ??
-          selectedMonth;
-        filters.push({ label: "Month", value: String(monthLabel) });
-      }
+    if (selectedTerm === "Monthly Exam" && selectedMonth) {
+      const monthLabel =
+        (selectedMonth as any)?.label ??
+        (selectedMonth as any)?.name ??
+        selectedMonth;
+      filters.push({ label: "Month", value: String(monthLabel) });
+    }
 
-      return filters;
-    },
-    [
-      selectedYear,
-      selectedGrade,
-      selectedClass,
-      selectedMedium,
-      selectedSubject,
-      selectedTerm,
-      selectedMonth,
-    ]
-  );
+    return filters;
+  }, [
+    selectedYear,
+    selectedGrade,
+    selectedClass,
+    selectedMedium,
+    selectedSubject,
+    selectedTerm,
+    selectedMonth,
+  ]);
 
   //Use Form For the mutation
   const { control, watch, formState, setValue, getValues, reset } =
@@ -837,6 +837,9 @@ const StudentMarksTable = ({
             )}
           </Stack>
         </Stack>
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Student Count {studentCount}
+        </Alert>
         <TableContainer
           component={Paper}
           elevation={2}
@@ -937,7 +940,9 @@ const StudentMarksTable = ({
                         </TableCell>
                       )}
                       {visibility.name && (
-                        <TableCell>{row.student?.nameWithInitials ?? "-"}</TableCell>
+                        <TableCell>
+                          {row.student?.nameWithInitials ?? "-"}
+                        </TableCell>
                       )}
                       {visibility.academicYear && (
                         <TableCell>{row.academicYear ?? "-"}</TableCell>
