@@ -623,7 +623,7 @@ function UserTable() {
               isSearching={isSearchingUsers}
             />
           </Box>
-          <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+          <Box sx={{ display: "flex", gap: 1, mb: 2,justifyContent:"flex-end" }}>
             <Button
               variant="outlined"
               size="small"
@@ -631,7 +631,7 @@ function UserTable() {
               onClick={handleExportTeachersExcel}
               disabled={!teacherList.length}
             >
-              Excel
+              Export Excel
             </Button>
             <Button
               variant="outlined"
@@ -640,7 +640,7 @@ function UserTable() {
               onClick={handleExportTeachersPdf}
               disabled={!teacherList.length}
             >
-              PDF
+              Export PDF
             </Button>
           </Box>
           <Stack sx={{ alignItems: "center" }}>
@@ -806,7 +806,7 @@ function UserTable() {
             />
             
           </Box>
-          <Box sx={{ display: "flex", gap: 1,mb:2 }}>
+          <Box sx={{ display: "flex", gap: 1, mb: 2,justifyContent:"flex-end" }}>
               <Button
                 variant="outlined"
                 size="small"
@@ -814,7 +814,7 @@ function UserTable() {
                 onClick={handleExportStudentsExcel}
                 disabled={!studentList.length}
               >
-                Excel
+                Export Excel
               </Button>
               <Button
                 variant="outlined"
@@ -823,7 +823,7 @@ function UserTable() {
                 onClick={handleExportStudentsPdf}
                 disabled={!studentList.length}
               >
-                PDF
+                Export PDF
               </Button>
             </Box>
           <Stack sx={{ alignItems: "center" }}>
@@ -989,7 +989,7 @@ function UserTable() {
             />
             
           </Box>
-          <Box sx={{ display: "flex", gap: 1,mb:2 }}>
+          <Box sx={{ display: "flex", gap: 1, mb: 2,justifyContent:"flex-end" }}>
               <Button
                 variant="outlined"
                 size="small"
@@ -997,7 +997,7 @@ function UserTable() {
                 onClick={handleExportParentsExcel}
                 disabled={!parentList.length}
               >
-                Excel
+                Export Excel
               </Button>
               <Button
                 variant="outlined"
@@ -1006,7 +1006,7 @@ function UserTable() {
                 onClick={handleExportParentsPdf}
                 disabled={!parentList.length}
               >
-                PDF
+                Export PDF
               </Button>
             </Box>
           <Stack sx={{ alignItems: "center" }}>
