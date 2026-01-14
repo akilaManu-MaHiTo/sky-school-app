@@ -25,31 +25,31 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DownloadIcon from "@mui/icons-material/Download";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import theme from "../../../theme";
-import PageTitle from "../../../components/PageTitle";
-import Breadcrumb from "../../../components/BreadCrumb";
+import theme from "../../../../theme";
+import PageTitle from "../../../../components/PageTitle";
+import Breadcrumb from "../../../../components/BreadCrumb";
 import {
   examReportStatus,
   examReportTerms,
   marksEntryMonitoring,
-} from "../../../api/StudentMarks/studentMarksApi";
+} from "../../../../api/StudentMarks/studentMarksApi";
 import { Controller, useForm } from "react-hook-form";
-import { getYearsData } from "../../../api/OrganizationSettings/organizationSettingsApi";
-import { getGradesData } from "../../../api/OrganizationSettings/academicGradeApi";
-import useIsMobile from "../../../customHooks/useIsMobile";
-import SearchInput from "../../../components/SearchBar";
-import { useDebounce } from "../../../util/useDebounce";
-import useCurrentOrganization from "../../../hooks/useCurrentOrganization";
+import { getYearsData } from "../../../../api/OrganizationSettings/organizationSettingsApi";
+import { getGradesData } from "../../../../api/OrganizationSettings/academicGradeApi";
+import useIsMobile from "../../../../customHooks/useIsMobile";
+import SearchInput from "../../../../components/SearchBar";
+import { useDebounce } from "../../../../util/useDebounce";
+import useCurrentOrganization from "../../../../hooks/useCurrentOrganization";
 import {
   exportMarksEntryMonitoringAllTermsToExcel,
   exportMarksEntryMonitoringToExcel,
   MarksEntryMonitoringRow as ExportRow,
   MarksEntryMonitoringTermGroup,
-} from "../../../reportsUtils/MarksEntryMonitoringExcel";
+} from "../../../../reportsUtils/MarksEntryMonitoringExcel";
 import {
   generateMarksEntryMonitoringAllTermsPdf,
   generateMarksEntryMonitoringPdf,
-} from "../../../reportsUtils/MarksEntryMonitoringPDF";
+} from "../../../../reportsUtils/MarksEntryMonitoringPDF";
 
 type MarkCheckingItem = {
   academicYear: string;
