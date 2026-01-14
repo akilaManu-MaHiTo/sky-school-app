@@ -611,9 +611,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                           >
                             <DeleteIcon color="error" />
                           </IconButton>
-
                         </TableCell>
-                        
                       </TableRow>
                     ))
                   ) : (
@@ -848,8 +846,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                             padding: 2.5,
                             borderRadius: 2,
                             transition: "all 0.2s ease-in-out",
-                            border: "1px solid",
-                            borderColor: "divider",
+                            borderLeft: `0.8rem solid ${subject.colorCode}`,
                           }}
                         >
                           <Stack

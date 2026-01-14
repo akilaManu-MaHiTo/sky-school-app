@@ -328,7 +328,7 @@ function RagDashboard() {
       : [];
 
     if (!raw || raw.length === 0) {
-      return { categories: [], series: [] };
+      return { categories: [], series: [], colors: [] };
     }
 
     const categories = raw.map((item: any) => item.subjectName ?? "");
@@ -337,8 +337,13 @@ function RagDashboard() {
       return Number(avg.toFixed(2));
     });
 
+     const colors = raw.map(
+       (item: any) => item.subjectColorCode ?? "#008FFB"
+     );
+
     return {
       categories,
+      colors,
       series: [
         {
           name: "Average %",
@@ -354,10 +359,11 @@ function RagDashboard() {
     const terms = Object.keys(container || {});
 
     if (terms.length === 0) {
-      return { categories: [], series: [] };
+      return { categories: [], series: [], colors: [] };
     }
 
     const subjectSet = new Set<string>();
+    const subjectColorMap = new Map<string, string>();
     terms.forEach((termKey) => {
       const termRaw = container[termKey];
       const termArr: any[] = Array.isArray(termRaw)
@@ -369,6 +375,12 @@ function RagDashboard() {
       termArr.forEach((item: any) => {
         if (item?.subjectName) {
           subjectSet.add(item.subjectName);
+          if (
+            item.subjectColorCode &&
+            !subjectColorMap.has(item.subjectName)
+          ) {
+            subjectColorMap.set(item.subjectName, item.subjectColorCode);
+          }
         }
       });
     });
@@ -377,6 +389,7 @@ function RagDashboard() {
 
     const series = subjects.map((subject) => ({
       name: subject,
+      color: subjectColorMap.get(subject) ?? "#008FFB",
       data: terms.map((termKey) => {
         const termRaw = container[termKey];
         const termArr: any[] = Array.isArray(termRaw)
@@ -390,9 +403,14 @@ function RagDashboard() {
       }),
     }));
 
+    const colors = subjects.map(
+      (subject) => subjectColorMap.get(subject) ?? "#008FFB"
+    );
+
     return {
       categories: terms,
       series,
+      colors,
     };
   }, [classAllReportBarChartData]);
 
@@ -405,10 +423,11 @@ function RagDashboard() {
 
     const terms = Object.keys(container || {});
     if (terms.length === 0) {
-      return { categories: [], series: [] };
+      return { categories: [], series: [], colors: [] };
     }
 
     const subjectSet = new Set<string>();
+    const subjectColorMap = new Map<string, string>();
     terms.forEach((termKey) => {
       const termRaw = container[termKey];
       const termArr: any[] = Array.isArray(termRaw)
@@ -420,6 +439,12 @@ function RagDashboard() {
       termArr.forEach((item: any) => {
         if (item?.subjectName) {
           subjectSet.add(item.subjectName);
+          if (
+            item.subjectColorCode &&
+            !subjectColorMap.has(item.subjectName)
+          ) {
+            subjectColorMap.set(item.subjectName, item.subjectColorCode);
+          }
         }
       });
     });
@@ -428,6 +453,7 @@ function RagDashboard() {
 
     const series = subjects.map((subject) => ({
       name: subject,
+      color: subjectColorMap.get(subject) ?? "#008FFB",
       data: terms.map((termKey) => {
         const termRaw = container[termKey];
         const termArr: any[] = Array.isArray(termRaw)
@@ -441,9 +467,14 @@ function RagDashboard() {
       }),
     }));
 
+    const colors = subjects.map(
+      (subject) => subjectColorMap.get(subject) ?? "#008FFB"
+    );
+
     return {
       categories: terms,
       series,
+      colors,
     };
   }, [classAllReportBarChartDataMarkGrades]);
 
@@ -517,7 +548,7 @@ function RagDashboard() {
       : [];
 
     if (!raw || raw.length === 0) {
-      return { categories: [], series: [] };
+      return { categories: [], series: [], colors: [] };
     }
 
     const categories = raw.map((item: any) => item.subjectName ?? "");
@@ -526,8 +557,13 @@ function RagDashboard() {
       return Number(count);
     });
 
+    const colors = raw.map(
+      (item: any) => item.subjectColorCode ?? "#008FFB"
+    );
+
     return {
       categories,
+      colors,
       series: [
         {
           name: "Students Count",
@@ -965,6 +1001,7 @@ function RagDashboard() {
                 categories={barChartReportData.categories}
                 series={barChartReportData.series as any}
                 loading={isClassReportBarChartFetching}
+                barColors={barChartReportData.colors}
               />
             )}
           </ResponsiveContainer>
@@ -1032,6 +1069,7 @@ function RagDashboard() {
                 categories={subjectCountsChart.categories}
                 series={subjectCountsChart.series as any}
                 loading={isClassReportBarChartMarkGradeFetching}
+                barColors={subjectCountsChart.colors}
               />
             )}
           </ResponsiveContainer>

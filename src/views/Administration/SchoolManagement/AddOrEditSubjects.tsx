@@ -37,7 +37,18 @@ import {
   AcademicMedium,
   BasketGroup,
 } from "../../../api/OrganizationSettings/academicDetailsApi";
-
+import {
+  Slider,
+  Sketch,
+  Material,
+  Colorful,
+  Compact,
+  Circle,
+  Wheel,
+  Block,
+  Github,
+  Chrome,
+} from "@uiw/react-color";
 export const AddOrEditSubjects = ({
   open,
   setOpen,
@@ -196,6 +207,19 @@ export const AddOrEditSubjects = ({
               sx={{ margin: "0.5rem", flex: 1 }}
             />
           </Box>
+          <Controller
+            name="colorCode"
+            control={control}
+            defaultValue={defaultValues?.colorCode ?? "#000000"}
+            render={({ field }) => (
+              <Sketch
+                style={{ marginLeft: 20 }}
+                color={field.value || "#000000"}
+                onChange={(newShade) => field.onChange(newShade.hex)}
+              />
+            )}
+          />
+
           <Controller
             name="subjectMedium"
             control={control}

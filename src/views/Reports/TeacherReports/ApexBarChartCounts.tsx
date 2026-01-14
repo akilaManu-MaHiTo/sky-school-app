@@ -8,6 +8,7 @@ interface ApexBarChartCountsProps {
   series: ApexAxisChartSeries;
   height?: number;
   loading?: boolean;
+  barColors?: string[];
 }
 
 const ApexBarChartCounts: React.FC<ApexBarChartCountsProps> = ({
@@ -15,6 +16,7 @@ const ApexBarChartCounts: React.FC<ApexBarChartCountsProps> = ({
   series,
   height = 350,
   loading = false,
+  barColors,
 }) => {
   const options: ApexOptions = {
     chart: {
@@ -27,11 +29,14 @@ const ApexBarChartCounts: React.FC<ApexBarChartCountsProps> = ({
       bar: {
         borderRadius: 8,
         columnWidth: "50%",
+        distributed: !!(barColors && barColors.length),
         dataLabels: {
           position: "top",
         },
       },
     },
+
+    colors: barColors && barColors.length ? barColors : undefined,
 
     dataLabels: {
       enabled: true,

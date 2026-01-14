@@ -8,6 +8,7 @@ interface ApexBarChartProps {
   series: ApexAxisChartSeries;
   height?: number;
   loading?: boolean;
+  barColors?: string[];
 }
 
 const ApexBarChart: React.FC<ApexBarChartProps> = ({
@@ -15,6 +16,7 @@ const ApexBarChart: React.FC<ApexBarChartProps> = ({
   series,
   height = 350,
   loading = false,
+  barColors,
 }) => {
   const options: ApexOptions = {
     chart: {
@@ -27,11 +29,14 @@ const ApexBarChart: React.FC<ApexBarChartProps> = ({
       bar: {
         borderRadius: 8,
         columnWidth: "50%",
+        distributed: !!(barColors && barColors.length),
         dataLabels: {
           position: "top", // 🔑 forces label above bar
         },
       },
     },
+
+    colors: barColors && barColors.length ? barColors : undefined,
 
     dataLabels: {
       enabled: true,
