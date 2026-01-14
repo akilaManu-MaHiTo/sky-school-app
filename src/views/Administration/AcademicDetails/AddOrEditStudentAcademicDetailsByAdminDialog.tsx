@@ -16,7 +16,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { grey } from "@mui/material/colors";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import CustomButton from "../../../components/CustomButton";
 import useIsMobile from "../../../customHooks/useIsMobile";
@@ -34,9 +34,12 @@ import {
 import {
   getAllSubjectData,
   getGradesData,
+  getGroup1SubjectData,
+  getGroup2SubjectData,
+  getGroup3SubjectData,
   getYearsData,
 } from "../../../api/OrganizationSettings/organizationSettingsApi";
-import { getClassesData } from "../../../api/OrganizationSettings/academicGradeApi";
+import { getClassesDataByGrade } from "../../../api/OrganizationSettings/academicGradeApi";
 
 const AddOrEditStudentAcademicDetailsByAdminDialog = ({
   open,
@@ -51,6 +54,8 @@ const AddOrEditStudentAcademicDetailsByAdminDialog = ({
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const { isMobile } = useIsMobile();
+
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const {
     handleSubmit,
@@ -80,9 +85,25 @@ const AddOrEditStudentAcademicDetailsByAdminDialog = ({
     queryFn: getAllSubjectData,
   });
 
+  const { data: subjectDataGroup1 } = useQuery({
+    queryKey: ["subject-data-group-1"],
+    queryFn: getGroup1SubjectData,
+  });
+
+  const { data: subjectDataGroup2 } = useQuery({
+    queryKey: ["subject-data-group-2"],
+    queryFn: getGroup2SubjectData,
+  });
+
+  const { data: subjectDataGroup3 } = useQuery({
+    queryKey: ["subject-data-group-3"],
+    queryFn: getGroup3SubjectData,
+  });
+
   const { data: classData } = useQuery({
-    queryKey: ["academic-classes"],
-    queryFn: getClassesData,
+    queryKey: ["academic-classes", selectedGrade?.grade],
+    queryFn: () => getClassesDataByGrade(selectedGrade?.grade),
+    enabled: !!selectedGrade?.grade,
   });
 
   const { data: yearData, isFetching: isYearDataFetching } = useQuery({
@@ -106,7 +127,7 @@ const AddOrEditStudentAcademicDetailsByAdminDialog = ({
   }, [isDirty]);
 
   useEffect(() => {
-    if (!open) {
+    if (!open || isInitialized) {
       return;
     }
 
@@ -160,6 +181,7 @@ const AddOrEditStudentAcademicDetailsByAdminDialog = ({
         group2: matchedGroup2,
         group3: matchedGroup3,
       });
+      setIsInitialized(true);
     } else {
       reset({
         grades: null,
@@ -169,8 +191,15 @@ const AddOrEditStudentAcademicDetailsByAdminDialog = ({
         group2: null,
         group3: null,
       });
+      setIsInitialized(true);
     }
-  }, [open, defaultValues, gradeData, subjectData, classData, reset]);
+  }, [open, defaultValues, gradeData, subjectData, classData, reset, isInitialized]);
+
+  useEffect(() => {
+    if (!open) {
+      setIsInitialized(false);
+    }
+  }, [open]);
 
   const { mutate: createMutation, isPending: isCreating } = useMutation({
     mutationFn: (payload: AcademicDetail) =>
@@ -379,12 +408,13 @@ const AddOrEditStudentAcademicDetailsByAdminDialog = ({
                   {...field}
                   onChange={(event, newValue) => field.onChange(newValue)}
                   size="small"
-                  options={subjectData ?? []}
+                  options={subjectDataGroup1 ?? []}
                   getOptionLabel={(option) =>
-                    option.subjectName +
-                    ` - ` +
-                    option.subjectMedium +
-                    ` Medium`
+                    option && typeof option === "object"
+                      ? `${option.subjectName ?? ""} - ${
+                          option.subjectMedium ?? ""
+                        } Medium`
+                      : ""
                   }
                   isOptionEqualToValue={(option, value) =>
                     option?.id === value?.id
@@ -415,12 +445,13 @@ const AddOrEditStudentAcademicDetailsByAdminDialog = ({
                   {...field}
                   onChange={(event, newValue) => field.onChange(newValue)}
                   size="small"
-                  options={subjectData ?? []}
+                  options={subjectDataGroup2 ?? []}
                   getOptionLabel={(option) =>
-                    option.subjectName +
-                    ` - ` +
-                    option.subjectMedium +
-                    ` Medium`
+                    option && typeof option === "object"
+                      ? `${option.subjectName ?? ""} - ${
+                          option.subjectMedium ?? ""
+                        } Medium`
+                      : ""
                   }
                   isOptionEqualToValue={(option, value) =>
                     option?.id === value?.id
@@ -451,12 +482,13 @@ const AddOrEditStudentAcademicDetailsByAdminDialog = ({
                   {...field}
                   onChange={(event, newValue) => field.onChange(newValue)}
                   size="small"
-                  options={subjectData ?? []}
+                  options={subjectDataGroup3 ?? []}
                   getOptionLabel={(option) =>
-                    option.subjectName +
-                    ` - ` +
-                    option.subjectMedium +
-                    ` Medium`
+                    option && typeof option === "object"
+                      ? `${option.subjectName ?? ""} - ${
+                          option.subjectMedium ?? ""
+                        } Medium`
+                      : ""
                   }
                   isOptionEqualToValue={(option, value) =>
                     option?.id === value?.id
