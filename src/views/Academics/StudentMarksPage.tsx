@@ -531,6 +531,7 @@ const StudentMarksPage = () => {
             selectedClass={selectedClass}
             selectedMedium={selectedMedium}
             refetchData={refetchMarksData}
+            studentCount={studentExamData?.length}
           />
         )}
       </Box>

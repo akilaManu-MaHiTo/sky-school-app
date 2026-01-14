@@ -25,6 +25,7 @@ import {
   AcademicDetail,
   AcademicMedium,
   createAcademicDetail,
+  createAcademicDetailByAdmin,
   updateAcademicDetail,
   updateAcademicDetailsByAdmin,
 } from "../../../api/OrganizationSettings/academicDetailsApi";
@@ -39,10 +40,12 @@ const AddOrEditAcademicDetailsByAdminDialog = ({
   open,
   setOpen,
   defaultValues,
+  teacherId,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
   defaultValues?: any;
+  teacherId: number;
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const { isMobile } = useIsMobile();
@@ -132,7 +135,8 @@ const AddOrEditAcademicDetailsByAdminDialog = ({
   }, [open, defaultValues, gradeData, subjectData, classData, reset]);
 
   const { mutate: createMutation, isPending: isCreating } = useMutation({
-    mutationFn: createAcademicDetail,
+    mutationFn: (payload: AcademicDetail) =>
+      createAcademicDetailByAdmin(payload, teacherId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-data"] });
       queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -175,7 +179,7 @@ const AddOrEditAcademicDetailsByAdminDialog = ({
       return;
     }
 
-    // createMutation(data);
+    createMutation(data);
   };
   return (
     <Dialog

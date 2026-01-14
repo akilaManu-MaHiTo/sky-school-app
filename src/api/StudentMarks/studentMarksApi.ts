@@ -23,7 +23,7 @@ export const examReportStatus = [
   "Done"
 ];
 export const markGrades = [
-  "A","B","C","D","F"
+  "A","B","C","S","F"
 ];
 export const months = [
   "January",

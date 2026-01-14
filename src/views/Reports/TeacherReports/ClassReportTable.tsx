@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import {
+  Alert,
   Box,
   Button,
   IconButton,
@@ -127,7 +128,7 @@ function ClassReportTable({
     return {
       subjects,
       exportSubjects: allSubjects,
-        groupNames: showGroupColumns ? GROUP_NAMES : [],
+      groupNames: showGroupColumns ? GROUP_NAMES : [],
       rows,
       basketSubjectsByGroup,
     };
@@ -243,7 +244,9 @@ function ClassReportTable({
           </Button>
         </Box>
       </Box>
-
+      <Alert severity="info" sx={{ mb: 2 }}>
+        Student Count {reportData?.data?.studentCount}
+      </Alert>
       <TableContainer
         component={Paper}
         elevation={2}
