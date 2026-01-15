@@ -51,11 +51,11 @@ const StudentPromotion = React.lazy(
 const ParentReport = React.lazy(() => import("./views/Reports/Student-ParentReport/ParentReport"));
 // Reports > Teacher Reports > Class Report
 const TeacherClassReport = React.lazy(
-  () => import("./views/Reports/TeacherReports/ClassReport")
+  () => import("./views/Reports/TeacherReports/ClassReport/ClassReport")
 );
 // Reports > Teacher Reports > Student Report
 const TeacherStudentReport = React.lazy(
-  () => import("./components/UnderDevelopment")
+  () => import("./views/Reports/TeacherReports/StudentReport/StudentReport")
 );
 // Reports > Management Staff Reports > Grade Report
 const ManagementGradeReport = React.lazy(
@@ -67,7 +67,7 @@ const MarksEntryReport = React.lazy(
 );
 // Reports > Management Staff Reports > Student Report
 const ManagementStudentReport = React.lazy(
-  () => import("./components/UnderDevelopment")
+  () => import("./views/Reports/ManagementStaffReport/StudentReport/StudentReport")
 );
 
 // Academics

@@ -19,9 +19,9 @@ import {
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import DownloadIcon from "@mui/icons-material/Download";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import { exportClassReportToExcel } from "../../../reportsUtils/ClassReportExcel";
-import { generateClassReportPdf } from "../../../reportsUtils/ClassReportPDF";
-import useCurrentOrganization from "../../../hooks/useCurrentOrganization";
+import { exportClassReportToExcel } from "../../../../reportsUtils/ClassReportExcel";
+import { generateClassReportPdf } from "../../../../reportsUtils/ClassReportPDF";
+import useCurrentOrganization from "../../../../hooks/useCurrentOrganization";
 
 interface ClassReportTableProps {
   reportData?: any;
