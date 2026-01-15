@@ -44,7 +44,7 @@ const AddClassTeacher = React.lazy(
 );
 // Administration > Student Management > Student Promotion
 const StudentPromotion = React.lazy(
-  () => import("./components/UnderDevelopment")
+  () => import("./views/Administration/StudentManagement/StudentPromotion")
 );
 
 // Reports > Student/Parent Reports > Parent Report
@@ -57,9 +57,13 @@ const TeacherClassReport = React.lazy(
 const TeacherStudentReport = React.lazy(
   () => import("./components/UnderDevelopment")
 );
+// Reports > Management Staff Reports > Grade Report
+const ManagementGradeReport = React.lazy(
+  () => import("./views/Reports/ManagementStaffReport/GradeReport/GradeReport")
+);
 // Reports > Management Staff Reports > Marks Entry Report
 const MarksEntryReport = React.lazy(
-  () => import("./views/Reports/ManagementStaffReport/MarksEntryMonitoring")
+  () => import("./views/Reports/ManagementStaffReport/MarksEntryMonitoring/MarksEntryMonitoring")
 );
 // Reports > Management Staff Reports > Student Report
 const ManagementStudentReport = React.lazy(
@@ -246,6 +250,16 @@ const AppRoutes = () => {
           )}
         />
         {/* Reports > Management Staff Reports > Marks Entry Report */}
+        <Route
+          path="/reports/management-grade-report"
+          element={withLayout(
+            MainLayout,
+            ManagementGradeReport,
+            !userPermissionObject?.[
+              PermissionKeys.MARKS_ENTRY_MONITORING_REPORTS_VIEW
+            ]
+          )}
+        />
         <Route
           path="/reports/marks-entry-monitor"
           element={withLayout(

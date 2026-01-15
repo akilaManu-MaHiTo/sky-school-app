@@ -117,3 +117,58 @@ export const deleteAcademicClass = async (id: String) => {
   const res = await axios.delete(`/api/class/${id}`);
   return res.data;
 };
+
+export async function getStudentToPromoteData(
+  year: string,
+  grade: any,
+  academicClass: any
+) {
+  const gradeId = grade?.id;
+  const classId = academicClass?.id;
+  const res = await axios.get(
+    `/api/student-profiles/${year}/${gradeId}/${classId}`
+  );
+  return res.data;
+}
+
+export type StudentPromotionItem = {
+  studentId: number;
+  academicGradeId: number;
+  academicClassId: number;
+  academicYear: string;
+  academicMedium: string;
+};
+
+export const promoteStudents = async (payload: StudentPromotionItem[]) => {
+  const res = await axios.post(`/api/student-promote`, payload);
+  return res.data;
+};
+
+export const gradeReportBarChart = async (
+  year: any,
+  grade: any,
+  examType: number
+) => {
+  const gradeId = grade?.id;
+  const yearId = year.year;
+  console.log("API Grade ID:", gradeId);
+  const res = await axios.get(
+    `/api/grade-report/${yearId}/${gradeId}/${examType}/bar-chart`
+  );
+  return res.data;
+};
+
+export const gradeReportMarkBarChart = async (
+  year: any,
+  grade: any,
+  examType: number,
+  gradeMark: string
+) => {
+  const gradeId = grade?.id;
+  const yearId = year.year;
+  console.log("API Grade ID:", gradeId);
+  const res = await axios.get(
+    `/api/grade-report/${yearId}/${gradeId}/${examType}/${gradeMark}/bar-chart`
+  );
+  return res.data;
+};
