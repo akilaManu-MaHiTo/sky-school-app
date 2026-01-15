@@ -16,7 +16,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { grey } from "@mui/material/colors";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import CustomButton from "../../../components/CustomButton";
 import useIsMobile from "../../../customHooks/useIsMobile";
@@ -37,7 +37,10 @@ import {
   getGroup3SubjectData,
   getYearsData,
 } from "../../../api/OrganizationSettings/organizationSettingsApi";
-import { getClassesData } from "../../../api/OrganizationSettings/academicGradeApi";
+import {
+  getClassesData,
+  getClassesDataByGrade,
+} from "../../../api/OrganizationSettings/academicGradeApi";
 
 const AddOrEditStudentAcademicDetailsDialog = ({
   open,
@@ -50,6 +53,8 @@ const AddOrEditStudentAcademicDetailsDialog = ({
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const { isMobile } = useIsMobile();
+
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const {
     handleSubmit,
@@ -93,8 +98,9 @@ const AddOrEditStudentAcademicDetailsDialog = ({
   });
 
   const { data: classData } = useQuery({
-    queryKey: ["academic-classes"],
-    queryFn: getClassesData,
+    queryKey: ["academic-classes", selectedGrade?.grade],
+    queryFn: () => getClassesDataByGrade(selectedGrade?.grade),
+    enabled: !!selectedGrade?.grade,
   });
 
   const { data: yearData, isFetching: isYearDataFetching } = useQuery({
@@ -118,7 +124,7 @@ const AddOrEditStudentAcademicDetailsDialog = ({
   }, [isDirty]);
 
   useEffect(() => {
-    if (!open) {
+    if (!open || isInitialized) {
       return;
     }
 
@@ -172,17 +178,15 @@ const AddOrEditStudentAcademicDetailsDialog = ({
         group2: matchedGroup2,
         group3: matchedGroup3,
       });
-    } else {
-      reset({
-        grades: null,
-        subjects: null,
-        classes: null,
-        group1: null,
-        group2: null,
-        group3: null,
-      });
+      setIsInitialized(true);
     }
-  }, [open, defaultValues, gradeData, subjectData, classData, reset]);
+  }, [open, defaultValues, gradeData, subjectData, classData, reset, isInitialized]);
+
+  useEffect(() => {
+    if (!open) {
+      setIsInitialized(false);
+    }
+  }, [open]);
 
   const { mutate: createMutation, isPending: isCreating } = useMutation({
     mutationFn: createAcademicStudentDetail,
@@ -267,6 +271,33 @@ const AddOrEditStudentAcademicDetailsDialog = ({
       <DialogContent>
         <Box sx={{ display: "flex", flexDirection: "column" }}>
           <Controller
+            name="academicYear"
+            control={control}
+            defaultValue={defaultValues?.academicYear ?? ""}
+            {...register("academicYear", { required: true })}
+            render={({ field }) => (
+              <Autocomplete
+                {...field}
+                onChange={(event, newValue) => field.onChange(newValue)}
+                size="small"
+                options={
+                  yearData?.length ? yearData.map((year) => year.year) : []
+                }
+                sx={{ flex: 1, margin: "0.5rem" }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    required
+                    error={!!errors.academicYear}
+                    helperText={errors.academicYear && "Required"}
+                    label="Academic Year"
+                    name="academicYear"
+                  />
+                )}
+              />
+            )}
+          />
+          <Controller
             name="grades"
             control={control}
             rules={{ required: true }}
@@ -325,34 +356,6 @@ const AddOrEditStudentAcademicDetailsDialog = ({
           />
 
           <Controller
-            name="academicYear"
-            control={control}
-            defaultValue={defaultValues?.academicYear ?? ""}
-            {...register("academicYear", { required: true })}
-            render={({ field }) => (
-              <Autocomplete
-                {...field}
-                onChange={(event, newValue) => field.onChange(newValue)}
-                size="small"
-                options={
-                  yearData?.length ? yearData.map((year) => year.year) : []
-                }
-                sx={{ flex: 1, margin: "0.5rem" }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    required
-                    error={!!errors.academicYear}
-                    helperText={errors.academicYear && "Required"}
-                    label="Academic Year"
-                    name="academicYear"
-                  />
-                )}
-              />
-            )}
-          />
-
-          <Controller
             name="academicMedium"
             control={control}
             defaultValue={defaultValues?.academicMedium ?? ""}
@@ -391,10 +394,11 @@ const AddOrEditStudentAcademicDetailsDialog = ({
                   size="small"
                   options={subjectDataGroup1 ?? []}
                   getOptionLabel={(option) =>
-                    option.subjectName +
-                    ` - ` +
-                    option.subjectMedium +
-                    ` Medium`
+                    option && typeof option === "object"
+                      ? `${option.subjectName ?? ""} - ${
+                          option.subjectMedium ?? ""
+                        } Medium`
+                      : ""
                   }
                   isOptionEqualToValue={(option, value) =>
                     option?.id === value?.id
@@ -427,10 +431,11 @@ const AddOrEditStudentAcademicDetailsDialog = ({
                   size="small"
                   options={subjectDataGroup2 ?? []}
                   getOptionLabel={(option) =>
-                    option.subjectName +
-                    ` - ` +
-                    option.subjectMedium +
-                    ` Medium`
+                    option && typeof option === "object"
+                      ? `${option.subjectName ?? ""} - ${
+                          option.subjectMedium ?? ""
+                        } Medium`
+                      : ""
                   }
                   isOptionEqualToValue={(option, value) =>
                     option?.id === value?.id
@@ -463,10 +468,11 @@ const AddOrEditStudentAcademicDetailsDialog = ({
                   size="small"
                   options={subjectDataGroup3 ?? []}
                   getOptionLabel={(option) =>
-                    option.subjectName +
-                    ` - ` +
-                    option.subjectMedium +
-                    ` Medium`
+                    option && typeof option === "object"
+                      ? `${option.subjectName ?? ""} - ${
+                          option.subjectMedium ?? ""
+                        } Medium`
+                      : ""
                   }
                   isOptionEqualToValue={(option, value) =>
                     option?.id === value?.id

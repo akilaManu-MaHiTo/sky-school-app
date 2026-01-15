@@ -36,6 +36,7 @@ export type AcademicSubject = z.infer<typeof SubjectSchema>;
 export const ClassSchema = z.object({
   id: z.number(),
   className: z.string(),
+  classCategory: z.string(),
   gradeId: z.number().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -94,6 +95,11 @@ export const deleteAcademicSubject = async (id: String) => {
 
 export async function getClassesData() {
   const res = await axios.get(`/api/class`);
+  return res.data;
+}
+
+export async function getClassesDataByGrade(grade: String) {
+  const res = await axios.get(`/api/class-by-grade/${grade}`);
   return res.data;
 }
 

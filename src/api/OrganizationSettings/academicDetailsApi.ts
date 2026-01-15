@@ -53,6 +53,19 @@ export const BasketGroup = [
   },
 ];
 
+export const ClassCategories = [
+  {
+    id: "1",
+    academicMedium: "1 - 5 Class",
+  },
+  { id: "3", academicMedium: "6 - 9 Class" },
+  {
+    id: "2",
+    academicMedium: "10 - 11 Class",
+  },
+  { id: "4", academicMedium: "12 - 13 Class" },
+];
+
 export const createAcademicDetail = async (payload: AcademicDetail) => {
   console.log("payload", payload);
   const submitData = {

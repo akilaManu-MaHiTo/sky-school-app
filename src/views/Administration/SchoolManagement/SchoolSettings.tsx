@@ -990,6 +990,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                     {classColumnVisibility.className && (
                       <TableCell align="left">Class Name</TableCell>
                     )}
+                    <TableCell align="left">Class Category</TableCell>
                     {classColumnVisibility.className && (
                       <TableCell align="center">Created By</TableCell>
                     )}
@@ -1020,6 +1021,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                             />
                           </TableCell>
                         )}
+                        <TableCell align="left">{row.classCategory}</TableCell>
                         {classColumnVisibility.className && (
                           <TableCell align="center">
                             {row?.createdByData?.nameWithInitials ?? "-"}
