@@ -48,7 +48,7 @@ const StudentPromotion = React.lazy(
 );
 
 // Reports > Student/Parent Reports > Parent Report
-const ParentReport = React.lazy(() => import("./components/UnderDevelopment"));
+const ParentReport = React.lazy(() => import("./views/Reports/Student-ParentReport/ParentReport"));
 // Reports > Teacher Reports > Class Report
 const TeacherClassReport = React.lazy(
   () => import("./views/Reports/TeacherReports/ClassReport")

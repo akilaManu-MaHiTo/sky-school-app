@@ -121,11 +121,51 @@ export async function getUserData({
   role: string;
   sortBy: string;
 }) {
-  const res = await axios.get(`/api/users/${role}/${sortBy}/search?keyword=${query}`);
+  const res = await axios.get(
+    `/api/users/${role}/${sortBy}/search?keyword=${query}`
+  );
   return res.data;
 }
 
-export async function updateUserActiveStatus (id: number, availability: boolean) {
-  const res = await axios.post(`/api/users/${id}/active-status`, { availability });
+export async function updateUserActiveStatus(
+  id: number,
+  availability: boolean
+) {
+  const res = await axios.post(`/api/users/${id}/active-status`, {
+    availability,
+  });
+  return res.data;
+}
+
+export async function getMyChildYears(studentId: number) {
+  const res = await axios.get(`/api/my-children-year/${studentId}`);
+  return res.data;
+}
+export async function getMyChildGrades(studentId: number) {
+  const res = await axios.get(`/api/my-children-grade/${studentId}`);
+  return res.data;
+}
+export async function getMyChildClasses(studentId: number) {
+  const res = await axios.get(`/api/my-children-class/${studentId}`);
+  return res.data;
+}
+
+export async function getMyChildReport(
+  studentId: number,
+  year: string,
+  examType: string
+) {
+  const res = await axios.get(
+    `/api/parent-report/${studentId}/${year}/${examType}`
+  );
+  return res.data;
+}
+
+export async function getMyChildReportLineChart(
+  studentId: number,
+) {
+  const res = await axios.get(
+    `/api/parent-report-line-chart/${studentId}`
+  );
   return res.data;
 }
