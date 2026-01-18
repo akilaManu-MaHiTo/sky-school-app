@@ -78,6 +78,7 @@ type ParentChildProfile = {
   parentProfileId: number | string;
   id: number | string;
   name?: string | null;
+  nameWithInitials?: string | null;
   email?: string | null;
   mobile?: string | null;
   gender?: string | null;
@@ -990,8 +991,8 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                     >
                       <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
                         <Typography sx={{ color: "var(--pallet-blue)" }} noWrap>
-                          {child.name
-                            ? `${child.name}${child.employeeId ? ` | ${child.employeeId}` : ""}`
+                          {child.nameWithInitials
+                            ? `${child.nameWithInitials}${child.employeeId ? ` | ${child.employeeId}` : ""}`
                             : `Child ${child.id}`}
                         </Typography>
                         <Typography variant="body2" color="textSecondary" noWrap>
