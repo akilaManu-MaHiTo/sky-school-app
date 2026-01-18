@@ -1103,6 +1103,7 @@ function RagDashboard() {
               isMobile={isMobile}
               isTablet={isTablet}
               showGroupColumns={showGroupColumns}
+              year={year}
             />
           ) : (
             <ClassReportTable
@@ -1112,6 +1113,7 @@ function RagDashboard() {
               isTablet={isTablet}
               title={classReportTitle}
               showGroupColumns={showGroupColumns}
+              year={year}
             />
           )}
         </Box>

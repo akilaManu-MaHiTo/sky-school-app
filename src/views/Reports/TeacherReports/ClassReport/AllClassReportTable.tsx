@@ -27,6 +27,7 @@ interface AllClassReportTableProps {
   isMobile: boolean;
   isTablet?: boolean;
   showGroupColumns?: boolean;
+  year?: string;
 }
 
 function AllClassReportTable({
@@ -35,6 +36,7 @@ function AllClassReportTable({
   isMobile,
   isTablet,
   showGroupColumns = true,
+  year,
 }: AllClassReportTableProps) {
   const { organization } = useCurrentOrganization();
   const organizationName = organization?.organizationName;
@@ -115,7 +117,12 @@ function AllClassReportTable({
         return [...row, ...Array(columnCount - row.length).fill("")];
       };
 
-      const yearLabel = termData.academicYear ?? termData.year ?? undefined;
+      const yearLabel =
+        typeof year === "string"
+          ? year
+          : (year as any)?.academicYear ??
+            (year as any)?.year ??
+            (year != null ? String(year) : undefined);
       const gradeLabel = termData.grade ? String(termData.grade) : undefined;
       const classLabel = termData.className
         ? String(termData.className)
@@ -134,6 +141,10 @@ function AllClassReportTable({
         : String(sheetTitleRaw);
       if (sectionTitle) {
         metaRows.push([sectionTitle]);
+      }
+
+      if (yearLabel) {
+        metaRows.push([yearLabel]);
       }
 
       const worksheetData: (string | number)[][] = [
@@ -352,6 +363,7 @@ function AllClassReportTable({
               isTablet={isTablet}
               title={title}
               showGroupColumns={showGroupColumns}
+              year={year}
             />
           </Box>
         );

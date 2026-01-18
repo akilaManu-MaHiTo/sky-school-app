@@ -88,7 +88,7 @@ type MarkMutationPayload = {
   selectedMonth: string;
 };
 const normalizeMarkValue = (
-  value: string | number | null | undefined
+  value: string | number | null | undefined,
 ): string => {
   if (value === null || value === undefined) {
     return "";
@@ -103,11 +103,11 @@ const deriveAbsencesFromRows = (rows: StudentMarkRow[] | null | undefined) =>
   (rows ?? []).map((row) => Boolean(row.isAbsentStudent));
 
 const buildRowSignature = (
-  rows: StudentMarkRow[] | null | undefined
+  rows: StudentMarkRow[] | null | undefined,
 ): Array<{ key: string; mark: string; isAbsent: boolean }> =>
   (rows ?? []).map((row, index) => ({
     key: String(
-      row.studentProfileId ?? row.student?.employeeNumber ?? `row-${index}`
+      row.studentProfileId ?? row.student?.employeeNumber ?? `row-${index}`,
     ),
     mark: normalizeMarkValue(row.studentMark),
     isAbsent: Boolean(row.isAbsentStudent),
@@ -128,7 +128,7 @@ const gradeColorMap: Record<
 const MARK_RANGE_ERROR_MESSAGE = "Marks must be between 0 and 100";
 
 const validateMarkRange = (
-  value: string | number | null | undefined
+  value: string | number | null | undefined,
 ): true | string => {
   if (value === "" || value === null || value === undefined) {
     return true;
@@ -147,7 +147,7 @@ const validateMarkRange = (
   return true;
 };
 const isMarkValueWithinRange = (
-  value: string | number | null | undefined
+  value: string | number | null | undefined,
 ): boolean => validateMarkRange(value) === true;
 
 // Main Function
@@ -167,7 +167,7 @@ const StudentMarksTable = ({
   //Utils
   const { enqueueSnackbar } = useSnackbar();
   const isMobile = useMediaQuery((theme: Theme) =>
-    theme.breakpoints.down("md")
+    theme.breakpoints.down("md"),
   );
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -295,7 +295,7 @@ const StudentMarksTable = ({
       return undefined;
     }
     const rowWithSubject = rows.find(
-      (studentRow) => studentRow.subject?.subjectName
+      (studentRow) => studentRow.subject?.subjectName,
     );
     return rowWithSubject?.subject?.subjectName ?? undefined;
   }, [rows]);
@@ -321,12 +321,12 @@ const StudentMarksTable = ({
     });
   }, [reset, rows]);
   const lastSyncedSignatureRef = useRef<string>(
-    JSON.stringify(buildRowSignature(rows))
+    JSON.stringify(buildRowSignature(rows)),
   );
 
   const getStudentKey = (
     admissionNumber?: string | null,
-    studentName?: string | null
+    studentName?: string | null,
   ) => {
     if (!admissionNumber || !studentName) {
       return null;
@@ -390,7 +390,7 @@ const StudentMarksTable = ({
         const message = error?.data?.message || error?.message || "Failed";
         enqueueSnackbar(message, { variant: "error" });
       },
-    }
+    },
   );
 
   // Debounced Mutation Function
@@ -407,7 +407,7 @@ const StudentMarksTable = ({
       }, 750);
       timeoutMap.set(studentProfileId, timeoutId);
     },
-    [persistMarkMutation]
+    [persistMarkMutation],
   );
 
   const cancelPendingMutation = useCallback(
@@ -422,7 +422,7 @@ const StudentMarksTable = ({
         timeoutMap.delete(studentProfileId);
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -440,7 +440,7 @@ const StudentMarksTable = ({
       row: StudentMarkRow,
       markValue: string | number | null,
       isAbsentStudent?: boolean,
-      options?: { immediate?: boolean }
+      options?: { immediate?: boolean },
     ) => {
       if (!row.studentProfileId || !selectedSubject?.id) {
         return;
@@ -484,7 +484,7 @@ const StudentMarksTable = ({
       selectedSubject,
       selectedTerm,
       selectedYear,
-    ]
+    ],
   );
 
   const handleExcelUpload = useCallback(
@@ -513,8 +513,8 @@ const StudentMarksTable = ({
                     : String(studentMark),
                 isAbsent: isAbsentStudent,
               },
-            ]
-          )
+            ],
+          ),
         );
         const marksFromForm = getValues("studentMarks");
         const absencesFromForm = getValues("isAbsentStudents");
@@ -533,7 +533,7 @@ const StudentMarksTable = ({
         rows.forEach((row, index) => {
           const rowKey = getStudentKey(
             row.student?.employeeNumber ?? null,
-            row.student?.nameWithInitials ?? row.student?.name ?? null
+            row.student?.nameWithInitials ?? row.student?.name ?? null,
           );
           if (!rowKey) {
             return;
@@ -546,8 +546,8 @@ const StudentMarksTable = ({
               mappedValue?.isAbsent !== null;
             const resolvedAbsent = hasExcelAbsent
               ? Boolean(mappedValue?.isAbsent)
-              : currentAbsences[index] ?? Boolean(row.isAbsentStudent);
-            const markValue = resolvedAbsent ? "" : mappedValue?.mark ?? "";
+              : (currentAbsences[index] ?? Boolean(row.isAbsentStudent));
+            const markValue = resolvedAbsent ? "" : (mappedValue?.mark ?? "");
             currentMarks[index] = markValue;
             currentAbsences[index] = resolvedAbsent;
             pendingUpdates.push({
@@ -580,7 +580,7 @@ const StudentMarksTable = ({
           }`,
           {
             variant: "success",
-          }
+          },
         );
       } catch (error) {
         enqueueSnackbar("Failed to read Excel file", { variant: "error" });
@@ -593,7 +593,7 @@ const StudentMarksTable = ({
       rows,
       setValue,
       triggerMarkMutation,
-    ]
+    ],
   );
 
   const handleExcelInputChange = useCallback(
@@ -604,13 +604,12 @@ const StudentMarksTable = ({
       }
       event.target.value = "";
     },
-    [handleExcelUpload]
+    [handleExcelUpload],
   );
 
   // Column Definitions and Visibility Setup
   const columns = useMemo<ColumnDefinition[]>(
     () => [
-      { key: "markId", label: "Mark Id" },
       { key: "admissionNumber", label: "Admission Number" },
       { key: "name", label: "Name" },
       { key: "academicYear", label: "Academic Year", defaultVisible: false },
@@ -623,12 +622,12 @@ const StudentMarksTable = ({
       { key: "studentMark", label: "Mark" },
       { key: "markGrade", label: "Grade Mark" },
     ],
-    []
+    [],
   );
   const { visibility, columnSelectorProps } = useColumnVisibility({ columns });
   const visibleColumnCount = useMemo(
     () => columns.filter((col) => visibility[col.key]).length,
-    [columns, visibility]
+    [columns, visibility],
   );
 
   const marksDataForExport = useMemo<StudentMarkRow[]>(() => {
@@ -648,11 +647,13 @@ const StudentMarksTable = ({
       const gradeValue = isAbsentValue
         ? "Absent"
         : hasWatchedValue && watchedValue !== ""
-        ? isMarkValueWithinRange(watchedValue)
-          ? getMarkGrade(watchedValue)
-          : "-"
-        : row.markGrade ??
-          (row.studentMark !== undefined ? getMarkGrade(row.studentMark) : "-");
+          ? isMarkValueWithinRange(watchedValue)
+            ? getMarkGrade(watchedValue)
+            : "-"
+          : (row.markGrade ??
+            (row.studentMark !== undefined
+              ? getMarkGrade(row.studentMark)
+              : "-"));
       const academicTermValue =
         resolvedMonthlyTermLabel !== undefined
           ? resolvedMonthlyTermLabel
@@ -852,7 +853,7 @@ const StudentMarksTable = ({
           <Table aria-label="simple table">
             <TableHead sx={{ backgroundColor: "#f3f3f3ff" }}>
               <TableRow>
-                {visibility.markId && <TableCell>Is Marked</TableCell>}
+                {/* {visibility.markId && <TableCell>Is Marked</TableCell>} */}
                 {visibility.admissionNumber && (
                   <TableCell>Admission Number</TableCell>
                 )}
@@ -896,10 +897,10 @@ const StudentMarksTable = ({
                     ? shouldUseWatchedGrade
                       ? getMarkGrade(watchedValue)
                       : "-"
-                    : row.markGrade ??
+                    : (row.markGrade ??
                       (row.studentMark !== undefined
                         ? getMarkGrade(row.studentMark)
-                        : "-");
+                        : "-"));
                   const displayGrade = currentIsAbsent ? "Absent" : baseGrade;
                   const markError = formState.errors?.studentMarks?.[index];
                   const markErrorMessage =
@@ -912,7 +913,7 @@ const StudentMarksTable = ({
                       key={row.id ?? index}
                       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                     >
-                      {visibility.markId && (
+                      {/* {visibility.markId && (
                         <TableCell>
                           {row.markId ? (
                             <IconButton
@@ -933,7 +934,7 @@ const StudentMarksTable = ({
                             "-"
                           )}
                         </TableCell>
-                      )}
+                      )} */}
                       {visibility.admissionNumber && (
                         <TableCell>
                           {row.student?.employeeNumber ?? "-"}
@@ -990,13 +991,13 @@ const StudentMarksTable = ({
                                     ? ""
                                     : normalizeMarkValue(
                                         getValues(markFieldName) ??
-                                          row.studentMark
+                                          row.studentMark,
                                       );
                                   triggerMarkMutation(
                                     row,
                                     latestMark,
                                     checked,
-                                    { immediate: true }
+                                    { immediate: true },
                                   );
                                 }}
                               />
@@ -1063,11 +1064,11 @@ const StudentMarksTable = ({
                                         triggerMarkMutation(
                                           row,
                                           val,
-                                          currentIsAbsent
+                                          currentIsAbsent,
                                         );
                                       } else {
                                         cancelPendingMutation(
-                                          row.studentProfileId
+                                          row.studentProfileId,
                                         );
                                       }
                                     }
@@ -1101,7 +1102,7 @@ const StudentMarksTable = ({
                               color={
                                 displayGrade === "Absent"
                                   ? "default"
-                                  : gradeColorMap[displayGrade] ?? "default"
+                                  : (gradeColorMap[displayGrade] ?? "default")
                               }
                               size="small"
                               sx={{

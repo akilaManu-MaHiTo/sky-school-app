@@ -77,7 +77,7 @@ export const exportClassReportToExcel = ({
       formatCellValue(
         typeof row.averageOfMarks === "number"
           ? row.averageOfMarks.toFixed(2)
-          : row.averageOfMarks
+          : row.averageOfMarks,
       ),
       formatCellValue(row.position),
     ];
@@ -108,23 +108,8 @@ export const exportClassReportToExcel = ({
   if (metaTitle) {
     metaRows.push([metaTitle]);
   }
-
-  const detailPairs: (string | number)[] = [];
   if (metaYear) {
-    detailPairs.push("Year", metaYear);
-  }
-  if (metaGrade) {
-    detailPairs.push("Grade", metaGrade);
-  }
-  if (metaClass) {
-    detailPairs.push("Class", metaClass);
-  }
-  if (metaTerm) {
-    detailPairs.push("Exam", metaTerm);
-  }
-
-  if (detailPairs.length) {
-    metaRows.push(detailPairs);
+    metaRows.push([metaYear]);
   }
 
   const worksheetData: (string | number)[][] = [
@@ -139,7 +124,7 @@ export const exportClassReportToExcel = ({
 
   const safeTitle = (options?.title || title || "class-report").replace(
     /[^a-z0-9]+/gi,
-    "-"
+    "-",
   );
   const fileName = options?.fileName || `${safeTitle.toLowerCase()}.xlsx`;
 
