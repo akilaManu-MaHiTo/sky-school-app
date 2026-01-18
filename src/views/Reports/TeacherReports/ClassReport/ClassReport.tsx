@@ -17,15 +17,15 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import theme from "../../../theme";
-import PageTitle from "../../../components/PageTitle";
-import Breadcrumb from "../../../components/BreadCrumb";
+import theme from "../../../../theme";
+import PageTitle from "../../../../components/PageTitle";
+import Breadcrumb from "../../../../components/BreadCrumb";
 import { Controller, useForm } from "react-hook-form";
-import useIsMobile from "../../../customHooks/useIsMobile";
-import DateRangePicker from "../../../components/DateRangePicker";
-import CustomButton from "../../../components/CustomButton";
+import useIsMobile from "../../../../customHooks/useIsMobile";
+import DateRangePicker from "../../../../components/DateRangePicker";
+import CustomButton from "../../../../components/CustomButton";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import DashboardCard from "../../../components/DashboardCard";
+import DashboardCard from "../../../../components/DashboardCard";
 import {
   XAxis,
   YAxis,
@@ -39,8 +39,8 @@ import {
 import React, { useMemo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { dateFormatter } from "../../../util/dateFormat.util";
-import CustomPieChart from "../../../components/CustomPieChart";
+import { dateFormatter } from "../../../../util/dateFormat.util";
+import CustomPieChart from "../../../../components/CustomPieChart";
 
 import SentimentSatisfiedAltOutlinedIcon from "@mui/icons-material/SentimentSatisfiedAltOutlined";
 import MoodOutlinedIcon from "@mui/icons-material/MoodOutlined";
@@ -59,12 +59,12 @@ import {
   getClassReportMarkGradesTable,
   markGrades,
   months,
-} from "../../../api/StudentMarks/studentMarksApi";
-import { getYearsData } from "../../../api/OrganizationSettings/organizationSettingsApi";
+} from "../../../../api/StudentMarks/studentMarksApi";
+import { getYearsData } from "../../../../api/OrganizationSettings/organizationSettingsApi";
 import {
   getClassesData,
   getGradesData,
-} from "../../../api/OrganizationSettings/academicGradeApi";
+} from "../../../../api/OrganizationSettings/academicGradeApi";
 import ApexBarChart from "./ApexBarChart";
 import ApexBarChartCounts from "./ApexBarChartCounts";
 import ApexStackedBarChart from "./ApexStackedBarChart";

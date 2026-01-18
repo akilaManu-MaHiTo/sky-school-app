@@ -6,9 +6,9 @@ import ClassReportTable from "./ClassReportTable";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import useCurrentOrganization from "../../../hooks/useCurrentOrganization";
-import { drawPdfHeader } from "../../../reportsUtils/OrganizationHeaderPDF";
-import { drawPdfFooter } from "../../../reportsUtils/OrganizationFooter";
+import useCurrentOrganization from "../../../../hooks/useCurrentOrganization";
+import { drawPdfHeader } from "../../../../reportsUtils/OrganizationHeaderPDF";
+import { drawPdfFooter } from "../../../../reportsUtils/OrganizationFooter";
 
 interface AllClassReportTableProps {
   /**

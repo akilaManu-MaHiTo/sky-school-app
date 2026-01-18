@@ -384,3 +384,12 @@ export async function searchStudentByEmployeeId(employeeId: string) {
   );
   return res.data;
 }
+
+export async function fetchMyChildrenData(parentId: number) {
+  const res = await axios.get(`/api/my-children/${parentId}`);
+  return res.data;
+}
+export async function fetchStudentData() {
+  const res = await axios.get(`/api/student-users`);
+  return res.data;
+}
