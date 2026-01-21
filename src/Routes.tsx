@@ -40,7 +40,7 @@ const SchoolSettings = React.lazy(
 );
 // Administration > Staff Management > Add Class Teacher
 const AddClassTeacher = React.lazy(
-  () => import("./components/UnderDevelopment")
+  () => import("./views/Administration/StaffManagement/ClassTeacherTable")
 );
 // Administration > Student Management > Student Promotion
 const StudentPromotion = React.lazy(
