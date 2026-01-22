@@ -151,7 +151,7 @@ export const AddOrEditAcademicClass = ({
           </Box>
 
           <Controller
-            name="academicMedium"
+            name="classCategory"
             control={control}
             defaultValue={defaultValues?.classCategory ?? ""}
             {...register("classCategory", { required: true })}

@@ -30,6 +30,7 @@ interface ClassReportTableProps {
   isTablet?: boolean;
   title: string;
   showGroupColumns?: boolean;
+  year?: string;
 }
 
 const GROUP_NAMES: string[] = ["Group 1", "Group 2", "Group 3"];
@@ -41,6 +42,7 @@ function ClassReportTable({
   title,
   isTablet,
   showGroupColumns = true,
+  year,
 }: ClassReportTableProps) {
   const [groupFilter, setGroupFilter] = useState<Record<string, string | null>>(
     {}
@@ -156,7 +158,12 @@ function ClassReportTable({
     const meta = reportData?.data ?? {};
     const gradeLabel = meta.grade ? String(meta.grade) : undefined;
     const classLabel = meta.className ? String(meta.className) : undefined;
-    const yearLabel = meta.academicYear ?? meta.year ?? undefined;
+    const yearLabel =
+      typeof year === "string"
+        ? year
+        : (year as any)?.academicYear ??
+          (year as any)?.year ??
+          (year != null ? String(year) : undefined);
     const termLabel = meta.term ?? undefined;
 
     exportClassReportToExcel({

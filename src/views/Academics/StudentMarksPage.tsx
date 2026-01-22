@@ -173,6 +173,7 @@ const StudentMarksPage = () => {
   });
   const breadcrumbItems = [
     { title: "Home", href: "/home" },
+    { title: "Academics" },
     { title: "Add Student Marks" },
   ];
   return (

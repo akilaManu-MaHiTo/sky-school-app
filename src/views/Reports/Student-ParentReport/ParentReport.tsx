@@ -375,7 +375,7 @@ export default function GradeReport() {
                           <TableCell>Subject</TableCell>
                           <TableCell align="right">Student Mark</TableCell>
                           <TableCell align="right">Grade</TableCell>
-                          <TableCell align="right">Class Average</TableCell>
+                          <TableCell align="right">Overall Class Average Mark</TableCell>
                           <TableCell align="right">Highest Class Mark</TableCell>
                           <TableCell align="right">Highest Class Grade</TableCell>
                         </TableRow>
@@ -392,7 +392,7 @@ export default function GradeReport() {
                                 {subject.studentGrade}
                               </TableCell>
                               <TableCell align="right">
-                                {subject.classAverageMark}
+                                {subject.classAverageMark.toFixed(2)}
                               </TableCell>
                               <TableCell align="right">
                                 {subject.highestMark}
