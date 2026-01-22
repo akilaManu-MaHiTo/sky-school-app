@@ -82,6 +82,9 @@ export const userSchema = z.object({
   studentProfile: z.array(teacherProfileSchema),
   employeeType: z.nativeEnum(EmployeeType),
   address: z.string().optional(),
+
+  nationalId: z.string().optional(),
+  dateOfRegister: z.date().optional(),
 });
 
 export type User = z.infer<typeof userSchema>;
@@ -276,6 +279,8 @@ export async function updateUserProfileDetails({
   address,
   email,
   nameWithInitials,
+  nationalId,
+  dateOfRegister,
 }: {
   id: number;
   name: string;
@@ -285,6 +290,8 @@ export async function updateUserProfileDetails({
   address: string;
   email: string;
   nameWithInitials: string;
+  nationalId: string;
+  dateOfRegister: Date;
 }) {
   const data = {
     name,
@@ -294,6 +301,8 @@ export async function updateUserProfileDetails({
     address,
     email,
     nameWithInitials,
+    nationalId,
+    dateOfRegister,
   };
 
   const res = await axios.post(`/api/user/${id}/profile-update`, data);
@@ -380,7 +389,7 @@ export async function resetProfileEmailConfirm({
 // Search Student by employeeId (admission number)
 export async function searchStudentByEmployeeId(employeeId: string) {
   const res = await axios.get(
-    `/api/users/Student/search?employeeId=${encodeURIComponent(employeeId)}`
+    `/api/users/Student/search?employeeId=${encodeURIComponent(employeeId)}`,
   );
   return res.data;
 }
