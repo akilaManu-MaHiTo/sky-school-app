@@ -90,6 +90,8 @@ export default function UpdateUserProfile({
       mobile: data.mobile,
       birthDate: data.birthDate!,
       address: data.address,
+      nationalId: data.nationalId || "",
+      dateOfRegister: data.dateOfRegister,
     });
   };
   return (
@@ -178,6 +180,28 @@ export default function UpdateUserProfile({
                   }
                 />
               </Box>
+              <Box sx={{ display: "flex" }}>
+                <TextField
+                  id="nationalId"
+                  label="NIC Number"
+                  required
+                  error={!!errors.nationalId}
+                  fullWidth
+                  size="small"
+                  sx={{ margin: "0.5rem" }}
+                  {...register("nationalId", {
+                    maxLength: {
+                      value: 12,
+                      message: "NIC Number cannot exceed 12 characters long",
+                    },
+                  })}
+                  helperText={
+                    errors.nameWithInitials
+                      ? errors.nameWithInitials.message
+                      : ""
+                  }
+                />
+              </Box>
               <TextField
                 id="mobile"
                 type="tel"
@@ -256,7 +280,7 @@ export default function UpdateUserProfile({
                     />
                   )}
                 />
-                <Box sx={{ mx: "0.5rem", mb: "2rem",mt:"1.5rem" }}>
+                <Box sx={{ mx: "0.5rem", mb: "2rem", mt: "1.5rem" }}>
                   <Controller
                     control={control}
                     {...register("birthDate")}
@@ -270,6 +294,26 @@ export default function UpdateUserProfile({
                           }
                           label="Birthday"
                           error={errors?.birthDate ? "Required" : ""}
+                          disableFuture={true}
+                        />
+                      );
+                    }}
+                  />
+                </Box>
+                <Box sx={{ mx: "0.5rem", mb: "2rem", mt: "1.5rem" }}>
+                  <Controller
+                    control={control}
+                    {...register("dateOfRegister")}
+                    name={"dateOfRegister"}
+                    render={({ field }) => {
+                      return (
+                        <DatePickerComponent
+                          onChange={(e) => field.onChange(e)}
+                          value={
+                            field.value ? new Date(field.value) : undefined
+                          }
+                          label="Date Of School Register"
+                          error={errors?.dateOfRegister ? "Required" : ""}
                           disableFuture={true}
                         />
                       );
