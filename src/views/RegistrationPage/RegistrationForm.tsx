@@ -241,7 +241,7 @@ function RegistrationForm() {
         <TextField
           id="nameWithInitials"
           label="Name With Initials"
-          placeholder="J.H.Doe"
+          placeholder="A.M.Silva"
           required
           error={!!errors.nameWithInitials}
           fullWidth

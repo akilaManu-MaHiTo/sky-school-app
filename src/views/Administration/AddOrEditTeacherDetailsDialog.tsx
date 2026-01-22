@@ -31,7 +31,7 @@ interface AddOrEditTeacherDetailsDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   teacherId: number;
-  defaultValues?: TeacherDetails | null;
+  defaultValues?: TeacherDetails;
 }
 
 const AddOrEditTeacherDetailsDialog = ({
@@ -42,6 +42,7 @@ const AddOrEditTeacherDetailsDialog = ({
 }: AddOrEditTeacherDetailsDialogProps) => {
   const { enqueueSnackbar } = useSnackbar();
   const { isMobile } = useIsMobile();
+  console.log("defaultValues", defaultValues);
 
   const {
     handleSubmit,
