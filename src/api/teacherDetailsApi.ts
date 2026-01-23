@@ -6,7 +6,7 @@ export const teacherDetailsSchema = z.object({
   civilStatus: z.string(),
   dateOfRetirement: z.string().nullable(),
   dateOfFirstRegistration: z.string().nullable(),
-  teacherTransfer: z.string().nullable(),
+  teacherType: z.string().nullable(),
   teacherGrade: z.string().nullable(),
   dateOfGrade: z.string().nullable(),
   salaryType: z.string().nullable(),

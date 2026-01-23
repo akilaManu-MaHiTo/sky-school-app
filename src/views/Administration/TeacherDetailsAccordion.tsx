@@ -143,8 +143,8 @@ const TeacherDetailsAccordion = ({
                 sx={{ flex: 1 }}
               />
               <DrawerContentItem
-                label="Teacher Transfer"
-                value={data?.teacherTransfer ?? "--"}
+                label="Teacher Category"
+                value={data?.teacherType ?? "--"}
                 sx={{ flex: 1 }}
               />
             </Stack>
@@ -186,9 +186,7 @@ const TeacherDetailsAccordion = ({
               <DrawerContentItem
                 label="Register Subject"
                 value={
-                  data?.registerPostDate
-                    ? format(new Date(data?.registerPostDate), "yyyy-MM-dd")
-                    : "--"
+                  data?.registerSubject
                 }
                 sx={{ flex: 1 }}
               />

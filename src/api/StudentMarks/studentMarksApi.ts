@@ -17,6 +17,12 @@ export const examReportTerms = [
   "Term 3",
   "Monthly Exam",
 ];
+export const examReportTermsWithoutAll = [
+  "Term 1",
+  "Term 2",
+  "Term 3",
+  "Monthly Exam",
+];
 export const examReportStatus = [
   "All",
   "Pending",

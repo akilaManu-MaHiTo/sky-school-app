@@ -20,7 +20,11 @@ import { useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
 import CustomButton from "../../components/CustomButton";
 import useIsMobile from "../../customHooks/useIsMobile";
-import { updateUserProfileDetails, User } from "../../api/userApi";
+import {
+  EmployeeType,
+  updateUserProfileDetails,
+  User,
+} from "../../api/userApi";
 import queryClient from "../../state/queryClient";
 import { genderOptions } from "../../constants/accidentConstants";
 import DatePickerComponent from "../../components/DatePickerComponent";
@@ -190,14 +194,24 @@ export default function UpdateUserProfile({
                   size="small"
                   sx={{ margin: "0.5rem" }}
                   {...register("nationalId", {
+                    required: "NIC Number is required",
                     maxLength: {
                       value: 12,
                       message: "NIC Number cannot exceed 12 characters long",
                     },
+                    validate: (value) => {
+                      if (!value) return true;
+                      const upper = value.toUpperCase();
+                      return (
+                        /^([0-9]{9}[V]|[0-9]{12})$/.test(upper) ||
+                        "NIC must be 9 digits + V, or 12 digits (numbers only)"
+                      );
+                    },
                   })}
+                  inputProps={{ style: { textTransform: "uppercase" } }}
                   helperText={
-                    errors.nameWithInitials
-                      ? errors.nameWithInitials.message
+                    typeof errors.nationalId?.message === "string"
+                      ? errors.nationalId.message
                       : ""
                   }
                 />
@@ -300,26 +314,28 @@ export default function UpdateUserProfile({
                     }}
                   />
                 </Box>
-                <Box sx={{ mx: "0.5rem", mb: "2rem", mt: "1.5rem" }}>
-                  <Controller
-                    control={control}
-                    {...register("dateOfRegister")}
-                    name={"dateOfRegister"}
-                    render={({ field }) => {
-                      return (
-                        <DatePickerComponent
-                          onChange={(e) => field.onChange(e)}
-                          value={
-                            field.value ? new Date(field.value) : undefined
-                          }
-                          label="Date Of School Register"
-                          error={errors?.dateOfRegister ? "Required" : ""}
-                          disableFuture={true}
-                        />
-                      );
-                    }}
-                  />
-                </Box>
+                {defaultValues.employeeType !== EmployeeType.PARENT && (
+                  <Box sx={{ mx: "0.5rem", mb: "2rem", mt: "1.5rem" }}>
+                    <Controller
+                      control={control}
+                      {...register("dateOfRegister")}
+                      name={"dateOfRegister"}
+                      render={({ field }) => {
+                        return (
+                          <DatePickerComponent
+                            onChange={(e) => field.onChange(e)}
+                            value={
+                              field.value ? new Date(field.value) : undefined
+                            }
+                            label="Date Of School Register"
+                            error={errors?.dateOfRegister ? "Required" : ""}
+                            disableFuture={true}
+                          />
+                        );
+                      }}
+                    />
+                  </Box>
+                )}
                 <Box
                   sx={{
                     display: "flex",

@@ -266,7 +266,7 @@ const { data: TeacherData, isFetching: isMyChildrenDataFetching } =
                     required
                     error={!!errors.teacher}
                     helperText={errors.teacher && "Required"}
-                    label="Select Student"
+                    label="Select Teacher"
                     name="myChild"
                   />
                 )}
