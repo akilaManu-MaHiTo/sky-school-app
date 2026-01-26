@@ -25,6 +25,8 @@ import {
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
+import DownloadIcon from "@mui/icons-material/Download";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import { useSnackbar } from "notistack";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
@@ -45,6 +47,9 @@ import { getYearsData } from "../../../api/OrganizationSettings/organizationSett
 import { getClassesData, getGradesData } from "../../../api/OrganizationSettings/academicGradeApi";
 import { Controller, useForm } from "react-hook-form";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import useCurrentOrganization from "../../../hooks/useCurrentOrganization";
+import { exportClassTeacherDetailsToExcel } from "../../../reportsUtils/ClassTeacherDetailsExcel";
+import { generateClassTeacherDetailsPdf } from "../../../reportsUtils/ClassTeacherDetailsPDF";
 
 type ClassTeacherFilterForm = {
   year: { id: number; year: string } | null;
@@ -59,6 +64,7 @@ function ClassTeacherTable({
   isAssignedTasks: boolean;
 }) {
   const { enqueueSnackbar } = useSnackbar();
+  const { organization } = useCurrentOrganization();
   const [openViewDrawer, setOpenViewDrawer] = useState(false);
   const [selectedRow, setSelectedRow] = useState<ClassTeacher | null>(null);
   const [openAddOrEditDialog, setOpenAddOrEditDialog] = useState(false);
@@ -119,6 +125,25 @@ function ClassTeacherTable({
   const selectedGrade = watch("grade");
   const selectedClass = watch("class");
 
+  const exportTitle = useMemo(() => {
+    const segments: string[] = [];
+    if (selectedYear?.year) {
+      segments.push(`Year ${selectedYear.year}`);
+    }
+    if (selectedGrade?.grade) {
+      segments.push(`Grade ${selectedGrade.grade}`);
+    }
+    if (selectedClass?.className) {
+      segments.push(`Class ${selectedClass.className}`);
+    }
+
+    if (!segments.length) {
+      return "Class Teacher Details";
+    }
+
+    return `Class Teacher Details (${segments.join(" / ")})`;
+  }, [selectedYear, selectedGrade, selectedClass]);
+
   useEffect(() => {
     setPage(0);
   }, [selectedYear, selectedGrade, selectedClass]);
@@ -150,6 +175,8 @@ function ClassTeacherTable({
       page * rowsPerPage + rowsPerPage,
     );
   }, [filteredClassTeachers, page, rowsPerPage]);
+
+  const hasExportData = filteredClassTeachers.length > 0;
 
   const { mutateAsync: deleteMutation } = useMutation({
     mutationFn: deleteClassTeacher,
@@ -197,6 +224,39 @@ function ClassTeacherTable({
       setValue("class", null);
     }
   }, [selectedClass, selectedGrade, setValue]);
+
+  const handleExportExcel = () => {
+    if (!hasExportData) {
+      enqueueSnackbar("No class teacher data to export", { variant: "warning" });
+      return;
+    }
+
+    try {
+      exportClassTeacherDetailsToExcel(filteredClassTeachers, {
+        title: exportTitle,
+      });
+    } catch (error) {
+      console.error("Failed to export class teacher Excel:", error);
+      enqueueSnackbar("Failed to export class teacher Excel", { variant: "error" });
+    }
+  };
+
+  const handleExportPdf = () => {
+    if (!hasExportData) {
+      enqueueSnackbar("No class teacher data to export", { variant: "warning" });
+      return;
+    }
+
+    try {
+      generateClassTeacherDetailsPdf(filteredClassTeachers, {
+        title: exportTitle,
+        organizationName: organization?.organizationName,
+      });
+    } catch (error) {
+      console.error("Failed to generate class teacher PDF:", error);
+      enqueueSnackbar("Failed to generate class teacher PDF", { variant: "error" });
+    }
+  };
 
   return (
     <Stack>
@@ -366,11 +426,14 @@ function ClassTeacherTable({
             maxWidth: isMobile ? "88vw" : "100%",
           }}
         >
-          <Box
+          <Stack
+            direction={isMobile ? "column" : "row"}
+            spacing={1}
             sx={{
               padding: theme.spacing(2),
-              display: "flex",
-              justifyContent: "flex-end",
+              justifyContent: isMobile ? "flex-start" : "space-between",
+              alignItems: isMobile ? "stretch" : "center",
+              flexWrap: "wrap",
             }}
           >
             <Button
@@ -384,7 +447,35 @@ function ClassTeacherTable({
             >
               Add Class Teacher
             </Button>
-          </Box>
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{
+                width: isMobile ? "100%" : "auto",
+                justifyContent: isMobile ? "flex-start" : "flex-end",
+                flexWrap: "wrap",
+              }}
+            >
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<DownloadIcon fontSize="small" />}
+                onClick={handleExportExcel}
+                disabled={!hasExportData}
+              >
+                Export Excel
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<PictureAsPdfIcon fontSize="small" />}
+                onClick={handleExportPdf}
+                disabled={!hasExportData}
+              >
+                Export PDF
+              </Button>
+            </Stack>
+          </Stack>
           {isClassTeacherFetching && <LinearProgress sx={{ width: "100%" }} />}
           <Table aria-label="simple table">
             <TableHead sx={{ backgroundColor: "#f3f3f3ff" }}>
