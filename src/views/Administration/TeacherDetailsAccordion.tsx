@@ -32,6 +32,7 @@ const TeacherDetailsAccordion = ({
   teacherId,
 }: TeacherDetailsAccordionProps) => {
   const [openDialog, setOpenDialog] = useState(false);
+  const [teacherDetails, setTeacherDetails] = useState(null);
   const { isTablet } = useIsMobile();
 
   const { data, isLoading, isError } = useQuery<TeacherDetails | null>({
@@ -99,7 +100,10 @@ const TeacherDetailsAccordion = ({
             }}
             size="medium"
             startIcon={hasData ? <EditIcon /> : <AddIcon />}
-            onClick={() => setOpenDialog(true)}
+            onClick={() => {
+              setOpenDialog(true);
+              setTeacherDetails(data);
+            }}
           >
             {hasData ? "Edit Teacher Details" : "Add Teacher Details"}
           </CustomButton>
@@ -139,8 +143,8 @@ const TeacherDetailsAccordion = ({
                 sx={{ flex: 1 }}
               />
               <DrawerContentItem
-                label="Teacher Transfer"
-                value={data?.teacherTransfer ?? "--"}
+                label="Teacher Category"
+                value={data?.teacherType ?? "--"}
                 sx={{ flex: 1 }}
               />
             </Stack>
@@ -162,10 +166,7 @@ const TeacherDetailsAccordion = ({
                 label="Date Of Grade"
                 value={
                   data?.dateOfGrade
-                    ? format(
-                        new Date(data?.dateOfGrade),
-                        "yyyy-MM-dd",
-                      )
+                    ? format(new Date(data?.dateOfGrade), "yyyy-MM-dd")
                     : "--"
                 }
                 sx={{ flex: 1 }}
@@ -177,10 +178,7 @@ const TeacherDetailsAccordion = ({
                 label="Date Of Retirement"
                 value={
                   data?.dateOfRetirement
-                    ? format(
-                        new Date(data?.dateOfRetirement),
-                        "yyyy-MM-dd",
-                      )
+                    ? format(new Date(data?.dateOfRetirement), "yyyy-MM-dd")
                     : "--"
                 }
                 sx={{ flex: 1 }}
@@ -188,12 +186,7 @@ const TeacherDetailsAccordion = ({
               <DrawerContentItem
                 label="Register Subject"
                 value={
-                  data?.registerPostDate
-                    ? format(
-                        new Date(data?.registerPostDate),
-                        "yyyy-MM-dd",
-                      )
-                    : "--"
+                  data?.registerSubject
                 }
                 sx={{ flex: 1 }}
               />
@@ -209,10 +202,7 @@ const TeacherDetailsAccordion = ({
                 label="Register Post Date"
                 value={
                   data?.registerPostDate
-                    ? format(
-                        new Date(data?.registerPostDate),
-                        "yyyy-MM-dd",
-                      )
+                    ? format(new Date(data?.registerPostDate), "yyyy-MM-dd")
                     : "--"
                 }
                 sx={{ flex: 1 }}
@@ -225,7 +215,7 @@ const TeacherDetailsAccordion = ({
           open={openDialog}
           setOpen={setOpenDialog}
           teacherId={teacherId}
-          defaultValues={data ?? null}
+          defaultValues={teacherDetails}
         />
       </AccordionDetails>
     </Accordion>

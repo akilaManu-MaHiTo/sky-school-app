@@ -31,7 +31,7 @@ interface AddOrEditTeacherDetailsDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   teacherId: number;
-  defaultValues?: TeacherDetails | null;
+  defaultValues?: TeacherDetails;
 }
 
 const AddOrEditTeacherDetailsDialog = ({
@@ -47,9 +47,11 @@ const AddOrEditTeacherDetailsDialog = ({
     handleSubmit,
     formState: { errors },
     reset,
+    register,
     control,
   } = useForm<TeacherDetails>({
-    defaultValues,
+    defaultValues: defaultValues ?? ({} as TeacherDetails),
+    values: defaultValues ?? ({} as TeacherDetails),
   });
 
   const isEdit = Boolean(defaultValues);
@@ -143,110 +145,118 @@ const AddOrEditTeacherDetailsDialog = ({
       <Divider />
       <DialogContent>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <Box sx={{ flex: 1, margin: "0.5rem", width: "full" }}>
-          <Controller
-            name="civilStatus"
-            control={control}
-            rules={{ required: true }}
-            render={({ field }) => (
-              <Autocomplete
-                options={["Married", "Unmarried", "Divorced"]}
-                size="small"
-                value={field.value || null}
-                onChange={(_, value) => field.onChange(value)}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Civil Status"
-                    required
-                    error={!!errors.civilStatus}
-                    helperText={errors.civilStatus && "Required"}
-                  />
-                )}
-              />
-            )}
-          />
+          <Box sx={{ flex: 1, margin: "0.5rem", width: "full" }}>
+            <Controller
+              name="civilStatus"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Autocomplete
+                  options={["Married", "Unmarried", "Divorced"]}
+                  size="small"
+                  value={field.value || null}
+                  onChange={(_, value) => field.onChange(value)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Civil Status"
+                      required
+                      error={!!errors.civilStatus}
+                      helperText={errors.civilStatus && "Required"}
+                    />
+                  )}
+                />
+              )}
+            />
           </Box>
 
-          <Controller
-            name="teacherGrade"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                id="teacherGrade"
-                error={!!errors.teacherGrade}
-                sx={{ flex: 1, margin: "0.5rem", width: "full" }}
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                label="Teacher Grade"
-                size="small"
-              />
-            )}
+          <TextField
+            id="teacherGrade"
+            label="Teacher Grade"
+            size="small"
+            sx={{ flex: 1, margin: "0.5rem", width: "full" }}
+            error={!!errors.teacherGrade}
+            helperText={errors.teacherGrade && "Required"}
+            {...register("teacherGrade")}
           />
 
-          <Controller
-            name="salaryType"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                id="salaryType"
-                error={!!errors.salaryType}
-                sx={{ flex: 1, margin: "0.5rem", width: "full" }}
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                label="Salary Type"
-                size="small"
-              />
-            )}
+          <TextField
+            id="salaryType"
+            label="Salary Type"
+            size="small"
+            sx={{ flex: 1, margin: "0.5rem", width: "full" }}
+            error={!!errors.salaryType}
+            helperText={errors.salaryType && "Required"}
+            {...register("salaryType")}
           />
 
-          <Controller
-            name="teacherTransfer"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                id="teacherTransfer"
-                error={!!errors.teacherTransfer}
-                sx={{ flex: 1, margin: "0.5rem", width: "full" }}
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                label="Teacher Transfer"
-                size="small"
-              />
-            )}
+          <Box sx={{ flex: 1, margin: "0.5rem", width: "full" }}>
+            <Controller
+              name="teacherType"
+              control={control}
+              render={({ field }) => (
+                <Autocomplete
+                  options={["Primary", "Secondary"]}
+                  size="small"
+                  value={field.value || null}
+                  onChange={(_, value) => field.onChange(value)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Teacher Category"
+                      required
+                      error={!!errors.teacherType}
+                      helperText={errors.teacherType && "Required"}
+                    />
+                  )}
+                />
+              )}
+            />
+          </Box>
+
+          <TextField
+            id="registerSubject"
+            label="Register Subject"
+            size="small"
+            sx={{ flex: 1, margin: "0.5rem", width: "full" }}
+            error={!!errors.registerSubject}
+            helperText={errors.registerSubject?.message as string}
+            inputProps={{ pattern: "[A-Za-z\\s]*" }}
+            {...register("registerSubject", {
+              pattern: {
+                value: /^[A-Za-z\s]*$/,
+                message: "Cant include numbers or special characters",
+              },
+            })}
           />
 
-          <Controller
-            name="registerSubject"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                id="registerSubject"
-                error={!!errors.registerSubject}
-                sx={{ flex: 1, margin: "0.5rem", width: "full" }}
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                label="Register Subject"
-                size="small"
-              />
-            )}
+          <TextField
+            id="registerPostNumber"
+            label="Register Post Number"
+            size="small"
+            sx={{ flex: 1, margin: "0.5rem", width: "full" }}
+            error={!!errors.registerPostNumber}
+            helperText={errors.registerPostNumber && "Required"}
+            {...register("registerPostNumber")}
           />
 
-          <Controller
-            name="registerPostNumber"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                id="registerPostNumber"
-                error={!!errors.registerPostNumber}
-                sx={{ flex: 1, margin: "0.5rem", width: "full" }}
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                label="Register Post Number"
-                size="small"
-              />
-            )}
-          />
+          <Box sx={{ mx: "0.5rem", mb: "0.5rem", mt: "0.5rem" }}>
+            <Controller
+              control={control}
+              name={"registerPostDate"}
+              render={({ field }) => {
+                return (
+                  <DatePickerComponent
+                    onChange={(e) => field.onChange(e)}
+                    value={field.value ? new Date(field.value) : undefined}
+                    label="Register Post Date"
+                    error={errors?.registerPostDate ? "Required" : ""}
+                    disableFuture={true}
+                  />
+                );
+              }}
+            />
+          </Box>
 
           <Box sx={{ mx: "0.5rem", mb: "0.5rem", mt: "0.5rem" }}>
             <Controller
@@ -277,7 +287,8 @@ const AddOrEditTeacherDetailsDialog = ({
                     value={field.value ? new Date(field.value) : undefined}
                     label="Date Of Retirement"
                     error={errors?.dateOfRetirement ? "Required" : ""}
-                    disableFuture={true}
+                    disablePast={true}
+                    
                   />
                 );
               }}
@@ -302,23 +313,7 @@ const AddOrEditTeacherDetailsDialog = ({
             />
           </Box>
 
-          <Box sx={{ mx: "0.5rem", mb: "0.5rem", mt: "0.5rem" }}>
-            <Controller
-              control={control}
-              name={"registerPostDate"}
-              render={({ field }) => {
-                return (
-                  <DatePickerComponent
-                    onChange={(e) => field.onChange(e)}
-                    value={field.value ? new Date(field.value) : undefined}
-                    label="Register Post Date"
-                    error={errors?.registerPostDate ? "Required" : ""}
-                    disableFuture={true}
-                  />
-                );
-              }}
-            />
-          </Box>
+          
         </Box>
       </DialogContent>
       <DialogActions sx={{ padding: "1rem" }}>

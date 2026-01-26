@@ -30,6 +30,7 @@ import PageTitle from "../../../../components/PageTitle";
 import Breadcrumb from "../../../../components/BreadCrumb";
 import {
   examReportTerms,
+  examReportTermsWithoutAll,
   markGrades,
 } from "../../../../api/StudentMarks/studentMarksApi";
 import { Controller, useForm } from "react-hook-form";
@@ -371,7 +372,7 @@ export default function GradeReport() {
                       }}
                       size="small"
                       options={
-                        examReportTerms?.filter((item) => item != null) ?? []
+                        examReportTermsWithoutAll?.filter((item) => item != null) ?? []
                       }
                       sx={{ flex: 1 }}
                       renderInput={(params) => (

@@ -44,6 +44,9 @@ import {
 import useIsMobile from "../../../customHooks/useIsMobile";
 import { AcademicMedium } from "../../../api/OrganizationSettings/academicDetailsApi";
 import { useSnackbar } from "notistack";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const breadcrumbItems = [
   { title: "Home", href: "/home" },
@@ -157,6 +160,21 @@ export default function StudentPromotion() {
       selectedStudentIds.includes(student.id)
     );
 
+  const exportableRows = useMemo(() => {
+    if (!filteredStudents || filteredStudents.length === 0) return [];
+
+    return filteredStudents.map((student: any) => ({
+      admissionNumber: student?.student?.admissionNumber ?? "--",
+      name: student?.student?.nameWithInitials ?? "--",
+      grade: student?.grade?.grade ?? "--",
+      className: student?.class?.className ?? "--",
+      year: student?.academicYear ?? "--",
+      medium: student?.academicMedium ?? "--",
+    }));
+  }, [filteredStudents]);
+
+  const hasExportableStudents = exportableRows.length > 0;
+
   const handleSelectAllChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -207,6 +225,81 @@ export default function StudentPromotion() {
       }));
 
     promoteStudentsMutation(payload);
+  };
+
+  const handleExportExcel = () => {
+    if (!hasExportableStudents) {
+      enqueueSnackbar("No students available to export", { variant: "info" });
+      return;
+    }
+
+    const headers = [
+      "Admission number",
+      "Student Name",
+      "Current Grade",
+      "Current Class",
+      "Current Year",
+      "Medium",
+    ];
+
+    const worksheetData = [
+      headers,
+      ...exportableRows.map((row) => [
+        row.admissionNumber,
+        row.name,
+        row.grade,
+        row.className,
+        row.year,
+        row.medium,
+      ]),
+    ];
+
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    XLSX.writeFile(workbook, `student-promotion-${timestamp}.xlsx`);
+  };
+
+  const handleExportPdf = () => {
+    if (!hasExportableStudents) {
+      enqueueSnackbar("No students available to export", { variant: "info" });
+      return;
+    }
+
+    const doc = new jsPDF("l", "mm", "a4");
+    doc.setFontSize(14);
+    doc.text("Student Promotion List", 14, 15);
+
+    autoTable(doc, {
+      startY: 20,
+      head: [
+        [
+          "#",
+          "Admission number",
+          "Student Name",
+          "Current Grade",
+          "Current Class",
+          "Current Year",
+          "Medium",
+        ],
+      ],
+      body: exportableRows.map((row, index) => [
+        index + 1,
+        row.admissionNumber,
+        row.name,
+        row.grade,
+        row.className,
+        row.year,
+        row.medium,
+      ]),
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [33, 150, 243], textColor: 255 },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+    });
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    doc.save(`student-promotion-${timestamp}.pdf`);
   };
 
   return (
@@ -516,25 +609,54 @@ export default function StudentPromotion() {
           marginX: "0.5rem",
         }}
       >
-        <TextField
-          size="small"
-          label="Search by admission or name"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ maxWidth: 320, marginRight: 2 }}
-        />
-        <Button
-          variant="contained"
-          onClick={handlePromoteSelected}
-          disabled={
-            isPromoting ||
-            !studentPromotionData ||
-            studentPromotionData.length === 0 ||
-            selectedStudentIds.length === 0
-          }
+        <Stack
+          direction={isMobile ? "column" : "row"}
+          spacing={1}
+          alignItems={isMobile ? "stretch" : "center"}
+          sx={{ width: "100%" }}
         >
-          {isPromoting ? "Promoting..." : "Promote Selected Students"}
-        </Button>
+          <TextField
+            size="small"
+            label="Search by admission or name"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{ maxWidth: isMobile ? "100%" : 320 }}
+          />
+          <Stack
+            direction="row"
+            spacing={1}
+            flexWrap="wrap"
+            justifyContent="flex-end"
+            sx={{ width: "100%" }}
+          >
+            <Button
+              variant="outlined"
+              onClick={handleExportExcel}
+              disabled={!hasExportableStudents}
+            >
+              Export Excel
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={handleExportPdf}
+              disabled={!hasExportableStudents}
+            >
+              Export PDF
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handlePromoteSelected}
+              disabled={
+                isPromoting ||
+                !studentPromotionData ||
+                studentPromotionData.length === 0 ||
+                selectedStudentIds.length === 0
+              }
+            >
+              {isPromoting ? "Promoting..." : "Promote Selected Students"}
+            </Button>
+          </Stack>
+        </Stack>
       </Box>
       <Stack>
         {isStudentPromotionDataFetching && <LinearProgress />}

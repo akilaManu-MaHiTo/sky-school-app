@@ -52,6 +52,8 @@ import { ResponsiveContainer } from "recharts";
 import useCurrentUser from "../../../hooks/useCurrentUser";
 import { fetchMyChildrenData } from "../../../api/userApi";
 import SubjectLineChart from "./SubjectLineChart";
+import { exportParentReportToExcel } from "../../../reportsUtils/ParentReportExcel";
+import { generateParentReportPdf } from "../../../reportsUtils/ParentReportPDF";
 
 const breadcrumbItems = [
   { title: "Home", href: "/home" },
@@ -153,6 +155,72 @@ export default function GradeReport() {
       })
       .filter((chart) => chart.categories.length > 0);
   }, [myChildrenLineChart]);
+
+  const handleExportExcel = () => {
+    if (!groupedReports || groupedReports.length === 0) return;
+
+    const sections = groupedReports.map((report: any, index: number) => ({
+      examType: report.academicDetails?.examType ?? `Exam ${index + 1}`,
+      academicDetails: {
+        year: report.academicDetails?.year,
+        grade: report.academicDetails?.grade,
+        className: report.academicDetails?.className,
+      },
+      overall: report.overall ?? null,
+      subjects: (report.subjects ?? []).map((s: any) => ({
+        subjectName: s.subjectName,
+        studentMark: s.studentMark,
+        studentGrade: s.studentGrade,
+        classAverageMark: s.classAverageMark,
+        highestMark: s.highestMark,
+        highestGrade: s.highestGrade,
+      })),
+    }));
+
+    const options = {
+      organizationName: organization?.organizationName,
+      studentName: reportStudent?.nameWithInitials,
+      admissionNumber: reportStudent?.admissionNumber,
+      yearLabel: academicDetails?.year,
+      gradeLabel: academicDetails?.grade,
+      classLabel: academicDetails?.className,
+    };
+
+    exportParentReportToExcel({ sections, options } as any);
+  };
+
+  const handleExportPdf = () => {
+    if (!groupedReports || groupedReports.length === 0) return;
+
+    const sections = groupedReports.map((report: any, index: number) => ({
+      examType: report.academicDetails?.examType ?? `Exam ${index + 1}`,
+      academicDetails: {
+        year: report.academicDetails?.year,
+        grade: report.academicDetails?.grade,
+        className: report.academicDetails?.className,
+      },
+      overall: report.overall ?? null,
+      subjects: (report.subjects ?? []).map((s: any) => ({
+        subjectName: s.subjectName,
+        studentMark: s.studentMark,
+        studentGrade: s.studentGrade,
+        classAverageMark: s.classAverageMark,
+        highestMark: s.highestMark,
+        highestGrade: s.highestGrade,
+      })),
+    }));
+
+    const options = {
+      organizationName: organization?.organizationName,
+      studentName: reportStudent?.nameWithInitials,
+      admissionNumber: reportStudent?.admissionNumber,
+      yearLabel: academicDetails?.year,
+      gradeLabel: academicDetails?.grade,
+      classLabel: academicDetails?.className,
+    };
+
+    generateParentReportPdf({ sections, options } as any);
+  };
 
   return (
     <Stack>
@@ -353,6 +421,33 @@ export default function GradeReport() {
                 </Stack>
               </Paper>
             )}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                mb: 2,
+                gap: 1,
+              }}
+            >
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<DownloadIcon fontSize="small" />}
+                onClick={handleExportExcel}
+                disabled={isMyChildrenReportFetching || !groupedReports.length}
+              >
+                Export Excel
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<PictureAsPdfIcon fontSize="small" />}
+                onClick={handleExportPdf}
+                disabled={isMyChildrenReportFetching || !groupedReports.length}
+              >
+                Export PDF
+              </Button>
+            </Box>
             <Stack spacing={2}>
               {groupedReports.map((report: any, index: number) => (
                 <Paper
