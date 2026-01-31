@@ -25,7 +25,7 @@ const TeacherDashboard = React.lazy(
   () => import("./components/UnderDevelopment")
 );
 const ManagementDashboard = React.lazy(
-  () => import("./components/UnderDevelopment")
+  () => import("./views/Dashboard/StaffDashboard/StaffDashboard")
 );
 
 // Administration > User Management > All Users
