@@ -22,7 +22,7 @@ const StudentParentDashboard = React.lazy(
   () => import("./components/UnderDevelopment")
 );
 const TeacherDashboard = React.lazy(
-  () => import("./components/UnderDevelopment")
+  () => import("./views/Dashboard/TeacherDashboard/TeacherDashboard")
 );
 const ManagementDashboard = React.lazy(
   () => import("./components/UnderDevelopment")
