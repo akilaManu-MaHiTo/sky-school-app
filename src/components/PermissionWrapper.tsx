@@ -1,8 +1,8 @@
 import React from "react";
 import {
-  defaultViewerPermissions,
   PermissionKeys,
 } from "../views/Administration/SectionList";
+import useCurrentUser from "../hooks/useCurrentUser";
 
 interface Props {
   accessKey: PermissionKeys;
@@ -10,9 +10,10 @@ interface Props {
 }
 
 const PermissionWrapper: React.FC<Props> = ({ accessKey, children }: Props) => {
-  const userPermissionObject = defaultViewerPermissions;
+  const { user } = useCurrentUser();
+  const userPermissionObject = user?.permissionObject;
 
-  if (!userPermissionObject[accessKey]) {
+  if (!userPermissionObject || !userPermissionObject[accessKey]) {
     return null;
   }
 

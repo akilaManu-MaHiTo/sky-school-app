@@ -25,7 +25,7 @@ const TeacherDashboard = React.lazy(
   () => import("./views/Dashboard/TeacherDashboard/TeacherDashboard")
 );
 const ManagementDashboard = React.lazy(
-  () => import("./components/UnderDevelopment"),
+  () => import("./views/Dashboard/StaffDashboard/StaffDashboard")
 );
 
 // Administration > User Management > All Users
@@ -80,6 +80,9 @@ const ManagementStudentReport = React.lazy(
 
 // Academics
 const AddMarks = React.lazy(() => import("./views/Academics/StudentMarksPage"));
+
+// Help
+const HelpPage = React.lazy(() => import("./views/Help/Help"));
 
 function withLayout(Layout: any, Component: any, restrictAccess = false) {
   return (
@@ -306,6 +309,15 @@ const AppRoutes = () => {
             MainLayout,
             AddMarks,
             !userPermissionObject?.[PermissionKeys.ADD_MARKS_VIEW],
+          )}
+        />
+        {/* Help */}
+        <Route
+          path="/help"
+          element={withLayout(
+            MainLayout,
+            HelpPage,
+            false
           )}
         />
       </Route>
