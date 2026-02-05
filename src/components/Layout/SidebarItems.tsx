@@ -141,6 +141,12 @@ export const sidebarItems: Array<SidebarItem> = [
         icon: <FileUploadIcon fontSize="small" />,
         accessKey: PermissionKeys.STUDENT_PROMOTION_VIEW,
       },
+      {
+        title: "Student Service Charges",
+        href: "/admin/student-service-charges",
+        icon: <FileUploadIcon fontSize="small" />,
+        accessKey: PermissionKeys.STUDENT_PROMOTION_VIEW,
+      },
     ],
   },
   {

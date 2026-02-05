@@ -1,6 +1,9 @@
 import { z } from "zod";
 import axios from "axios";
-import { AcademicGradeSchema, ClassSchema } from "./OrganizationSettings/academicGradeApi";
+import {
+  AcademicGradeSchema,
+  ClassSchema,
+} from "./OrganizationSettings/academicGradeApi";
 import { userSchema } from "./userApi";
 
 export const classTeacherSchema = z.object({
@@ -51,4 +54,10 @@ export async function updateClassTeacher(data: ClassTeacher) {
 
 export async function deleteClassTeacher(id: string) {
   await axios.delete(`/api/class-teacher/${id}`);
+}
+
+export async function fetchTeacherDashboardStats(teacherId: number, year: any) {
+  const selectedYear = year.year;
+  const res = await axios.get(`/api/teacher-dashboard/${teacherId}/${selectedYear}`);
+  return res.data;
 }
