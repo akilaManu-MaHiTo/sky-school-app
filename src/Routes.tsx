@@ -12,62 +12,70 @@ import { User, validateUser } from "./api/userApi";
 const LoginPage = React.lazy(() => import("./views/LoginPage/LoginPage"));
 // Register Page
 const RegistrationPage = React.lazy(
-  () => import("./views/RegistrationPage/RegistrationPage")
+  () => import("./views/RegistrationPage/RegistrationPage"),
 );
 // Insight Page
 const InsightsPage = React.lazy(() => import("./views/Insights/Insight"));
 
 // Dashboards
 const StudentParentDashboard = React.lazy(
-  () => import("./components/UnderDevelopment")
+  () => import("./views/Dashboard/StudentDashboard/StudentDashboard"),
 );
 const TeacherDashboard = React.lazy(
   () => import("./views/Dashboard/TeacherDashboard/TeacherDashboard")
 );
 const ManagementDashboard = React.lazy(
-  () => import("./components/UnderDevelopment")
+  () => import("./components/UnderDevelopment"),
 );
 
 // Administration > User Management > All Users
 const UserTable = React.lazy(() => import("./views/Administration/UserTable"));
 // Administration > User Management > Access Management
 const AccessManagementTable = React.lazy(
-  () => import("./views/Administration/AccessManagementTable")
+  () => import("./views/Administration/AccessManagementTable"),
 );
 // Administration > School Management > School Settings
 const SchoolSettings = React.lazy(
-  () => import("./views/Administration/SchoolManagement/SchoolSettings")
+  () => import("./views/Administration/SchoolManagement/SchoolSettings"),
 );
 // Administration > Staff Management > Add Class Teacher
 const AddClassTeacher = React.lazy(
-  () => import("./views/Administration/StaffManagement/ClassTeacherTable")
+  () => import("./views/Administration/StaffManagement/ClassTeacherTable"),
 );
 // Administration > Student Management > Student Promotion
 const StudentPromotion = React.lazy(
-  () => import("./views/Administration/StudentManagement/StudentPromotion")
+  () => import("./views/Administration/StudentManagement/StudentPromotion"),
+);
+// Administration > Student Management > Student Service Charges
+const StudentServiceCharges = React.lazy(
+  () => import("./views/Administration/StudentManagement/StudentServiceCharges/StudentServiceChargesTable")
 );
 
 // Reports > Student/Parent Reports > Parent Report
-const ParentReport = React.lazy(() => import("./views/Reports/Student-ParentReport/ParentReport"));
+const ParentReport = React.lazy(
+  () => import("./views/Reports/Student-ParentReport/ParentReport"),
+);
 // Reports > Teacher Reports > Class Report
 const TeacherClassReport = React.lazy(
-  () => import("./views/Reports/TeacherReports/ClassReport/ClassReport")
+  () => import("./views/Reports/TeacherReports/ClassReport/ClassReport"),
 );
 // Reports > Teacher Reports > Student Report
 const TeacherStudentReport = React.lazy(
-  () => import("./views/Reports/TeacherReports/StudentReport/StudentReport")
+  () => import("./views/Reports/TeacherReports/StudentReport/StudentReport"),
 );
 // Reports > Management Staff Reports > Grade Report
 const ManagementGradeReport = React.lazy(
-  () => import("./views/Reports/ManagementStaffReport/GradeReport/GradeReport")
+  () => import("./views/Reports/ManagementStaffReport/GradeReport/GradeReport"),
 );
 // Reports > Management Staff Reports > Marks Entry Report
 const MarksEntryReport = React.lazy(
-  () => import("./views/Reports/ManagementStaffReport/MarksEntryMonitoring/MarksEntryMonitoring")
+  () =>
+    import("./views/Reports/ManagementStaffReport/MarksEntryMonitoring/MarksEntryMonitoring"),
 );
 // Reports > Management Staff Reports > Student Report
 const ManagementStudentReport = React.lazy(
-  () => import("./views/Reports/ManagementStaffReport/StudentReport/StudentReport")
+  () =>
+    import("./views/Reports/ManagementStaffReport/StudentReport/StudentReport"),
 );
 
 // Academics
@@ -140,7 +148,7 @@ const AppRoutes = () => {
           element={withLayout(
             MainLayout,
             InsightsPage,
-            !userPermissionObject?.[PermissionKeys.INSIGHT_VIEW]
+            !userPermissionObject?.[PermissionKeys.INSIGHT_VIEW],
           )}
         />
 
@@ -152,7 +160,7 @@ const AppRoutes = () => {
             StudentParentDashboard,
             !userPermissionObject?.[
               PermissionKeys.STUDENT_PARENT_DASHBOARD_VIEW
-            ]
+            ],
           )}
         />
         {/* Dashboard > Teacher Dashboard */}
@@ -161,7 +169,7 @@ const AppRoutes = () => {
           element={withLayout(
             MainLayout,
             TeacherDashboard,
-            !userPermissionObject?.[PermissionKeys.TEACHERS_DASHBOARD_VIEW]
+            !userPermissionObject?.[PermissionKeys.TEACHERS_DASHBOARD_VIEW],
           )}
         />
         {/* Dashboard > Management Dashboard */}
@@ -170,7 +178,7 @@ const AppRoutes = () => {
           element={withLayout(
             MainLayout,
             ManagementDashboard,
-            !userPermissionObject?.[PermissionKeys.MANAGEMENT_DASHBOARD_VIEW]
+            !userPermissionObject?.[PermissionKeys.MANAGEMENT_DASHBOARD_VIEW],
           )}
         />
 
@@ -180,7 +188,7 @@ const AppRoutes = () => {
           element={withLayout(
             MainLayout,
             UserTable,
-            !userPermissionObject?.[PermissionKeys.INSIGHT_VIEW]
+            !userPermissionObject?.[PermissionKeys.INSIGHT_VIEW],
           )}
         />
         {/* Administration > User Management > Access Management */}
@@ -189,7 +197,7 @@ const AppRoutes = () => {
           element={withLayout(
             MainLayout,
             AccessManagementTable,
-            !userPermissionObject?.[PermissionKeys.ADMIN_USERS_VIEW]
+            !userPermissionObject?.[PermissionKeys.ADMIN_USERS_VIEW],
           )}
         />
         {/* Administration > School Management > School Settings */}
@@ -198,7 +206,7 @@ const AppRoutes = () => {
           element={withLayout(
             MainLayout,
             SchoolSettings,
-            !userPermissionObject?.[PermissionKeys.SCHOOL_SETTINGS_VIEW]
+            !userPermissionObject?.[PermissionKeys.SCHOOL_SETTINGS_VIEW],
           )}
         />
         {/* Administration > Staff Management > Add Class Teacher */}
@@ -207,7 +215,7 @@ const AppRoutes = () => {
           element={withLayout(
             MainLayout,
             AddClassTeacher,
-            !userPermissionObject?.[PermissionKeys.ADD_CLASS_TEACHER_VIEW]
+            !userPermissionObject?.[PermissionKeys.ADD_CLASS_TEACHER_VIEW],
           )}
         />
         {/* Administration > Student Management > Student Promotion */}
@@ -216,6 +224,14 @@ const AppRoutes = () => {
           element={withLayout(
             MainLayout,
             StudentPromotion,
+            !userPermissionObject?.[PermissionKeys.STUDENT_PROMOTION_VIEW],
+          )}
+        />
+        <Route
+          path="/admin/student-service-charges"
+          element={withLayout(
+            MainLayout,
+            StudentServiceCharges,
             !userPermissionObject?.[PermissionKeys.STUDENT_PROMOTION_VIEW]
           )}
         />
@@ -228,7 +244,7 @@ const AppRoutes = () => {
             ParentReport,
             !userPermissionObject?.[
               PermissionKeys.STUDENT_PARENT_PARENT_REPORTS_VIEW
-            ]
+            ],
           )}
         />
         {/* Reports > Teacher Reports > Class Report */}
@@ -237,7 +253,7 @@ const AppRoutes = () => {
           element={withLayout(
             MainLayout,
             TeacherClassReport,
-            !userPermissionObject?.[PermissionKeys.TEACHER_ClASS_REPORTS_VIEW]
+            !userPermissionObject?.[PermissionKeys.TEACHER_ClASS_REPORTS_VIEW],
           )}
         />
         {/* Reports > Teacher Reports > Student Report */}
@@ -246,7 +262,9 @@ const AppRoutes = () => {
           element={withLayout(
             MainLayout,
             TeacherStudentReport,
-            !userPermissionObject?.[PermissionKeys.TEACHER_STUDENT_REPORTS_VIEW]
+            !userPermissionObject?.[
+              PermissionKeys.TEACHER_STUDENT_REPORTS_VIEW
+            ],
           )}
         />
         {/* Reports > Management Staff Reports > Marks Entry Report */}
@@ -257,7 +275,7 @@ const AppRoutes = () => {
             ManagementGradeReport,
             !userPermissionObject?.[
               PermissionKeys.MARKS_ENTRY_MONITORING_REPORTS_VIEW
-            ]
+            ],
           )}
         />
         <Route
@@ -267,7 +285,7 @@ const AppRoutes = () => {
             MarksEntryReport,
             !userPermissionObject?.[
               PermissionKeys.MARKS_ENTRY_MONITORING_REPORTS_VIEW
-            ]
+            ],
           )}
         />
         {/* Reports > Management Staff Reports > Student Report */}
@@ -278,7 +296,7 @@ const AppRoutes = () => {
             ManagementStudentReport,
             !userPermissionObject?.[
               PermissionKeys.MANAGEMENT_STAFF_STUDENT_REPORTS_VIEW
-            ]
+            ],
           )}
         />
         {/* Academics > Add Marks */}
@@ -287,7 +305,7 @@ const AppRoutes = () => {
           element={withLayout(
             MainLayout,
             AddMarks,
-            !userPermissionObject?.[PermissionKeys.ADD_MARKS_VIEW]
+            !userPermissionObject?.[PermissionKeys.ADD_MARKS_VIEW],
           )}
         />
       </Route>
