@@ -52,11 +52,9 @@ const useStyles = makeStyles(() => ({
 function RichTextComponent({
   onChange,
   placeholder,
-  markdown,
 }: {
   onChange: (value: string) => void;
   placeholder?: string;
-  markdown?: string;
 }) {
   const classes = useStyles();
   const ref = useRef<MDXEditorMethods>(null);
@@ -64,8 +62,7 @@ function RichTextComponent({
   return (
     <MDXEditor
       ref={ref}
-      markdown={!markdown ? "" : markdown}
-      placeholder={!markdown && placeholder}
+      markdown={placeholder ?? ""}
       className={classes.editor}
       plugins={[
         toolbarPlugin({

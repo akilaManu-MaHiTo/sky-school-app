@@ -116,11 +116,11 @@ function LoginForm() {
               cursor: "pointer",
               fontSize: "15px",
               textDecoration: "underline",
-              fontWeight: "700",
+              fontWeight: "500",
             }}
             onClick={() => navigate("/register")}
           >
-            Create Account
+            Sign Up Here
           </span>
         </Typography>
       </Box>

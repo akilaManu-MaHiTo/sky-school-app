@@ -1,7 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { StudentMarkRow } from "../views/Academics/studentMarksUtils";
-import { ColumnDefinition } from "../components/useColumnVisibility";
 import { drawPdfHeader, PdfHeaderData } from "./OrganizationHeaderPDF";
 import { drawPdfFooter } from "./OrganizationFooter";
 
@@ -9,9 +8,6 @@ export interface StudentMarksPdfOptions extends PdfHeaderData {
   academicYear?: string;
   academicTerm?: string;
   subjectName?: string;
-  columns?: ColumnDefinition[];
-  visibility?: Record<string, boolean>;
-  filters?: { label: string; value: string | number }[];
 }
 
 const REPORT_TITLE = "Student Marks Report";
@@ -47,25 +43,6 @@ const resolveGradeValue = (row: StudentMarkRow): string => {
     return "-";
   }
   return row.markGrade;
-};
-
-const columnValueSelector: Record<
-  string,
-  (row: StudentMarkRow) => string | number
-> = {
-  admissionNumber: (row) =>
-    row.student?.employeeNumber || row.employeeNumber || "-",
-  name: (row) =>
-    row.student?.nameWithInitials || row.student?.name || "-",
-  academicYear: (row) => row.academicYear ?? "-",
-  academicTerm: (row) => row.academicTerm ?? "-",
-  academicMedium: (row) => row.academicMedium ?? "-",
-  grade: (row) => (row.grade?.grade ? `Grade ${row.grade.grade}` : "-"),
-  className: (row) => row.class?.className || "-",
-  subjectName: (row) => row.subject?.subjectName || "-",
-  isAbsentStudent: (row) => (row.isAbsentStudent ? "Yes" : "No"),
-  studentMark: (row) => resolveMarkValue(row),
-  markGrade: (row) => resolveGradeValue(row),
 };
 
 export const generateStudentMarksPdf = (
@@ -115,53 +92,32 @@ export const generateStudentMarksPdf = (
     summaryRight.forEach((line, index) => {
       doc.text(line, 120, 56 + index * 5);
     });
-
-    
   };
-
-  const defaultColumns: ColumnDefinition[] = [
-    { key: "admissionNumber", label: "Admission No." },
-    { key: "name", label: "Student" },
-    { key: "grade", label: "Grade" },
-    { key: "className", label: "Class" },
-    { key: "studentMark", label: "Mark" },
-    { key: "markGrade", label: "Mark Grade" },
-    { key: "isAbsentStudent", label: "Absent" },
-  ];
-
-  const columns = options.columns ?? defaultColumns;
-  const visibility =
-    options.visibility ??
-    columns.reduce<Record<string, boolean>>((acc, col) => {
-      acc[col.key] = true;
-      return acc;
-    }, {});
-
-  const exportColumns = columns.filter(
-    (column) => visibility[column.key] && column.key !== "isAbsentStudent"
-  );
-
-  const headRow = ["#", ...exportColumns.map((column) => column.label)];
-
-  const body = dataset.map((row, index) => [
-    (index + 1).toString(),
-    ...exportColumns.map((column) => {
-      const selector = columnValueSelector[column.key];
-      if (!selector) {
-        return "-";
-      }
-      const value = selector(row);
-      if (value === undefined || value === null || value === "") {
-        return "-";
-      }
-      return value;
-    }),
-  ]);
 
   autoTable(doc, {
     startY: TABLE_MARGIN_TOP,
-    head: [headRow],
-    body,
+    head: [
+      [
+        "#",
+        "Admission No.",
+        "Student",
+        "Grade",
+        "Class",
+        "Mark",
+        "Mark Grade",
+        "Absent",
+      ],
+    ],
+    body: dataset.map((row, index) => [
+      (index + 1).toString(),
+      row.student?.employeeNumber || row.employeeNumber || "-",
+      row.student?.name || "-",
+      row.grade?.grade ? `Grade ${row.grade.grade}` : "-",
+      row.class?.className || "-",
+      resolveMarkValue(row),
+      resolveGradeValue(row),
+      row.isAbsentStudent ? "Yes" : "No",
+    ]),
     theme: "grid",
     styles: {
       fontSize: 8,
@@ -176,6 +132,13 @@ export const generateStudentMarksPdf = (
     },
     columnStyles: {
       0: { cellWidth: 10, halign: "center" },
+      1: { cellWidth: 28 },
+      2: { cellWidth: 42 },
+      3: { cellWidth: 25 },
+      4: { cellWidth: 25 },
+      5: { cellWidth: 18, halign: "center" },
+      6: { cellWidth: 20, halign: "center" },
+      7: { cellWidth: 18, halign: "center" },
     },
     margin: { top: TABLE_MARGIN_TOP, bottom: TABLE_MARGIN_BOTTOM, left: 12, right: 12 },
     didDrawPage: (dataArg) => {

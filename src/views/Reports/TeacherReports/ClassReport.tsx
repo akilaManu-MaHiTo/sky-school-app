@@ -5,27 +5,19 @@ import {
   Autocomplete,
   Box,
   Button,
-  LinearProgress,
-  Paper,
   Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   TextField,
   Typography,
 } from "@mui/material";
-import theme from "../../../../theme";
-import PageTitle from "../../../../components/PageTitle";
-import Breadcrumb from "../../../../components/BreadCrumb";
+import theme from "../../../theme";
+import PageTitle from "../../../components/PageTitle";
+import Breadcrumb from "../../../components/BreadCrumb";
 import { Controller, useForm } from "react-hook-form";
-import useIsMobile from "../../../../customHooks/useIsMobile";
-import DateRangePicker from "../../../../components/DateRangePicker";
-import CustomButton from "../../../../components/CustomButton";
+import useIsMobile from "../../../customHooks/useIsMobile";
+import DateRangePicker from "../../../components/DateRangePicker";
+import CustomButton from "../../../components/CustomButton";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import DashboardCard from "../../../../components/DashboardCard";
+import DashboardCard from "../../../components/DashboardCard";
 import {
   XAxis,
   YAxis,
@@ -36,11 +28,11 @@ import {
   Bar,
   Cell,
 } from "recharts";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { dateFormatter } from "../../../../util/dateFormat.util";
-import CustomPieChart from "../../../../components/CustomPieChart";
+import { dateFormatter } from "../../../util/dateFormat.util";
+import CustomPieChart from "../../../components/CustomPieChart";
 
 import SentimentSatisfiedAltOutlinedIcon from "@mui/icons-material/SentimentSatisfiedAltOutlined";
 import MoodOutlinedIcon from "@mui/icons-material/MoodOutlined";
@@ -51,20 +43,18 @@ import {
   examTerms,
   getAllClassReportAllBarChart,
   getAllClassReportAllBarChartMarkGrade,
-  getAllClassReportAllMarkGradesTable,
   getAllClassReportCard,
   getClassReportBarChart,
   getClassReportBarChartByGrades,
   getClassReportCard,
-  getClassReportMarkGradesTable,
   markGrades,
   months,
-} from "../../../../api/StudentMarks/studentMarksApi";
-import { getYearsData } from "../../../../api/OrganizationSettings/organizationSettingsApi";
+} from "../../../api/StudentMarks/studentMarksApi";
+import { getYearsData } from "../../../api/OrganizationSettings/organizationSettingsApi";
 import {
   getClassesData,
   getGradesData,
-} from "../../../../api/OrganizationSettings/academicGradeApi";
+} from "../../../api/OrganizationSettings/academicGradeApi";
 import ApexBarChart from "./ApexBarChart";
 import ApexBarChartCounts from "./ApexBarChartCounts";
 import ApexStackedBarChart from "./ApexStackedBarChart";
@@ -74,13 +64,11 @@ import AllClassReportTable from "./AllClassReportTable";
 
 const breadcrumbItems = [
   { title: "Home", href: "/home" },
-  { title: "Reports" },
-  { title: "Teacher Reports" },
   { title: "Class Report" },
 ];
 
 function RagDashboard() {
-  const { isMobile, isTablet,isSmallMonitor } = useIsMobile();
+  const { isMobile, isTablet } = useIsMobile();
   const {
     register,
     setValue,
@@ -266,106 +254,48 @@ function RagDashboard() {
       disableFetch,
   });
 
-  const {
-    data: classMarkGradesTableData,
-    isFetching: isClassMarkGradesTableFetching,
-  } = useQuery({
-    queryKey: [
-      "class-report-mark-grades-table",
-      year,
-      selectedGrade,
-      selectedClass,
-      selectedTerm,
-      selectedMonthlyExam,
-    ],
-    queryFn: () =>
-      getClassReportMarkGradesTable(
-        year,
-        selectedGrade,
-        selectedClass,
-        selectedTerm,
-        selectedMonthlyExam
-      ),
-    enabled:
-      !!selectedGrade &&
-      !!selectedClass &&
-      !!year &&
-      !!selectedTerm &&
-      (selectedTerm !== "Monthly Exam" || !!selectedMonthlyExam) &&
-      !disableFetch,
-  });
-
-  const {
-    data: classAllMarkGradesTableData,
-    isFetching: isClassAllMarkGradesTableFetching,
-  } = useQuery({
-    queryKey: [
-      "class-report-all-mark-grades-table",
-      year,
-      selectedGrade,
-      selectedClass,
-    ],
-    queryFn: () =>
-      getAllClassReportAllMarkGradesTable(year, selectedGrade, selectedClass),
-    enabled:
-      !!selectedGrade &&
-      !!selectedClass &&
-      !!year &&
-      !!selectedTerm &&
-      (selectedTerm !== "Monthly Exam" || !!selectedMonthlyExam) &&
-      disableFetch,
-  });
-
   const isMonthlyExam = selectedTerm === "Monthly Exam";
 
-  // Single-term bar chart: X = subjects, Y = average %
   const barChartReportData = useMemo(() => {
-    const source: any = classReportBarChartData;
-    const raw: any[] = Array.isArray(source)
-      ? source
-      : Array.isArray(source?.data)
-      ? source.data
+    const candidate: any = classReportBarChartData;
+    const raw: any[] = Array.isArray(candidate)
+      ? candidate
+      : Array.isArray(candidate?.data)
+      ? candidate.data
       : [];
 
     if (!raw || raw.length === 0) {
-      return { categories: [], series: [], colors: [] };
+      return { categories: [], series: [] };
     }
 
-    const categories = raw.map((item: any) => item.subjectName ?? "");
-    const data = raw.map((item: any) => {
-      const avg = typeof item?.average === "number" ? item.average : 0;
-      return Number(avg.toFixed(2));
-    });
-
-     const colors = raw.map(
-       (item: any) => item.subjectColorCode ?? "#008FFB"
-     );
-
     return {
-      categories,
-      colors,
+      categories: raw.map((item: any) => item.subjectName),
       series: [
         {
           name: "Average %",
-          data,
+          data: raw.map((item: any) => {
+            const avg = typeof item.average === "number" ? item.average : 0;
+            return Number(avg.toFixed(2));
+          }),
         },
       ],
     };
   }, [classReportBarChartData]);
 
-  // All-terms stacked bar: X = terms (Term 1, Term 2, ...), stack = subjects (average %)
   const allTermsStackedBarData = useMemo(() => {
-    const container: any = classAllReportBarChartData?.data ?? classAllReportBarChartData ?? {};
-    const terms = Object.keys(container || {});
+    if (!classAllReportBarChartData || !classAllReportBarChartData.data) {
+      return { categories: [], series: [] };
+    }
+
+    const terms = Object.keys(classAllReportBarChartData.data);
 
     if (terms.length === 0) {
-      return { categories: [], series: [], colors: [] };
+      return { categories: [], series: [] };
     }
 
     const subjectSet = new Set<string>();
-    const subjectColorMap = new Map<string, string>();
     terms.forEach((termKey) => {
-      const termRaw = container[termKey];
+      const termRaw = (classAllReportBarChartData.data as any)[termKey];
       const termArr: any[] = Array.isArray(termRaw)
         ? termRaw
         : Array.isArray(Object.values(termRaw || {}))
@@ -375,12 +305,6 @@ function RagDashboard() {
       termArr.forEach((item: any) => {
         if (item?.subjectName) {
           subjectSet.add(item.subjectName);
-          if (
-            item.subjectColorCode &&
-            !subjectColorMap.has(item.subjectName)
-          ) {
-            subjectColorMap.set(item.subjectName, item.subjectColorCode);
-          }
         }
       });
     });
@@ -389,146 +313,64 @@ function RagDashboard() {
 
     const series = subjects.map((subject) => ({
       name: subject,
-      color: subjectColorMap.get(subject) ?? "#008FFB",
       data: terms.map((termKey) => {
-        const termRaw = container[termKey];
+        const termRaw = (classAllReportBarChartData.data as any)[termKey];
         const termArr: any[] = Array.isArray(termRaw)
           ? termRaw
           : Array.isArray(Object.values(termRaw || {}))
           ? Object.values(termRaw || {})
           : [];
         const found = termArr.find((item: any) => item.subjectName === subject);
-        const avg = typeof found?.average === "number" ? found.average : 0;
-        return Number(avg.toFixed(2));
+        return found ? Number(found.average.toFixed(2)) : 0;
       }),
     }));
-
-    const colors = subjects.map(
-      (subject) => subjectColorMap.get(subject) ?? "#008FFB"
-    );
 
     return {
       categories: terms,
       series,
-      colors,
     };
   }, [classAllReportBarChartData]);
 
-  // All-terms stacked bar for mark grades: X = terms, stack = subjects (student counts)
+  // Transform `classAllReportBarChartDataMarkGrades` so X axis = terms and stacks = subjects
   const allTermsStackedBarDataMarkGrades = useMemo(() => {
-    const container: any =
-      (classAllReportBarChartDataMarkGrades as any)?.data ??
-      classAllReportBarChartDataMarkGrades ??
-      {};
+    const raw = classAllReportBarChartDataMarkGrades ?? {};
 
-    const terms = Object.keys(container || {});
-    if (terms.length === 0) {
-      return { categories: [], series: [], colors: [] };
-    }
+    const termKeys = Object.keys(raw || {});
+    if (termKeys.length === 0) return { categories: [], series: [] };
 
+    // collect subjects across all terms
     const subjectSet = new Set<string>();
-    const subjectColorMap = new Map<string, string>();
-    terms.forEach((termKey) => {
-      const termRaw = container[termKey];
-      const termArr: any[] = Array.isArray(termRaw)
+    termKeys.forEach((term) => {
+      const termRaw = (raw as any)[term];
+      const arr: any[] = Array.isArray(termRaw)
         ? termRaw
         : Array.isArray(Object.values(termRaw || {}))
         ? Object.values(termRaw || {})
         : [];
-
-      termArr.forEach((item: any) => {
-        if (item?.subjectName) {
-          subjectSet.add(item.subjectName);
-          if (
-            item.subjectColorCode &&
-            !subjectColorMap.has(item.subjectName)
-          ) {
-            subjectColorMap.set(item.subjectName, item.subjectColorCode);
-          }
-        }
+      arr.forEach((item: any) => {
+        if (item?.subjectName) subjectSet.add(item.subjectName);
       });
     });
 
     const subjects = Array.from(subjectSet);
 
+    // Create a series per subject where data array aligns with termKeys order
     const series = subjects.map((subject) => ({
       name: subject,
-      color: subjectColorMap.get(subject) ?? "#008FFB",
-      data: terms.map((termKey) => {
-        const termRaw = container[termKey];
+      data: termKeys.map((term) => {
+        const termRaw = (raw as any)[term];
         const termArr: any[] = Array.isArray(termRaw)
           ? termRaw
           : Array.isArray(Object.values(termRaw || {}))
           ? Object.values(termRaw || {})
           : [];
-        const found = termArr.find((item: any) => item.subjectName === subject);
-        const count = typeof found?.count === "number" ? found.count : 0;
-        return Number(count);
+        const found = termArr.find((it: any) => it.subjectName === subject);
+        return found ? Number(found.count ?? 0) : 0;
       }),
     }));
 
-    const colors = subjects.map(
-      (subject) => subjectColorMap.get(subject) ?? "#008FFB"
-    );
-
-    return {
-      categories: terms,
-      series,
-      colors,
-    };
+    return { categories: termKeys, series };
   }, [classAllReportBarChartDataMarkGrades]);
-
-  const singleTermMarkGradesRows = useMemo(() => {
-    const source: any = classMarkGradesTableData;
-    const raw: any[] = Array.isArray(source)
-      ? source
-      : Array.isArray(source?.data)
-      ? source.data
-      : [];
-
-    return raw || [];
-  }, [classMarkGradesTableData]);
-
-  const markGradesTableGradeColumns = useMemo(() => {
-    if (!disableFetch) {
-      const sample =
-        (singleTermMarkGradesRows && singleTermMarkGradesRows.length > 0
-          ? singleTermMarkGradesRows[0]
-          : {}) as any;
-      return Object.keys(sample).filter((key) =>
-        ["subjectId", "subjectName", "term"].includes(key) ? false : true
-      );
-    }
-
-    const container: any =
-      (classAllMarkGradesTableData as any)?.data ??
-      classAllMarkGradesTableData ??
-      {};
-
-    const terms = Object.keys(container || {});
-    let sample: any = {};
-
-    for (const termKey of terms) {
-      const termRaw = container[termKey];
-      const termArr: any[] = Array.isArray(termRaw)
-        ? termRaw
-        : Array.isArray(Object.values(termRaw || {}))
-        ? Object.values(termRaw || {})
-        : [];
-      if (termArr.length > 0) {
-        sample = termArr[0];
-        break;
-      }
-    }
-
-    return Object.keys(sample).filter(
-      (key) => !["subjectId", "subjectName", "term"].includes(key)
-    );
-  }, [
-    disableFetch,
-    singleTermMarkGradesRows,
-    classAllMarkGradesTableData,
-  ]);
 
   const classReportTitle = useMemo(() => {
     if (!selectedTerm) return "Class Overall Report";
@@ -538,52 +380,29 @@ function RagDashboard() {
     return `Grade ${selectedGrade?.grade} ${selectedClass?.className} Class Overall Report - ${selectedTerm}`;
   }, [selectedTerm, selectedMonthlyExam]);
 
-  // Single-term bar chart for mark grades: X = subjects, Y = count
+  // Transform `classReportBarChartMarkGradeData` into categories/series for counts chart
   const subjectCountsChart = useMemo(() => {
-    const source: any = classReportBarChartMarkGradeData;
-    const raw: any[] = Array.isArray(source)
-      ? source
-      : Array.isArray(source?.data)
-      ? source.data
+    const rawCandidate: any = classReportBarChartMarkGradeData;
+    const raw: any[] = Array.isArray(rawCandidate)
+      ? rawCandidate
+      : Array.isArray(rawCandidate?.data)
+      ? rawCandidate.data
       : [];
 
     if (!raw || raw.length === 0) {
-      return { categories: [], series: [], colors: [] };
+      return { categories: [], series: [] };
     }
 
-    const categories = raw.map((item: any) => item.subjectName ?? "");
-    const data = raw.map((item: any) => {
-      const count = typeof item?.count === "number" ? item.count : 0;
-      return Number(count);
-    });
-
-    const colors = raw.map(
-      (item: any) => item.subjectColorCode ?? "#008FFB"
-    );
-
     return {
-      categories,
-      colors,
+      categories: raw.map((s: any) => s.subjectName),
       series: [
         {
           name: "Students Count",
-          data,
+          data: raw.map((s: any) => (s.count != null ? Number(s.count) : 0)),
         },
       ],
     };
   }, [classReportBarChartMarkGradeData]);
-
-  const showGroupColumns = useMemo(() => {
-    const gradeValue = selectedGrade?.grade;
-    return (
-      gradeValue === 10 ||
-      gradeValue === 11 ||
-      gradeValue === "10" ||
-      gradeValue === "11"
-    );
-  }, [selectedGrade]);
-
-  console.log("hi",selectedGrade);
 
   return (
     <Stack>
@@ -794,162 +613,6 @@ function RagDashboard() {
           </Box>
         </AccordionDetails>
       </Accordion>
-      <Box
-        sx={{
-          width: "100%",
-          height: "auto",
-          marginTop: "1rem",
-          boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-          padding: "1rem",
-          borderRadius: "0.3rem",
-          border: "1px solid var(--pallet-border-blue)",
-          backgroundColor: "#fff",
-        }}
-      >
-        <Typography
-          variant="h6"
-          sx={{
-            textAlign: "left",
-            mb: 2,
-          }}
-        >
-          {disableFetch
-            ? "All Terms Subject Mark Grades"
-            : "Subject Mark Grades"}
-        </Typography>
-
-        <TableContainer
-          component={Paper}
-          elevation={2}
-          sx={{
-            overflowX: "auto",
-            maxWidth: isMobile ? "75vw" : isTablet ? "88vW" : "100%",
-          }}
-        >
-          {(isClassMarkGradesTableFetching || isClassAllMarkGradesTableFetching) && (
-            <LinearProgress sx={{ width: "100%" }} />
-          )}
-          <Table aria-label="subject mark grades table">
-            <TableHead sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}>
-              <TableRow>
-                <TableCell>Subject</TableCell>
-                {markGradesTableGradeColumns.map((col) => (
-                  <TableCell key={col} align="right">
-                    {col}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {!disableFetch ? (
-                singleTermMarkGradesRows && singleTermMarkGradesRows.length > 0 ? (
-                  singleTermMarkGradesRows.map((row: any, index: number) => (
-                    <TableRow
-                      key={row.subjectId ?? `${row.subjectName}-${index}`}
-                    >
-                      <TableCell>{row.subjectName}</TableCell>
-                      {markGradesTableGradeColumns.map((col) => (
-                        <TableCell key={col} align="right">
-                          {row[col] ?? 0}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={1 + markGradesTableGradeColumns.length}
-                      align="center"
-                    >
-                      <Typography variant="body2">
-                        No mark grades data available. Please adjust filters.
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                )
-              ) : (() => {
-                const container: any =
-                  (classAllMarkGradesTableData as any)?.data ??
-                  classAllMarkGradesTableData ??
-                  {};
-
-                const terms = Object.keys(container || {});
-                const nonEmptyTerms = terms.filter((termKey) => {
-                  const termRaw = container[termKey];
-                  const termArr: any[] = Array.isArray(termRaw)
-                    ? termRaw
-                    : Array.isArray(Object.values(termRaw || {}))
-                    ? Object.values(termRaw || {})
-                    : [];
-                  return termArr.length > 0;
-                });
-
-                if (!nonEmptyTerms.length) {
-                  return (
-                    <TableRow>
-                      <TableCell
-                        colSpan={1 + markGradesTableGradeColumns.length}
-                        align="center"
-                      >
-                        <Typography variant="body2">
-                          No mark grades data available. Please adjust filters.
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  );
-                }
-
-                const termLabelMap: Record<string, string> = {
-                  term1: "Term 1",
-                  term2: "Term 2",
-                  term3: "Term 3",
-                };
-
-                return nonEmptyTerms.map((termKey) => {
-                  const termRaw = container[termKey];
-                  const termArr: any[] = Array.isArray(termRaw)
-                    ? termRaw
-                    : Array.isArray(Object.values(termRaw || {}))
-                    ? Object.values(termRaw || {})
-                    : [];
-
-                  const label = termLabelMap[termKey] || termKey;
-
-                  return (
-                    <React.Fragment key={termKey}>
-                      <TableRow>
-                        <TableCell
-                          colSpan={1 + markGradesTableGradeColumns.length}
-                          sx={{ backgroundColor: "#f5f5f5" }}
-                        >
-                          <Typography
-                            variant="subtitle2"
-                            sx={{ fontWeight: 600 }}
-                          >
-                            {label}
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                      {termArr.map((row: any, index: number) => (
-                        <TableRow
-                          key={row.subjectId ?? `${row.subjectName}-${index}`}
-                        >
-                          <TableCell>{row.subjectName}</TableCell>
-                          {markGradesTableGradeColumns.map((col) => (
-                            <TableCell key={col} align="right">
-                              {row[col] ?? 0}
-                            </TableCell>
-                          ))}
-                        </TableRow>
-                      ))}
-                    </React.Fragment>
-                  );
-                });
-              })()}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box>
 
       <Box
         sx={{
@@ -958,7 +621,6 @@ function RagDashboard() {
           gap: "1rem",
         }}
       >
-        
         <Box
           sx={{
             width: "100%",
@@ -974,7 +636,7 @@ function RagDashboard() {
         >
           <Box
             sx={{
-              mb: "3.5rem",
+              mb:"3.5rem"
             }}
           >
             <Typography
@@ -1001,7 +663,6 @@ function RagDashboard() {
                 categories={barChartReportData.categories}
                 series={barChartReportData.series as any}
                 loading={isClassReportBarChartFetching}
-                barColors={barChartReportData.colors}
               />
             )}
           </ResponsiveContainer>
@@ -1069,7 +730,6 @@ function RagDashboard() {
                 categories={subjectCountsChart.categories}
                 series={subjectCountsChart.series as any}
                 loading={isClassReportBarChartMarkGradeFetching}
-                barColors={subjectCountsChart.colors}
               />
             )}
           </ResponsiveContainer>
@@ -1102,8 +762,6 @@ function RagDashboard() {
               isLoading={isClassAllReportCardFetching}
               isMobile={isMobile}
               isTablet={isTablet}
-              showGroupColumns={showGroupColumns}
-              year={year}
             />
           ) : (
             <ClassReportTable
@@ -1112,14 +770,10 @@ function RagDashboard() {
               isMobile={isMobile}
               isTablet={isTablet}
               title={classReportTitle}
-              showGroupColumns={showGroupColumns}
-              year={year}
             />
           )}
         </Box>
       </Box>
-
-      
     </Stack>
   );
 }

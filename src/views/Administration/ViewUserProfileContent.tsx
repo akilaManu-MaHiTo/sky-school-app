@@ -48,7 +48,6 @@ import { format } from "date-fns";
 import AddOrEditStudentAcademicDetailsDialog from "./AcademicDetails/AddOrEditStudentAcademicDetailsDialog";
 import { getPlainAddress } from "../../util/plainText.util";
 import AddOrEditChildrenDetailsDialog from "./AcademicDetails/AddOrEditChildrenDetailsDialog";
-import TeacherDetailsAccordion from "./TeacherDetailsAccordion";
 
 type BasketSubject = {
   id: number;
@@ -79,7 +78,6 @@ type ParentChildProfile = {
   parentProfileId: number | string;
   id: number | string;
   name?: string | null;
-  nameWithInitials?: string | null;
   email?: string | null;
   mobile?: string | null;
   gender?: string | null;
@@ -125,7 +123,6 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["current-user"] });
       enqueueSnackbar("Profile updated successfully!", { variant: "success" });
-      setImageFile(null);
     },
     onError: () => {
       enqueueSnackbar("Profile update failed", { variant: "error" });
@@ -181,7 +178,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
           acc[year].push(profile);
           return acc;
         },
-        {},
+        {}
       );
 
       const sortedEntries = Object.entries(grouped).sort((a, b) => {
@@ -213,7 +210,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
         acc[year].push(profile);
         return acc;
       },
-      {} as Record<string, any>,
+      {} as Record<string, any>
     );
     const sortedEntries = Object.entries(grouped).sort((a, b) => {
       const yearA = Number(a[0]);
@@ -244,7 +241,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
         acc[year].push(profile);
         return acc;
       },
-      {},
+      {}
     );
 
     const sortedEntries = Object.entries(grouped).sort((a, b) => {
@@ -451,16 +448,15 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                 selectedUser?.employeeType === EmployeeType.TEACHER
                   ? "Staff ID"
                   : selectedUser?.employeeType === EmployeeType.STUDENT
-                    ? "Student ID"
-                    : "User ID"
+                  ? "Student ID"
+                  : "User ID"
               }
               value={selectedUser?.employeeNumber}
               sx={{ flex: 1 }}
             />
-
             <DrawerContentItem
-              label="National ID Number"
-              value={selectedUser?.nationalId}
+              label="Email"
+              value={selectedUser?.email}
               sx={{ flex: 1 }}
             />
           </Stack>
@@ -497,24 +493,8 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
           </Stack>
           <Stack direction={isTablet ? "column" : "row"}>
             <DrawerContentItem
-              label="Email"
-              value={selectedUser?.email}
-              sx={{ flex: 1 }}
-            />
-            <DrawerContentItem
               label="Mobile Number"
               value={selectedUser?.mobile}
-              sx={{ flex: 1 }}
-            />
-          </Stack>
-          <Stack direction={isTablet ? "column" : "row"}>
-            <DrawerContentItem
-              label="Date Of Register"
-              value={
-                selectedUser?.dateOfRegister
-                  ? format(new Date(selectedUser?.dateOfRegister), "yyyy-MM-dd")
-                  : "--"
-              }
               sx={{ flex: 1 }}
             />
             <DrawerContentItem
@@ -610,9 +590,6 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
           my: 1,
         }}
       >
-        {selectedUser.employeeType === EmployeeType.TEACHER && (
-          <TeacherDetailsAccordion teacherId={selectedUser.id} />
-        )}
         {selectedUser.employeeType === EmployeeType.STUDENT && (
           <Accordion
             variant="elevation"
@@ -757,12 +734,23 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                                         onClick={() => {
                                           setEditAcademicStudentDetails(p);
                                           setOpenAcademicStudentDetailsDialog(
-                                            true,
+                                            true
                                           );
                                         }}
                                         disabled={isAcademicDetailDeleting}
                                       >
                                         <EditIcon color="primary" />
+                                      </IconButton>
+                                      <IconButton
+                                        onClick={() => {
+                                          setEditAcademicStudentDetails(p);
+                                          setOpenDeleteAcademicStudentDetailsDialog(
+                                            true
+                                          );
+                                        }}
+                                        disabled={isAcademicDetailDeleting}
+                                      >
+                                        <DeleteIcon color="error" />
                                       </IconButton>
                                     </>
                                   )}
@@ -1002,38 +990,22 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                     <Box
                       sx={{
                         display: "flex",
-                        justifyContent: isMobile
-                          ? "flex-start"
-                          : "space-between",
-                        width: isMobile ? "100%" : "30%",
+                        justifyContent: isMobile ? "flex-start" : "space-between",
+                        width: isMobile ?"100%": "30%",
                         flexDirection: isMobile ? "column" : "row",
                         alignItems: isMobile ? "flex-start" : "center",
                         gap: 1,
                       }}
                     >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          minWidth: 0,
-                        }}
-                      >
+                      <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
                         <Typography sx={{ color: "var(--pallet-blue)" }} noWrap>
-                          {child.nameWithInitials
-                            ? `${child.nameWithInitials}${child.employeeId ? ` | ${child.employeeId}` : ""}`
+                          {child.name
+                            ? `${child.name}${child.employeeId ? ` | ${child.employeeId}` : ""}`
                             : `Child ${child.id}`}
                         </Typography>
-                        <Typography
-                          variant="body2"
-                          color="textSecondary"
-                          noWrap
-                        >
+                        <Typography variant="body2" color="textSecondary" noWrap>
                           {child.gender ? `${child.gender}` : ""}
-                          {child.mobile
-                            ? child.gender
-                              ? ` | ${child.mobile}`
-                              : `${child.mobile}`
-                            : ""}
+                          {child.mobile ? (child.gender ? ` | ${child.mobile}` : `${child.mobile}`) : ""}
                         </Typography>
                       </Box>
                       <IconButton

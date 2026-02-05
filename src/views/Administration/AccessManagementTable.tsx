@@ -50,9 +50,7 @@ function AccessManagementTable() {
 
   const breadcrumbItems = [
     { title: "Home", href: "/home" },
-    { title: "Administration" },
     { title: "User Management" },
-    { title: "Access Management" },
   ];
 
   const isMobile = useMediaQuery((theme: Theme) =>
@@ -127,10 +125,9 @@ function AccessManagementTable() {
           marginY: 2,
           borderRadius: 1,
           overflowX: "hidden",
-          backgroundColor: "#fff",
         }}
       >
-        <PageTitle title="Access Management" />
+        <PageTitle title="User Management" />
         <Breadcrumb breadcrumbs={breadcrumbItems} />
       </Box>
       <Stack sx={{ alignItems: "center" }}>

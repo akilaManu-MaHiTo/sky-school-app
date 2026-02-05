@@ -5,7 +5,6 @@ import {
   Alert,
   Badge,
   Box,
-  CircularProgress,
   colors,
   IconButton,
   LinearProgress,
@@ -21,7 +20,7 @@ import {
 } from "@mui/material";
 import { DrawerContentItem } from "../../components/ViewDataDrawer";
 import useIsMobile from "../../customHooks/useIsMobile";
-import { EmployeeType, updateUserProfileImage, User } from "../../api/userApi";
+import { EmployeeType, User } from "../../api/userApi";
 import MultiDrawerContent from "../../components/MultiDrawerContent";
 import ProfileImage from "../../components/ProfileImageComponent";
 import { format } from "date-fns";
@@ -31,8 +30,6 @@ import AddIcon from "@mui/icons-material/Add";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import UpdateUserProfile from "./UpdateUserProfileByAdminDialog";
 import theme from "../../theme";
 import AddOrEditTeacherAcademicDetailsDialog from "./AcademicDetails/AddOrEditTeacherAcademicDetailsDialog";
 import AddOrEditStudentAcademicDetailsDialog from "./AcademicDetails/AddOrEditStudentAcademicDetailsDialog";
@@ -44,9 +41,6 @@ import { enqueueSnackbar } from "notistack";
 import { getPlainAddress } from "../../util/plainText.util";
 import AddOrEditAcademicDetailsByAdminDialog from "./AcademicDetails/AddOrEditTeacherAcademicDetailsByAdminDialog";
 import AddOrEditStudentAcademicDetailsByAdminDialog from "./AcademicDetails/AddOrEditStudentAcademicDetailsByAdminDialog";
-import AddOrEditChildrenDetailsDialog from "./AcademicDetails/AddOrEditChildrenDetailsDialog";
-import { deleteParentProfile } from "../../api/parentApi";
-import AddOrEditChildrenDetailsDialogByAdmin from "./AcademicDetails/AddOrEditChildrenDetailsDialogByAdmin";
 
 type BasketSubject = {
   id: number;
@@ -67,20 +61,6 @@ type StudentProfileEntry = {
   basketSubjects?: Record<string, BasketSubject> | null;
   isStudentApproved?: number | boolean;
 };
-type ParentAcademicProfile = StudentProfileEntry & {
-  createdAt?: string;
-  updatedAt?: string;
-};
-type ParentChildProfile = {
-  parentProfileId: number | string;
-  id: number | string;
-  name?: string | null;
-  email?: string | null;
-  mobile?: string | null;
-  gender?: string | null;
-  employeeId?: string | null;
-  academicProfiles?: ParentAcademicProfile[];
-};
 
 const extractStudentSubjectGroups = (profiles: StudentProfileEntry[]) => {
   const groups = new Set<string>();
@@ -98,51 +78,18 @@ const extractStudentSubjectGroups = (profiles: StudentProfileEntry[]) => {
 function ViewUserContent({ selectedUser }: { selectedUser: User }) {
   const { isTablet, isMobile } = useIsMobile();
 
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [openEditUserRoleDialog, setOpenEditUserRoleDialog] = useState(false);
-
   const [openAcademicDetailsDialog, setOpenAcademicDetailsDialog] =
     useState(false);
   const [editAcademicDetails, setEditAcademicDetails] = useState<any>(null);
   const [openDeleteAcademicDetailsDialog, setOpenDeleteAcademicDetailsDialog] =
     useState(false);
 
-  const [openChildEditDialog, setOpenChildEditDialog] = useState(false);
-  const [editChildDetails, setEditChildDetails] = useState(null);
-  const [openDeleteChildDialog, setOpenDeleteChildDialog] = useState(false);
   const [
     openAcademicStudentDetailsDialog,
     setOpenAcademicStudentDetailsDialog,
   ] = useState(false);
   const [editAcademicStudentDetails, setEditAcademicStudentDetails] =
     useState<StudentProfileEntry | null>(null);
-
-  const { mutate: profileUpdateMutation, isPending } = useMutation({
-    mutationFn: updateUserProfileImage,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-data"] });
-      enqueueSnackbar("Profile updated successfully!", {
-        variant: "success",
-      });
-      setImageFile(null);
-    },
-    onError: () => {
-      enqueueSnackbar("Profile update failed", { variant: "error" });
-    },
-  });
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-    }
-  };
-
-  const saveImage = () => {
-    if (imageFile) {
-      profileUpdateMutation({ id: selectedUser.id, imageFile });
-    }
-  };
 
   const transformProfileData = useMemo(() => {
     if (!selectedUser || !selectedUser.userProfile) return [];
@@ -203,43 +150,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
     }));
   }, [selectedUser]);
 
-  const transformParentProfileData = useMemo(() => {
-    if (!selectedUser || !(selectedUser as any).parentProfile) return [];
-
-    const parentProfiles = (selectedUser as any)
-      .parentProfile as ParentChildProfile[];
-
-    return parentProfiles.map((child) => {
-      const profiles = (child.academicProfiles ?? []) as StudentProfileEntry[];
-
-      const grouped = profiles.reduce<Record<string, StudentProfileEntry[]>>(
-        (acc, profile) => {
-          const year = profile.academicYear ?? "N/A";
-          if (!acc[year]) acc[year] = [];
-          acc[year].push(profile);
-          return acc;
-        },
-        {}
-      );
-
-      const sortedEntries = Object.entries(grouped).sort((a, b) => {
-        const yearA = Number(a[0]);
-        const yearB = Number(b[0]);
-        if (!Number.isNaN(yearA) && !Number.isNaN(yearB)) {
-          return yearB - yearA;
-        }
-        return b[0].localeCompare(a[0]);
-      });
-
-      return {
-        child,
-        years: sortedEntries.map(([year, profilesForYear]) => ({
-          year,
-          profiles: profilesForYear,
-        })),
-      };
-    });
-  }, [selectedUser]);
+  console.log("transformStudentProfileData", transformStudentProfileData);
 
   const {
     mutate: deleteAcademicDetailMutation,
@@ -248,7 +159,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
     mutationFn: deleteAcademicDetail,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["user-data"],
+        queryKey: ["current-user"],
       });
       enqueueSnackbar("Academic Detail Delete Successfully!", {
         variant: "success",
@@ -258,26 +169,6 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
     },
     onError: (error: any) => {
       const message = error?.data?.message || "Academic Detail Delete Failed";
-      enqueueSnackbar(message, { variant: "error" });
-    },
-  });
-  const {
-    mutate: deleteParentProfileMutation,
-    isPending: isDeletingParentProfile,
-  } = useMutation({
-    mutationFn: deleteParentProfile,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["user-data"],
-      });
-      enqueueSnackbar("Child profile removed successfully!", {
-        variant: "success",
-      });
-      setOpenDeleteChildDialog(false);
-      setEditChildDetails(null);
-    },
-    onError: (error: any) => {
-      const message = error?.data?.message || "Remove child profile failed";
       enqueueSnackbar(message, { variant: "error" });
     },
   });
@@ -326,7 +217,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
           >
             <ProfileImage
               name={selectedUser?.name}
-              files={imageFile ? [imageFile] : selectedUser?.profileImage}
+              files={selectedUser?.profileImage}
               fontSize="5rem"
             />
           </Badge>
@@ -338,50 +229,8 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
               color: "var(--pallet-dark-blue)",
             }}
           >
-            {selectedUser?.nameWithInitials}
+            {selectedUser?.name}
           </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: isTablet ? "column" : "row",
-            }}
-            gap={2}
-          >
-            <CustomButton
-              variant="outlined"
-              component="label"
-              sx={{ mt: 2 }}
-              endIcon={
-                isPending && (
-                  <CircularProgress size={20} sx={{ color: "gray" }} />
-                )
-              }
-            >
-              Change Profile Image
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleImageChange}
-              />
-            </CustomButton>
-
-            {imageFile && !isPending && (
-              <CustomButton
-                variant="contained"
-                onClick={saveImage}
-                sx={{ mt: 2, backgroundColor: "var(--pallet-blue)" }}
-                disabled={isPending}
-                endIcon={
-                  isPending && (
-                    <CircularProgress size={20} sx={{ color: "gray" }} />
-                  )
-                }
-              >
-                Save
-              </CustomButton>
-            )}
-          </Box>
         </Box>
 
         <Stack
@@ -395,71 +244,6 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
           }}
           gap={1.5}
         >
-          {isMobile && (
-            <Stack
-              mb={4}
-              sx={{
-                display: "flex",
-                alignItems: "flex-end",
-              }}
-            >
-              <Box>
-                <>
-                  {isTablet ? (
-                    <IconButton
-                      aria-label="edit"
-                      onClick={() => setOpenEditUserRoleDialog(true)}
-                    >
-                      <EditOutlinedIcon sx={{ color: "var(--pallet-blue)" }} />
-                    </IconButton>
-                  ) : (
-                    <CustomButton
-                      variant="contained"
-                      sx={{ backgroundColor: "var(--pallet-blue)" }}
-                      size="medium"
-                      onClick={() => setOpenEditUserRoleDialog(true)}
-                      startIcon={<EditOutlinedIcon />}
-                    >
-                      Edit My Profile
-                    </CustomButton>
-                  )}
-                </>
-              </Box>
-            </Stack>
-          )}
-          {!isMobile && (
-            <Stack
-              mb={4}
-              mt={4}
-              sx={{
-                display: "flex",
-                alignItems: "flex-end",
-              }}
-            >
-              <Box>
-                <>
-                  {isTablet ? (
-                    <IconButton
-                      aria-label="edit"
-                      onClick={() => setOpenEditUserRoleDialog(true)}
-                    >
-                      <EditOutlinedIcon sx={{ color: "var(--pallet-blue)" }} />
-                    </IconButton>
-                  ) : (
-                    <CustomButton
-                      variant="contained"
-                      sx={{ backgroundColor: "var(--pallet-blue)" }}
-                      size="medium"
-                      onClick={() => setOpenEditUserRoleDialog(true)}
-                      startIcon={<EditOutlinedIcon />}
-                    >
-                      Edit Profile
-                    </CustomButton>
-                  )}
-                </>
-              </Box>
-            </Stack>
-          )}
           <Stack direction={isTablet ? "column" : "row"}>
             <DrawerContentItem
               label={
@@ -532,16 +316,6 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
           </Stack>
         </Stack>
       </Stack>
-
-      {openEditUserRoleDialog && (
-        <UpdateUserProfile
-          open={openEditUserRoleDialog}
-          handleClose={() => {
-            setOpenEditUserRoleDialog(false);
-          }}
-          defaultValues={selectedUser}
-        />
-      )}
       <Stack
         sx={{
           my: 1,
@@ -580,7 +354,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                     fontWeight: "semi-bold",
                   }}
                 >
-                  STUDENT ACADEMIC DETAILS
+                  MY ACADEMIC DETAILS
                 </Typography>
               </Box>
             </AccordionSummary>
@@ -761,7 +535,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                     fontWeight: "semi-bold",
                   }}
                 >
-                  TEACHER ACADEMIC DETAILS
+                  ACADEMIC DETAILS
                 </Typography>
               </Box>
             </AccordionSummary>
@@ -873,231 +647,6 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
             </AccordionDetails>
           </Accordion>
         )}
-        {selectedUser.employeeType === EmployeeType.PARENT && (
-          <Accordion
-            variant="elevation"
-            sx={{
-              paddingTop: 0,
-              borderRadius: "8px",
-              marginTop: "1rem",
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel1a-content"
-              style={{
-                borderBottom: `1px solid${colors.grey[100]}`,
-                borderRadius: "8px",
-              }}
-              id="panel1a-header"
-            >
-              <Box
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  margin: "10px 0",
-                }}
-              >
-                <Typography
-                  color="textSecondary"
-                  variant="body2"
-                  sx={{
-                    color: "black",
-                    fontWeight: "semi-bold",
-                  }}
-                >
-                  MY CHILDREN
-                </Typography>
-              </Box>
-            </AccordionSummary>
-
-            <AccordionDetails>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  mt: "1rem",
-                  marginBottom: theme.spacing(2),
-                }}
-              >
-                <CustomButton
-                  variant="contained"
-                  sx={{
-                    backgroundColor: "var(--pallet-blue)",
-                  }}
-                  size="medium"
-                  startIcon={<AddIcon />}
-                  onClick={() => {
-                    setEditChildDetails(null);
-                    setOpenChildEditDialog(true);
-                  }}
-                >
-                  Add My Child
-                </CustomButton>
-              </Box>
-              {transformParentProfileData.map(({ child, years }) => (
-                <Accordion
-                  key={child.id}
-                  variant="elevation"
-                  sx={{ borderRadius: "8px", mt: "1rem" }}
-                >
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    sx={{
-                      borderBottom: `1px solid ${colors.grey[100]}`,
-                      borderRadius: "8px",
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: isMobile
-                          ? "flex-start"
-                          : "space-between",
-                        width: isMobile ? "100%" : "30%",
-                        flexDirection: isMobile ? "column" : "row",
-                        alignItems: isMobile ? "flex-start" : "center",
-                        gap: 1,
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          minWidth: 0,
-                        }}
-                      >
-                        <Typography sx={{ color: "var(--pallet-blue)" }} noWrap>
-                          {child.name
-                            ? `${child.name}${
-                                child.employeeId ? ` | ${child.employeeId}` : ""
-                              }`
-                            : `Child ${child.id}`}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          color="textSecondary"
-                          noWrap
-                        >
-                          {child.gender ? `${child.gender}` : ""}
-                          {child.mobile
-                            ? child.gender
-                              ? ` | ${child.mobile}`
-                              : `${child.mobile}`
-                            : ""}
-                        </Typography>
-                      </Box>
-                      <IconButton
-                        size="small"
-                        color="error"
-                        aria-label="delete-child"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          setEditChildDetails(child);
-                          setOpenDeleteChildDialog(true);
-                        }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-                  </AccordionSummary>
-
-                  <AccordionDetails>
-                    {years.length === 0 && (
-                      <Typography variant="body2" color="textSecondary">
-                        No academic details available.
-                      </Typography>
-                    )}
-                    {years.map(({ year, profiles }) => {
-                      const subjectGroups =
-                        extractStudentSubjectGroups(profiles);
-                      return (
-                        <Accordion
-                          key={`${child.id}-${year}`}
-                          variant="elevation"
-                          sx={{ borderRadius: "8px", mt: "1rem" }}
-                        >
-                          <AccordionSummary
-                            expandIcon={<ExpandMoreIcon />}
-                            sx={{
-                              borderBottom: `1px solid ${colors.grey[100]}`,
-                              borderRadius: "8px",
-                            }}
-                          >
-                            <Typography sx={{ color: "var(--pallet-blue)" }}>
-                              Year {year}
-                            </Typography>
-                          </AccordionSummary>
-
-                          <AccordionDetails>
-                            <TableContainer
-                              component={Paper}
-                              elevation={2}
-                              sx={{
-                                overflowX: "auto",
-                                maxWidth: isMobile ? "88vw" : "100%",
-                              }}
-                            >
-                              <Table aria-label="child academic table">
-                                <TableHead
-                                  sx={{
-                                    backgroundColor:
-                                      "var(--pallet-lighter-blue)",
-                                  }}
-                                >
-                                  <TableRow>
-                                    <TableCell>Grade</TableCell>
-                                    <TableCell>Class</TableCell>
-                                    <TableCell>Medium</TableCell>
-                                    {subjectGroups.map((group) => (
-                                      <TableCell key={group}>{group}</TableCell>
-                                    ))}
-                                  </TableRow>
-                                </TableHead>
-
-                                <TableBody>
-                                  {profiles.map((p) => (
-                                    <TableRow key={p.id}>
-                                      <TableCell>
-                                        {`Grade ` + (p.grade?.grade ?? "-")}
-                                      </TableCell>
-                                      <TableCell>
-                                        {p.class?.className ?? "--"}
-                                      </TableCell>
-                                      <TableCell>
-                                        {p.academicMedium ?? "--"}
-                                      </TableCell>
-                                      {subjectGroups.map((group) => {
-                                        const subject =
-                                          p.basketSubjects?.[group];
-                                        return (
-                                          <TableCell key={`${p.id}-${group}`}>
-                                            {subject ? (
-                                              <Typography>
-                                                {subject.subjectName}
-                                              </Typography>
-                                            ) : (
-                                              "--"
-                                            )}
-                                          </TableCell>
-                                        );
-                                      })}
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
-                            </TableContainer>
-                          </AccordionDetails>
-                        </Accordion>
-                      );
-                    })}
-                  </AccordionDetails>
-                </Accordion>
-              ))}
-            </AccordionDetails>
-          </Accordion>
-        )}
       </Stack>
 
       {openAcademicDetailsDialog && (
@@ -1105,47 +654,6 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
           open={openAcademicDetailsDialog}
           setOpen={setOpenAcademicDetailsDialog}
           defaultValues={editAcademicDetails}
-          teacherId={selectedUser.id}
-        />
-      )}
-
-      {openChildEditDialog && (
-        <AddOrEditChildrenDetailsDialogByAdmin
-          open={openChildEditDialog}
-          setOpen={setOpenChildEditDialog}
-          defaultValues={editChildDetails}
-          parentId={selectedUser.id}
-        />
-      )}
-
-      {openDeleteChildDialog && (
-        <DeleteConfirmationModal
-          open={openDeleteChildDialog}
-          title="Remove Child Confirmation"
-          content={
-            <>
-              Are you sure you want to remove this child profile?
-              <Alert severity="warning" style={{ marginTop: "1rem" }}>
-                This action is not reversible.
-              </Alert>
-            </>
-          }
-          handleClose={() => setOpenDeleteChildDialog(false)}
-          deleteFunc={async () => {
-            // use parentProfileId to delete
-            const id =
-              (editChildDetails as any)?.parentProfileId ??
-              (editChildDetails as any)?.id;
-            deleteParentProfileMutation(id);
-          }}
-          onSuccess={() => {
-            setOpenDeleteChildDialog(false);
-            setEditChildDetails(null);
-          }}
-          handleReject={() => {
-            setOpenDeleteChildDialog(false);
-            setEditChildDetails(null);
-          }}
         />
       )}
 
@@ -1154,7 +662,6 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
           open={openAcademicStudentDetailsDialog}
           setOpen={setOpenAcademicStudentDetailsDialog}
           defaultValues={editAcademicStudentDetails}
-          studentId={selectedUser.id}
         />
       )}
 

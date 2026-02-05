@@ -68,7 +68,6 @@ import {
   LetterSubjects,
 } from "../../../reportsUtils/SubjectsReportPDF";
 import useCurrentOrganization from "../../../hooks/useCurrentOrganization";
-import { title } from "process";
 interface TabPanelProps {
   children?: React.ReactNode;
   dir?: string;
@@ -171,8 +170,6 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
   };
   const breadcrumbItems = [
     { title: "Home", href: "/home" },
-    { title: "Administration" },
-    { title: "School Management" },
     { title: "School Settings" },
   ];
 
@@ -552,7 +549,6 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                     <TableCell align="center">Id</TableCell>
                     <TableCell align="center">Year</TableCell>
                     <TableCell align="center">Status</TableCell>
-                    <TableCell align="center">Created By</TableCell>
                     <TableCell align="center"></TableCell>
                   </TableRow>
                 </TableHead>
@@ -587,9 +583,6 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                                   : "var(--pallet-red-lighter)",
                             }}
                           />
-                        </TableCell>
-                        <TableCell align="center">
-                          {row?.createdByData?.nameWithInitials ?? "-"}
                         </TableCell>
                         <TableCell align="center">
                           <IconButton
@@ -672,11 +665,11 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
                 >
                   <TableRow>
-                    {gradeColumnVisibility.grade && (
-                      <TableCell align="center">Grade</TableCell>
+                    {gradeColumnVisibility.id && (
+                      <TableCell align="center">Id</TableCell>
                     )}
                     {gradeColumnVisibility.grade && (
-                      <TableCell align="center">Created By</TableCell>
+                      <TableCell align="center">Grade</TableCell>
                     )}
                     {gradeColumnVisibility.grade &&
                       gradeColumnVisibility.id && (
@@ -694,6 +687,9 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                           cursor: "pointer",
                         }}
                       >
+                        {gradeColumnVisibility.id && (
+                          <TableCell align="center">{row.id}</TableCell>
+                        )}
                         {gradeColumnVisibility.grade && (
                           <TableCell align="center">
                             <Chip
@@ -703,11 +699,6 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                                 backgroundColor: "var(--pallet-lighter-blue)",
                               }}
                             />
-                          </TableCell>
-                        )}
-                        {gradeColumnVisibility.grade && (
-                          <TableCell align="center">
-                            {row?.createdByData?.nameWithInitials ?? "-"}
                           </TableCell>
                         )}
                         {gradeColumnVisibility.grade &&
@@ -846,7 +837,8 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                             padding: 2.5,
                             borderRadius: 2,
                             transition: "all 0.2s ease-in-out",
-                            borderLeft: `0.8rem solid ${subject.colorCode}`,
+                            border: "1px solid",
+                            borderColor: "divider",
                           }}
                         >
                           <Stack
@@ -877,15 +869,6 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                               >
                                 <SubjectIcon fontSize="small" />
                                 {subject.subjectCode}
-                              </Typography>
-                              <Typography
-                                variant="caption"
-                                sx={{
-                                  color: "text.secondary",
-                                  mt: 0.5,
-                                }}
-                              >
-                                {subject.createdByData?.nameWithInitials ?? "-"}
                               </Typography>
                             </Box>
 
@@ -990,10 +973,6 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                     {classColumnVisibility.className && (
                       <TableCell align="left">Class Name</TableCell>
                     )}
-                    <TableCell align="left">Class Category</TableCell>
-                    {classColumnVisibility.className && (
-                      <TableCell align="center">Created By</TableCell>
-                    )}
                     <TableCell align="center"></TableCell>
                   </TableRow>
                 </TableHead>
@@ -1019,12 +998,6 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                                 backgroundColor: "var(--pallet-lighter-blue)",
                               }}
                             />
-                          </TableCell>
-                        )}
-                        <TableCell align="left">{row.classCategory}</TableCell>
-                        {classColumnVisibility.className && (
-                          <TableCell align="center">
-                            {row?.createdByData?.nameWithInitials ?? "-"}
                           </TableCell>
                         )}
                         <TableCell align="center">
