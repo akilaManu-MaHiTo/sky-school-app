@@ -9,13 +9,7 @@ function useIsMobile() {
     theme.breakpoints.down("md")
   );
 
-  // const isSmallMonitor = useMediaQuery((theme: Theme) =>
-  //   theme.breakpoints.down(500)
-  // );
-
-  const isSmallMonitor = useMediaQuery("(min-width:1024px) and (max-width:1440px)");
-
-  return { isMobile, isTablet, isSmallMonitor };
+  return { isMobile, isTablet };
 }
 
 export default useIsMobile;

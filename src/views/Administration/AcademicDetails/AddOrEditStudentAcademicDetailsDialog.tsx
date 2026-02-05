@@ -16,7 +16,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { grey } from "@mui/material/colors";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import CustomButton from "../../../components/CustomButton";
 import useIsMobile from "../../../customHooks/useIsMobile";
@@ -37,10 +37,7 @@ import {
   getGroup3SubjectData,
   getYearsData,
 } from "../../../api/OrganizationSettings/organizationSettingsApi";
-import {
-  getClassesData,
-  getClassesDataByGrade,
-} from "../../../api/OrganizationSettings/academicGradeApi";
+import { getClassesData } from "../../../api/OrganizationSettings/academicGradeApi";
 
 const AddOrEditStudentAcademicDetailsDialog = ({
   open,
@@ -54,26 +51,17 @@ const AddOrEditStudentAcademicDetailsDialog = ({
   const { enqueueSnackbar } = useSnackbar();
   const { isMobile } = useIsMobile();
 
-  const [isInitialized, setIsInitialized] = useState(false);
-
   const {
     handleSubmit,
     formState: { errors, isDirty },
     reset,
     register,
-    watch,
     control,
   } = useForm<AcademicDetail>({
     defaultValues: defaultValues,
   });
 
   const isEdit = Boolean(defaultValues?.id);
-  const selectedGrade = watch("grades");
-  const gradeNumber = Number(selectedGrade?.grade);
-
-  const isGroup1 = gradeNumber === 10 || gradeNumber === 11;
-  const isGroup2 = gradeNumber >= 6 && gradeNumber <= 11;
-  const isGroup3 = gradeNumber === 10 || gradeNumber === 11;
 
   const { data: gradeData } = useQuery({
     queryKey: ["academic-grades"],
@@ -98,9 +86,8 @@ const AddOrEditStudentAcademicDetailsDialog = ({
   });
 
   const { data: classData } = useQuery({
-    queryKey: ["academic-classes", selectedGrade?.grade],
-    queryFn: () => getClassesDataByGrade(selectedGrade?.grade),
-    enabled: !!selectedGrade?.grade,
+    queryKey: ["academic-classes"],
+    queryFn: getClassesData,
   });
 
   const { data: yearData, isFetching: isYearDataFetching } = useQuery({
@@ -124,7 +111,7 @@ const AddOrEditStudentAcademicDetailsDialog = ({
   }, [isDirty]);
 
   useEffect(() => {
-    if (!open || isInitialized) {
+    if (!open) {
       return;
     }
 
@@ -150,9 +137,7 @@ const AddOrEditStudentAcademicDetailsDialog = ({
         defaultValues?.class ??
         null;
 
-      const matchBasketSubject = (
-        groupKey: "Group 1" | "Group 2" | "Group 3"
-      ) => {
+      const matchBasketSubject = (groupKey: "Group 1" | "Group 2" | "Group 3") => {
         const basketSubject = defaultValues?.basketSubjects?.[groupKey];
         if (!basketSubject) {
           return null;
@@ -178,15 +163,17 @@ const AddOrEditStudentAcademicDetailsDialog = ({
         group2: matchedGroup2,
         group3: matchedGroup3,
       });
-      setIsInitialized(true);
+    } else {
+      reset({
+        grades: null,
+        subjects: null,
+        classes: null,
+        group1: null,
+        group2: null,
+        group3: null,
+      });
     }
-  }, [open, defaultValues, gradeData, subjectData, classData, reset, isInitialized]);
-
-  useEffect(() => {
-    if (!open) {
-      setIsInitialized(false);
-    }
-  }, [open]);
+  }, [open, defaultValues, gradeData, subjectData, classData, reset]);
 
   const { mutate: createMutation, isPending: isCreating } = useMutation({
     mutationFn: createAcademicStudentDetail,
@@ -271,33 +258,6 @@ const AddOrEditStudentAcademicDetailsDialog = ({
       <DialogContent>
         <Box sx={{ display: "flex", flexDirection: "column" }}>
           <Controller
-            name="academicYear"
-            control={control}
-            defaultValue={defaultValues?.academicYear ?? ""}
-            {...register("academicYear", { required: true })}
-            render={({ field }) => (
-              <Autocomplete
-                {...field}
-                onChange={(event, newValue) => field.onChange(newValue)}
-                size="small"
-                options={
-                  yearData?.length ? yearData.map((year) => year.year) : []
-                }
-                sx={{ flex: 1, margin: "0.5rem" }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    required
-                    error={!!errors.academicYear}
-                    helperText={errors.academicYear && "Required"}
-                    label="Academic Year"
-                    name="academicYear"
-                  />
-                )}
-              />
-            )}
-          />
-          <Controller
             name="grades"
             control={control}
             rules={{ required: true }}
@@ -356,6 +316,34 @@ const AddOrEditStudentAcademicDetailsDialog = ({
           />
 
           <Controller
+            name="academicYear"
+            control={control}
+            defaultValue={defaultValues?.academicYear ?? ""}
+            {...register("academicYear", { required: true })}
+            render={({ field }) => (
+              <Autocomplete
+                {...field}
+                onChange={(event, newValue) => field.onChange(newValue)}
+                size="small"
+                options={
+                  yearData?.length ? yearData.map((year) => year.year) : []
+                }
+                sx={{ flex: 1, margin: "0.5rem" }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    required
+                    error={!!errors.academicYear}
+                    helperText={errors.academicYear && "Required"}
+                    label="Academic Year"
+                    name="academicYear"
+                  />
+                )}
+              />
+            )}
+          />
+
+          <Controller
             name="academicMedium"
             control={control}
             defaultValue={defaultValues?.academicMedium ?? ""}
@@ -381,116 +369,98 @@ const AddOrEditStudentAcademicDetailsDialog = ({
             )}
           />
 
-          {isGroup1 && (
-            <Controller
-              name="group1"
-              control={control}
-              defaultValue={defaultValues?.group1 ?? ""}
-              {...register("group1")}
-              render={({ field }) => (
-                <Autocomplete
-                  {...field}
-                  onChange={(event, newValue) => field.onChange(newValue)}
-                  size="small"
-                  options={subjectDataGroup1 ?? []}
-                  getOptionLabel={(option) =>
-                    option && typeof option === "object"
-                      ? `${option.subjectName ?? ""} - ${
-                          option.subjectMedium ?? ""
-                        } Medium`
-                      : ""
-                  }
-                  isOptionEqualToValue={(option, value) =>
-                    option?.id === value?.id
-                  }
-                  sx={{ flex: 1, margin: "0.5rem" }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      error={!!errors.group1}
-                      helperText={errors.group1 && "Required"}
-                      label="Group 1"
-                      name="group1"
-                    />
-                  )}
-                />
-              )}
-            />
-          )}
+          <Controller
+            name="group1"
+            control={control}
+            defaultValue={defaultValues?.group1 ?? ""}
+            {...register("group1", )}
+            render={({ field }) => (
+              <Autocomplete
+                {...field}
+                onChange={(event, newValue) => field.onChange(newValue)}
+                size="small"
+                options={subjectDataGroup1 ?? []}
+                getOptionLabel={(option) =>
+                  option.subjectName + ` - ` + option.subjectMedium + ` Medium`
+                }
+                isOptionEqualToValue={(option, value) =>
+                  option?.id === value?.id
+                }
+                sx={{ flex: 1, margin: "0.5rem" }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    error={!!errors.group1}
+                    helperText={errors.group1 && "Required"}
+                    label="Group 1"
+                    name="group1"
+                  />
+                )}
+              />
+            )}
+          />
 
-          {isGroup2 && (
-            <Controller
-              name="group2"
-              control={control}
-              defaultValue={defaultValues?.group2 ?? ""}
-              {...register("group2")}
-              render={({ field }) => (
-                <Autocomplete
-                  {...field}
-                  onChange={(event, newValue) => field.onChange(newValue)}
-                  size="small"
-                  options={subjectDataGroup2 ?? []}
-                  getOptionLabel={(option) =>
-                    option && typeof option === "object"
-                      ? `${option.subjectName ?? ""} - ${
-                          option.subjectMedium ?? ""
-                        } Medium`
-                      : ""
-                  }
-                  isOptionEqualToValue={(option, value) =>
-                    option?.id === value?.id
-                  }
-                  sx={{ flex: 1, margin: "0.5rem" }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      error={!!errors.group2}
-                      helperText={errors.group2 && "Required"}
-                      label="Group 2"
-                      name="group2"
-                    />
-                  )}
-                />
-              )}
-            />
-          )}
+          <Controller
+            name="group2"
+            control={control}
+            defaultValue={defaultValues?.group2 ?? ""}
+            {...register("group2", )}
+            render={({ field }) => (
+              <Autocomplete
+                {...field}
+                onChange={(event, newValue) => field.onChange(newValue)}
+                size="small"
+                options={subjectDataGroup2 ?? []}
+                getOptionLabel={(option) =>
+                  option.subjectName + ` - ` + option.subjectMedium + ` Medium`
+                }
+                isOptionEqualToValue={(option, value) =>
+                  option?.id === value?.id
+                }
+                sx={{ flex: 1, margin: "0.5rem" }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    error={!!errors.group2}
+                    helperText={errors.group2 && "Required"}
+                    label="Group 2"
+                    name="group2"
+                  />
+                )}
+              />
+            )}
+          />
 
-          {isGroup3 && (
-            <Controller
-              name="group3"
-              control={control}
-              defaultValue={defaultValues?.group3 ?? ""}
-              {...register("group3")}
-              render={({ field }) => (
-                <Autocomplete
-                  {...field}
-                  onChange={(event, newValue) => field.onChange(newValue)}
-                  size="small"
-                  options={subjectDataGroup3 ?? []}
-                  getOptionLabel={(option) =>
-                    option && typeof option === "object"
-                      ? `${option.subjectName ?? ""} - ${
-                          option.subjectMedium ?? ""
-                        } Medium`
-                      : ""
-                  }
-                  isOptionEqualToValue={(option, value) =>
-                    option?.id === value?.id
-                  }
-                  sx={{ flex: 1, margin: "0.5rem" }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      error={!!errors.group3}
-                      helperText={errors.group3 && "Required"}
-                      label="Group 3"
-                      name="group3"
-                    />
-                  )}
-                />
-              )}
-            />
-          )}
+          <Controller
+            name="group3"
+            control={control}
+            defaultValue={defaultValues?.group3 ?? ""}
+            {...register("group3",)}
+            render={({ field }) => (
+              <Autocomplete
+                {...field}
+                onChange={(event, newValue) => field.onChange(newValue)}
+                size="small"
+                options={subjectDataGroup3 ?? []}
+                getOptionLabel={(option) =>
+                  option.subjectName + ` - ` + option.subjectMedium + ` Medium`
+                }
+                isOptionEqualToValue={(option, value) =>
+                  option?.id === value?.id
+                }
+                sx={{ flex: 1, margin: "0.5rem" }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    error={!!errors.group3}
+                    helperText={errors.group3 && "Required"}
+                    label="Group 3"
+                    name="group3"
+                  />
+                )}
+              />
+            )}
+          />
         </Box>
       </DialogContent>
       <DialogActions sx={{ padding: "1rem" }}>

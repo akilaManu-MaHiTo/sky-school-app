@@ -15,7 +15,6 @@ interface StudentMarksExcelDownloadProps {
   sx?: SxProps<Theme>;
   displayMode?: "button" | "icon";
   tooltip?: string;
-  filters?: { label: string; value: string | number }[];
 }
 
 const columnValueSelector: Record<
@@ -24,7 +23,7 @@ const columnValueSelector: Record<
 > = {
   markId: (row) => (row.markId ? "Yes" : "-"),
   admissionNumber: (row) => row.student?.employeeNumber ?? "-",
-  name: (row) => row.student?.nameWithInitials ?? "-",
+  name: (row) => row.student?.name ?? "-",
   academicYear: (row) => row.academicYear ?? "-",
   academicTerm: (row) => row.academicTerm ?? "-",
   academicMedium: (row) => row.academicMedium ?? "-",
@@ -62,7 +61,6 @@ const StudentMarksExcelDownload = ({
   sx,
   displayMode = "button",
   tooltip = "Download Excel",
-  filters,
 }: StudentMarksExcelDownloadProps) => {
   const { enqueueSnackbar } = useSnackbar();
 
@@ -86,45 +84,18 @@ const StudentMarksExcelDownload = ({
       return;
     }
 
-    // Prepare filter rows to display selected filters at the top of the sheet
-    const filterRows: (string | number)[][] = [];
+    const worksheetData = marksData.map((row) => {
+      const rowData: Record<string, string | number> = {};
 
-    if (filters && filters.length) {
-      filters.forEach((filter) => {
-        const value = filter.value;
-        if (value !== undefined && value !== null && value !== "") {
-          filterRows.push([filter.label, value]);
-        }
+      visibleColumns.forEach((column) => {
+        const selector = columnValueSelector[column.key];
+        rowData[column.label] = selector ? selector(row) : "-";
       });
 
-      if (filterRows.length) {
-        // Add an empty row after filters for spacing
-        filterRows.push([]);
-      }
-    }
+      return rowData;
+    });
 
-    // Header row based on visible columns
-    const headerRow = visibleColumns.map((column) => column.label);
-
-    // Data rows with support for serial number (#) instead of markId
-    const dataRows = marksData.map((row, rowIndex) =>
-      visibleColumns.map((column) => {
-        if (column.key === "markId") {
-          // Use a sequential number instead of internal markId
-          return rowIndex + 1;
-        }
-        const selector = columnValueSelector[column.key];
-        const value = selector ? selector(row) : "-";
-        if (value === undefined || value === null || value === "") {
-          return "-";
-        }
-        return value;
-      })
-    );
-
-    const aoa = [...filterRows, headerRow, ...dataRows];
-
-    const worksheet = XLSX.utils.aoa_to_sheet(aoa);
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Marks");
     XLSX.writeFile(workbook, fileName);

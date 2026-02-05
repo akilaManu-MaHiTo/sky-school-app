@@ -60,7 +60,6 @@ export default function EditUserRoleDialog({
     queryKey: ["access-roles"],
     queryFn: getAccessRolesList,
   });
-  const isMobile = isTablet;
 
   const {
     handleSubmit,
@@ -91,8 +90,14 @@ export default function EditUserRoleDialog({
         resetForm();
         handleClose();
       }}
-      fullScreen={isMobile}
-      fullWidth
+      fullScreen={true}
+      PaperProps={{
+        style: {
+          backgroundColor: grey[50],
+          minWidth: "500px",
+        },
+        component: "form",
+      }}
     >
       <DialogTitle
         sx={{

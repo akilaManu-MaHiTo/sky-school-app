@@ -190,12 +190,6 @@ export const sidebarItems: Array<SidebarItem> = [
     href: "/",
     nestedItems: [
       {
-        title: "Grade Report",
-        href: "/reports/management-grade-report",
-        icon: <DashboardIcon fontSize="small" />,
-        accessKey: PermissionKeys.MANAGEMENT_STAFF_STUDENT_REPORTS_VIEW,
-      },
-      {
         title: "Marks Entry Monitoring",
         href: "/reports/marks-entry-monitor",
         icon: <DashboardIcon fontSize="small" />,

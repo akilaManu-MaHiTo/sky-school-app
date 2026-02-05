@@ -29,12 +29,10 @@ import RoleButton from "../../components/RoleButton";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import SchoolIcon from "@mui/icons-material/School";
 import GroupIcon from "@mui/icons-material/Group";
-import useIsMobile from "../../customHooks/useIsMobile";
 
 function RegistrationForm() {
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up(990));
-  const { isMobile, isTablet,isSmallMonitor } = useIsMobile();
   const [selectedRole, setSelectedRole] = useState("");
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -98,7 +96,6 @@ function RegistrationForm() {
         justifyContent: "center",
         margin: "2.5rem",
         marginBottom: isMdUp ? "2.5rem" : "22vh",
-        marginTop: isSmallMonitor ? "20rem" : isMobile ? "2.5rem" : "",
       }}
     >
       <Box>
@@ -180,7 +177,6 @@ function RegistrationForm() {
           <TextField
             required
             id="employeeNumber"
-            type="number"
             label="Staff Number"
             error={!!errors.employeeNumber}
             fullWidth
@@ -200,7 +196,6 @@ function RegistrationForm() {
           <TextField
             required
             id="employeeNumber"
-            type="number"
             label="Student Admission Number"
             error={!!errors.employeeNumber}
             fullWidth
@@ -241,7 +236,7 @@ function RegistrationForm() {
         <TextField
           id="nameWithInitials"
           label="Name With Initials"
-          placeholder="A.M.Silva"
+          placeholder="J.H.Doe"
           required
           error={!!errors.nameWithInitials}
           fullWidth
@@ -398,7 +393,6 @@ function RegistrationForm() {
             marginTop: "1.6rem",
             display: "flex",
             justifyContent: "space-between",
-            marginBottom: "1rem",
           }}
         >
           <CustomButton

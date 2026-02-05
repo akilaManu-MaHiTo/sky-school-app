@@ -13,8 +13,6 @@ import {
   Chip,
   IconButton,
   LinearProgress,
-  Menu,
-  MenuItem,
   Stack,
   Tab,
   TableFooter,
@@ -49,15 +47,8 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import DownloadIcon from "@mui/icons-material/Download";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import useCurrentOrganization from "../../hooks/useCurrentOrganization";
-import { exportTeacherDetailsToExcel } from "../../reportsUtils/TeacherDetailsExcel";
-import { exportStudentDetailsToExcel } from "../../reportsUtils/StudentDetailsExcel";
-import { exportParentDetailsToExcel } from "../../reportsUtils/ParentDetailsExcel";
-import { generateTeacherDetailsPdf } from "../../reportsUtils/TeacherDetailsPDF";
-import { generateStudentDetailsPdf } from "../../reportsUtils/StudentDetailsPDF";
-import { generateParentDetailsPdf } from "../../reportsUtils/ParentDetailsPDF";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { exportUsersToExcel } from "../../reportsUtils/UserReportExcel";
+import { generateUsersPdf } from "../../reportsUtils/UserReportPDF";
 interface TabPanelProps {
   children?: React.ReactNode;
   dir?: string;
@@ -113,33 +104,15 @@ function UserTable() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
-  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
-
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
-
-  const isActionMenuOpen = Boolean(menuAnchorEl);
-
-  const handleOpenActionMenu = (event: any, userId: number | string) => {
-    event.stopPropagation();
-    setMenuAnchorEl(event.currentTarget);
-    setSelectedUserId(userId);
-  };
-
-  const handleCloseActionMenu = () => {
-    setMenuAnchorEl(null);
-  };
-
   const debouncedQuery = useDebounce(searchQuery, 1000);
-
-  const { organization } = useCurrentOrganization();
-  const organizationName = organization?.organizationName;
 
   const {
     data: searchedUserData,
     refetch: researchUserData,
-    isFetching: isSearchingUsers,
+    isFetching: isSearchingSubjects,
   } = useQuery({
     queryKey: ["user-data", debouncedQuery, userRole, selectedSortBy],
     queryFn: ({ queryKey }) =>
@@ -167,9 +140,7 @@ function UserTable() {
 
   const breadcrumbItems = [
     { title: "Home", href: "/home" },
-    { title: "Administration" },
-    { title: "User Management" },
-    { title: "All Users" },
+    { title: "Users" },
   ];
 
   const isMobile = useMediaQuery((theme: Theme) =>
@@ -204,24 +175,6 @@ function UserTable() {
     return searchedUserData ?? [];
   }, [searchedUserData, userRole, searchQuery]);
 
-  const teacherList = useMemo(
-    () =>
-      (currentUserList ?? []).filter((u: any) => u.employeeType === "Teacher"),
-    [currentUserList]
-  );
-
-  const studentList = useMemo(
-    () =>
-      (currentUserList ?? []).filter((u: any) => u.employeeType === "Student"),
-    [currentUserList]
-  );
-
-  const parentList = useMemo(
-    () =>
-      (currentUserList ?? []).filter((u: any) => u.employeeType === "Parent"),
-    [currentUserList]
-  );
-
   const selectedRow = useMemo(() => {
     if (!selectedUserId) return null;
     return currentUserList.find((u: User) => u.id === selectedUserId) ?? null;
@@ -245,87 +198,38 @@ function UserTable() {
     },
   });
 
-  const handleExportTeachersExcel = () => {
-    if (!teacherList.length) {
-      enqueueSnackbar("No teacher data to export", { variant: "warning" });
+  const handleExportExcel = () => {
+    if (!currentUserList.length) {
+      enqueueSnackbar("No users available to export", { variant: "info" });
       return;
     }
-    exportTeacherDetailsToExcel(teacherList, {
-      organizationName,
-      title: "Teacher Details",
-      fileName: "teacher-details.xlsx",
+    const isProfileExportRole =
+      userRole === "Teacher" || userRole === "Student" || userRole === "Parent";
+    exportUsersToExcel({
+      users: currentUserList,
+      options: {
+        mode: isProfileExportRole ? "profileRows" : "summary",
+      },
     });
   };
 
-  const handleExportTeachersPdf = () => {
-    if (!teacherList.length) {
-      enqueueSnackbar("No teacher data to export", { variant: "warning" });
+  const handleExportPdf = () => {
+    if (!currentUserList.length) {
+      enqueueSnackbar("No users available to export", { variant: "info" });
       return;
     }
     try {
-      generateTeacherDetailsPdf(teacherList, {
-        organizationName,
-        title: "Teacher Details Report",
+      const isProfileExportRole =
+        userRole === "Teacher" || userRole === "Student" || userRole === "Parent";
+      generateUsersPdf({
+        users: currentUserList,
+        headerData: {
+          title: "Users Report",
+          mode: isProfileExportRole ? "profileRows" : "summary",
+        },
       });
     } catch (error) {
-      console.error("Unable to generate teacher PDF:", error);
-      enqueueSnackbar("Unable to generate teacher PDF", { variant: "error" });
-    }
-  };
-
-  const handleExportStudentsExcel = () => {
-    if (!studentList.length) {
-      enqueueSnackbar("No student data to export", { variant: "warning" });
-      return;
-    }
-    exportStudentDetailsToExcel(studentList, {
-      organizationName,
-      title: "Student Details",
-      fileName: "student-details.xlsx",
-    });
-  };
-
-  const handleExportStudentsPdf = () => {
-    if (!studentList.length) {
-      enqueueSnackbar("No student data to export", { variant: "warning" });
-      return;
-    }
-    try {
-      generateStudentDetailsPdf(studentList, {
-        organizationName,
-        title: "Student Details Report",
-      });
-    } catch (error) {
-      console.error("Unable to generate student PDF:", error);
-      enqueueSnackbar("Unable to generate student PDF", { variant: "error" });
-    }
-  };
-
-  const handleExportParentsExcel = () => {
-    if (!parentList.length) {
-      enqueueSnackbar("No parent data to export", { variant: "warning" });
-      return;
-    }
-    exportParentDetailsToExcel(parentList, {
-      organizationName,
-      title: "Parent Details",
-      fileName: "parent-details.xlsx",
-    });
-  };
-
-  const handleExportParentsPdf = () => {
-    if (!parentList.length) {
-      enqueueSnackbar("No parent data to export", { variant: "warning" });
-      return;
-    }
-    try {
-      generateParentDetailsPdf(parentList, {
-        organizationName,
-        title: "Parent Details Report",
-      });
-    } catch (error) {
-      console.error("Unable to generate parent PDF:", error);
-      enqueueSnackbar("Unable to generate parent PDF", { variant: "error" });
+      enqueueSnackbar("Failed to generate PDF", { variant: "error" });
     }
   };
 
@@ -338,10 +242,9 @@ function UserTable() {
           marginY: 2,
           borderRadius: 1,
           overflowX: "hidden",
-          backgroundColor: "#fff",
         }}
       >
-        <PageTitle title="All Users" />
+        <PageTitle title="Users" />
         <Breadcrumb breadcrumbs={breadcrumbItems} />
       </Box>
       <Box
@@ -450,7 +353,7 @@ function UserTable() {
           <Box
             mb={4}
             display="flex"
-            justifyContent="flex-start"
+            justifyContent="space-between"
             alignItems="center"
           >
             <SearchInput
@@ -458,8 +361,26 @@ function UserTable() {
               value={searchQuery}
               onChange={setSearchQuery}
               onSearch={handleSearch}
-              isSearching={isSearchingUsers}
+              isSearching={isSearchingSubjects}
             />
+            <Box display="flex" gap={1}>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<DownloadIcon fontSize="small" />}
+                onClick={handleExportExcel}
+              >
+                Export Excel
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<PictureAsPdfIcon fontSize="small" />}
+                onClick={handleExportPdf}
+              >
+                Export PDF
+              </Button>
+            </Box>
           </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
@@ -467,10 +388,10 @@ function UserTable() {
               elevation={2}
               sx={{
                 overflowX: "auto",
-                maxWidth: isMobile ? "65vw" : "100%",
+                maxWidth: isMobile ? "88vw" : "100%",
               }}
             >
-              {isSearchingUsers && <LinearProgress sx={{ width: "100%" }} />}
+              {/* {isUserDataFetching && <LinearProgress sx={{ width: "100%" }} />} */}
               <Table aria-label="simple table">
                 <TableHead
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
@@ -517,10 +438,10 @@ function UserTable() {
                           "&:last-child td, &:last-child th": { border: 0 },
                           cursor: "pointer",
                         }}
-                        // onClick={() => {
-                        //   setSelectedUserId(row.id);
-                        //   setOpenViewDrawer(true);
-                        // }}
+                        onClick={() => {
+                          setSelectedUserId(row.id);
+                          setOpenViewDrawer(true);
+                        }}
                       >
                         <TableCell align="left">{row.id}</TableCell>
                         <TableCell align="left">
@@ -567,11 +488,13 @@ function UserTable() {
                         </TableCell>
                         <TableCell align="center">
                           <IconButton
-                            onClick={(event) =>
-                              handleOpenActionMenu(event, row.id)
-                            }
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOpenEditUserRoleDialog(true);
+                              setSelectedUserId(row.id);
+                            }}
                           >
-                            <MoreVertIcon />
+                            <EditIcon />
                           </IconButton>
                         </TableCell>
                       </TableRow>
@@ -610,7 +533,7 @@ function UserTable() {
         </TabPanel>
         <TabPanel value={activeTab} index={1} dir={theme.direction}>
           <Box
-            mb={2}
+            mb={4}
             display="flex"
             justifyContent="space-between"
             alignItems="center"
@@ -620,28 +543,26 @@ function UserTable() {
               value={searchQuery}
               onChange={setSearchQuery}
               onSearch={handleSearch}
-              isSearching={isSearchingUsers}
+              isSearching={isSearchingSubjects}
             />
-          </Box>
-          <Box sx={{ display: "flex", gap: 1, mb: 2,justifyContent:"flex-end" }}>
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<DownloadIcon fontSize="small" />}
-              onClick={handleExportTeachersExcel}
-              disabled={!teacherList.length}
-            >
-              Export Excel
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<PictureAsPdfIcon fontSize="small" />}
-              onClick={handleExportTeachersPdf}
-              disabled={!teacherList.length}
-            >
-              Export PDF
-            </Button>
+            <Box display="flex" gap={1}>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<DownloadIcon fontSize="small" />}
+                onClick={handleExportExcel}
+              >
+                Export Excel
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<PictureAsPdfIcon fontSize="small" />}
+                onClick={handleExportPdf}
+              >
+                Export PDF
+              </Button>
+            </Box>
           </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
@@ -649,10 +570,10 @@ function UserTable() {
               elevation={2}
               sx={{
                 overflowX: "auto",
-                maxWidth: isMobile ? "65vw" : "100%",
+                maxWidth: isMobile ? "88vw" : "100%",
               }}
             >
-              {isSearchingUsers && <LinearProgress sx={{ width: "100%" }} />}
+              {/* {isUserDataFetching && <LinearProgress sx={{ width: "100%" }} />} */}
               <Table aria-label="simple table">
                 <TableHead
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
@@ -699,10 +620,10 @@ function UserTable() {
                           "&:last-child td, &:last-child th": { border: 0 },
                           cursor: "pointer",
                         }}
-                        // onClick={() => {
-                        //   setSelectedUserId(row.id);
-                        //   setOpenViewDrawer(true);
-                        // }}
+                        onClick={() => {
+                          setSelectedUserId(row.id);
+                          setOpenViewDrawer(true);
+                        }}
                       >
                         <TableCell align="left">{row.id}</TableCell>
                         <TableCell align="left">
@@ -749,11 +670,13 @@ function UserTable() {
                         </TableCell>
                         <TableCell align="center">
                           <IconButton
-                            onClick={(event) =>
-                              handleOpenActionMenu(event, row.id)
-                            }
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOpenEditUserRoleDialog(true);
+                              setSelectedUserId(row.id);
+                            }}
                           >
-                            <MoreVertIcon />
+                            <EditIcon />
                           </IconButton>
                         </TableCell>
                       </TableRow>
@@ -792,7 +715,7 @@ function UserTable() {
         </TabPanel>
         <TabPanel value={activeTab} index={2} dir={theme.direction}>
           <Box
-            mb={2}
+            mb={4}
             display="flex"
             justifyContent="space-between"
             alignItems="center"
@@ -802,17 +725,14 @@ function UserTable() {
               value={searchQuery}
               onChange={setSearchQuery}
               onSearch={handleSearch}
-              isSearching={isSearchingUsers}
+              isSearching={isSearchingSubjects}
             />
-            
-          </Box>
-          <Box sx={{ display: "flex", gap: 1, mb: 2,justifyContent:"flex-end" }}>
+            <Box display="flex" gap={1}>
               <Button
                 variant="outlined"
                 size="small"
                 startIcon={<DownloadIcon fontSize="small" />}
-                onClick={handleExportStudentsExcel}
-                disabled={!studentList.length}
+                onClick={handleExportExcel}
               >
                 Export Excel
               </Button>
@@ -820,22 +740,22 @@ function UserTable() {
                 variant="outlined"
                 size="small"
                 startIcon={<PictureAsPdfIcon fontSize="small" />}
-                onClick={handleExportStudentsPdf}
-                disabled={!studentList.length}
+                onClick={handleExportPdf}
               >
                 Export PDF
               </Button>
             </Box>
+          </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
               component={Paper}
               elevation={2}
               sx={{
                 overflowX: "auto",
-                maxWidth: isMobile ? "65vw" : "100%",
+                maxWidth: isMobile ? "88vw" : "100%",
               }}
             >
-              {isSearchingUsers && <LinearProgress sx={{ width: "100%" }} />}
+              {/* {isUserDataFetching && <LinearProgress sx={{ width: "100%" }} />} */}
               <Table aria-label="simple table">
                 <TableHead
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
@@ -882,10 +802,10 @@ function UserTable() {
                           "&:last-child td, &:last-child th": { border: 0 },
                           cursor: "pointer",
                         }}
-                        // onClick={() => {
-                        //   setSelectedUserId(row.id);
-                        //   setOpenViewDrawer(true);
-                        // }}
+                        onClick={() => {
+                          setSelectedUserId(row.id);
+                          setOpenViewDrawer(true);
+                        }}
                       >
                         <TableCell align="left">{row.id}</TableCell>
                         <TableCell align="left">
@@ -932,11 +852,13 @@ function UserTable() {
                         </TableCell>
                         <TableCell align="center">
                           <IconButton
-                            onClick={(event) =>
-                              handleOpenActionMenu(event, row.id)
-                            }
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOpenEditUserRoleDialog(true);
+                              setSelectedUserId(row.id);
+                            }}
                           >
-                            <MoreVertIcon />
+                            <EditIcon />
                           </IconButton>
                         </TableCell>
                       </TableRow>
@@ -975,7 +897,7 @@ function UserTable() {
         </TabPanel>
         <TabPanel value={activeTab} index={3} dir={theme.direction}>
           <Box
-            mb={2}
+            mb={4}
             display="flex"
             justifyContent="space-between"
             alignItems="center"
@@ -985,17 +907,14 @@ function UserTable() {
               value={searchQuery}
               onChange={setSearchQuery}
               onSearch={handleSearch}
-              isSearching={isSearchingUsers}
+              isSearching={isSearchingSubjects}
             />
-            
-          </Box>
-          <Box sx={{ display: "flex", gap: 1, mb: 2,justifyContent:"flex-end" }}>
+            <Box display="flex" gap={1}>
               <Button
                 variant="outlined"
                 size="small"
                 startIcon={<DownloadIcon fontSize="small" />}
-                onClick={handleExportParentsExcel}
-                disabled={!parentList.length}
+                onClick={handleExportExcel}
               >
                 Export Excel
               </Button>
@@ -1003,22 +922,22 @@ function UserTable() {
                 variant="outlined"
                 size="small"
                 startIcon={<PictureAsPdfIcon fontSize="small" />}
-                onClick={handleExportParentsPdf}
-                disabled={!parentList.length}
+                onClick={handleExportPdf}
               >
                 Export PDF
               </Button>
             </Box>
+          </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
               component={Paper}
               elevation={2}
               sx={{
                 overflowX: "auto",
-                maxWidth: isMobile ? "65vw" : "100%",
+                maxWidth: isMobile ? "88vw" : "100%",
               }}
             >
-              {isSearchingUsers && <LinearProgress sx={{ width: "100%" }} />}
+              {/* {isUserDataFetching && <LinearProgress sx={{ width: "100%" }} />} */}
               <Table aria-label="simple table">
                 <TableHead
                   sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
@@ -1065,10 +984,10 @@ function UserTable() {
                           "&:last-child td, &:last-child th": { border: 0 },
                           cursor: "pointer",
                         }}
-                        // onClick={() => {
-                        //   setSelectedUserId(row.id);
-                        //   setOpenViewDrawer(true);
-                        // }}
+                        onClick={() => {
+                          setSelectedUserId(row.id);
+                          setOpenViewDrawer(true);
+                        }}
                       >
                         <TableCell align="left">{row.id}</TableCell>
                         <TableCell align="left">
@@ -1115,11 +1034,13 @@ function UserTable() {
                         </TableCell>
                         <TableCell align="center">
                           <IconButton
-                            onClick={(event) =>
-                              handleOpenActionMenu(event, row.id)
-                            }
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOpenEditUserRoleDialog(true);
+                              setSelectedUserId(row.id);
+                            }}
                           >
-                            <MoreVertIcon />
+                            <EditIcon />
                           </IconButton>
                         </TableCell>
                       </TableRow>
@@ -1157,33 +1078,6 @@ function UserTable() {
           </Stack>
         </TabPanel>
       </Box>
-
-      <Menu
-        anchorEl={menuAnchorEl}
-        open={isActionMenuOpen}
-        onClose={handleCloseActionMenu}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
-      >
-        <MenuItem
-          onClick={() => {
-            setOpenViewDrawer(true);
-            handleCloseActionMenu();
-          }}
-        >
-          <EditIcon fontSize="small" sx={{ mr: 1 }} color="primary" />
-          Edit
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            setOpenEditUserRoleDialog(true);
-            handleCloseActionMenu();
-          }}
-        >
-          <CheckCircleIcon fontSize="small" sx={{ mr: 1 }} color="success" />
-          Active
-        </MenuItem>
-      </Menu>
 
       <ViewDataDrawer
         open={openViewDrawer}

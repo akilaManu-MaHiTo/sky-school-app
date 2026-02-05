@@ -10,12 +10,11 @@ import {
   DialogActions,
   Button,
   CircularProgress,
-  Autocomplete,
 } from "@mui/material";
 import { grey } from "@mui/material/colors";
 import { useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
   AcademicClass,
   createAcademicClass,
@@ -25,7 +24,6 @@ import useIsMobile from "../../../customHooks/useIsMobile";
 import queryClient from "../../../state/queryClient";
 import CloseIcon from "@mui/icons-material/Close";
 import CustomButton from "../../../components/CustomButton";
-import { ClassCategories } from "../../../api/OrganizationSettings/academicDetailsApi";
 
 export const AddOrEditAcademicClass = ({
   open,
@@ -41,7 +39,6 @@ export const AddOrEditAcademicClass = ({
     register,
     handleSubmit,
     formState: { errors },
-    control,
     reset,
   } = useForm<AcademicClass>({
     defaultValues: defaultValues ?? ({} as AcademicClass),
@@ -129,51 +126,26 @@ export const AddOrEditAcademicClass = ({
       </DialogTitle>
       <Divider />
       <DialogContent>
-        <Box sx={{ display: "flex", flexDirection: "column" }}>
-          <Box sx={{ margin: "0.5rem", flex: 1 }}>
-            <TextField
-              {...register("className", {
-                required: { value: true, message: "Class Name is required" },
-                pattern: {
-                  value: /^[A-Za-z\s]+$/,
-                  message: "Only letters are allowed",
-                },
-              })}
-              id="className"
-              name="className"
-              type="text"
-              label="Class Name"
-              size="small"
-              error={!!errors.className}
-              helperText={errors.className ? errors.className.message : ""}
-              fullWidth
-            />
-          </Box>
-
-          <Controller
-            name="classCategory"
-            control={control}
-            defaultValue={defaultValues?.classCategory ?? ""}
-            {...register("classCategory", { required: true })}
-            render={({ field }) => (
-              <Autocomplete
-                {...field}
-                onChange={(event, newValue) => field.onChange(newValue)}
-                size="small"
-                options={ClassCategories.map((medium) => medium.academicMedium)}
-                sx={{ flex: 1, margin: "0.5rem" }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    required
-                    error={!!errors.classCategory}
-                    helperText={errors.classCategory && "Required"}
-                    label="Class Category"
-                    name="classCategory"
-                  />
-                )}
-              />
-            )}
+        <Box
+          sx={{ display: "flex", flexDirection: isMobile ? "column" : "row" }}
+        >
+          <TextField
+            {...register("className", {
+              required: { value: true, message: "Class Name is required" },
+              pattern: {
+                value: /^[A-Za-z\s]+$/,
+                message: "Only letters are allowed",
+              },
+            })}
+            id="className"
+            name="className"
+            type="text"
+            label="Class Name"
+            size="small"
+            error={!!errors.className}
+            helperText={errors.className ? errors.className.message : ""}
+            fullWidth
+            sx={{ margin: "0.5rem", flex: 1 }}
           />
         </Box>
       </DialogContent>

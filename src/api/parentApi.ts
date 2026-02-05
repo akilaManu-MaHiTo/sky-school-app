@@ -6,11 +6,6 @@ export async function createParentProfile(payload: { studentId: number }) {
   return res.data;
 }
 
-export async function createParentProfileByAdmin(payload: { studentId: number, parentId: number }) {
-  const res = await axios.post("/api/parent-profiles-by-admin", payload);
-  return res.data;
-}
-
 // Delete parent profile by id
 export async function deleteParentProfile(id: number | string) {
   const res = await axios.delete(`/api/parent-profiles/${id}`);

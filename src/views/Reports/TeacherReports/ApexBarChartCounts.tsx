@@ -3,20 +3,18 @@ import ReactApexChart from "react-apexcharts";
 import { Box, CircularProgress } from "@mui/material";
 import { ApexOptions } from "apexcharts";
 
-interface ApexBarChartProps {
+interface ApexBarChartCountsProps {
   categories: string[];
   series: ApexAxisChartSeries;
   height?: number;
   loading?: boolean;
-  barColors?: string[];
 }
 
-const ApexBarChart: React.FC<ApexBarChartProps> = ({
+const ApexBarChartCounts: React.FC<ApexBarChartCountsProps> = ({
   categories,
   series,
   height = 350,
   loading = false,
-  barColors,
 }) => {
   const options: ApexOptions = {
     chart: {
@@ -29,19 +27,16 @@ const ApexBarChart: React.FC<ApexBarChartProps> = ({
       bar: {
         borderRadius: 8,
         columnWidth: "50%",
-        distributed: !!(barColors && barColors.length),
         dataLabels: {
-          position: "top", // 🔑 forces label above bar
+          position: "top",
         },
       },
     },
 
-    colors: barColors && barColors.length ? barColors : undefined,
-
     dataLabels: {
       enabled: true,
-      formatter: (val: number) => `${val}%`,
-      offsetY: -22, // 🔑 push label above the column
+      formatter: (val: number) => `${val}`,
+      offsetY: -18,
       style: {
         fontSize: "12px",
         fontWeight: 600,
@@ -59,15 +54,14 @@ const ApexBarChart: React.FC<ApexBarChartProps> = ({
     },
 
     yaxis: {
-      max: 100,
       labels: {
-        formatter: (val: number) => `${val}%`,
+        formatter: (val: number) => `${val}`,
       },
     },
 
     tooltip: {
       y: {
-        formatter: (val: number) => `${val}%`,
+        formatter: (val: number) => `${val}`,
       },
     },
 
@@ -102,4 +96,4 @@ const ApexBarChart: React.FC<ApexBarChartProps> = ({
   );
 };
 
-export default ApexBarChart;
+export default ApexBarChartCounts;
