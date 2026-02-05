@@ -46,6 +46,10 @@ const AddClassTeacher = React.lazy(
 const StudentPromotion = React.lazy(
   () => import("./views/Administration/StudentManagement/StudentPromotion")
 );
+// Administration > Student Management > Student Service Charges
+const StudentServiceCharges = React.lazy(
+  () => import("./views/Administration/StudentManagement/StudentServiceCharges/StudentServiceChargesTable")
+);
 
 // Reports > Student/Parent Reports > Parent Report
 const ParentReport = React.lazy(() => import("./views/Reports/Student-ParentReport/ParentReport"));
@@ -216,6 +220,14 @@ const AppRoutes = () => {
           element={withLayout(
             MainLayout,
             StudentPromotion,
+            !userPermissionObject?.[PermissionKeys.STUDENT_PROMOTION_VIEW]
+          )}
+        />
+        <Route
+          path="/admin/student-service-charges"
+          element={withLayout(
+            MainLayout,
+            StudentServiceCharges,
             !userPermissionObject?.[PermissionKeys.STUDENT_PROMOTION_VIEW]
           )}
         />
