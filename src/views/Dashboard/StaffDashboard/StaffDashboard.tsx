@@ -13,14 +13,21 @@ import {
   Button,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import BarChartIcon from "@mui/icons-material/BarChart";
 import theme from "../../../theme";
 import PageTitle from "../../../components/PageTitle";
 import Breadcrumb from "../../../components/BreadCrumb";
 import useIsMobile from "../../../customHooks/useIsMobile";
 import { useQuery } from "@tanstack/react-query";
-import { fetchAllStudents, fetchAllTeachers, fetchClassStudentCounts } from "../../../api/documentType";
+import {
+  fetchAllParents,
+  fetchAllStudents,
+  fetchAllTeachers,
+  fetchClassStudentCounts,
+} from "../../../api/documentType";
 import { getYearsData } from "../../../api/OrganizationSettings/organizationSettingsApi";
 import { Controller, useForm } from "react-hook-form";
+import DashboardCard from "../../../components/DashboardCard";
 
 const breadcrumbItems = [
   { title: "Home", href: "/home" },
@@ -66,13 +73,19 @@ export default function StaffDashboard() {
     queryKey: ["class-student-counts", selectedYear],
     queryFn: () => fetchClassStudentCounts(selectedYear),
   });
-  const { data: studentDataCount, isFetching: isStudentDataFetching } = useQuery({
-    queryKey: ["school-student-counts", selectedYear],
-    queryFn: () => fetchAllStudents(selectedYear),
-  });
-  const { data: TeacherDataCount, isFetching: isTeacherDataFetching } = useQuery({
-    queryKey: ["school-teacher-counts", selectedYear],
-    queryFn: () => fetchAllTeachers(selectedYear),
+  const { data: studentDataCount, isFetching: isStudentDataFetching } =
+    useQuery({
+      queryKey: ["school-student-counts", selectedYear],
+      queryFn: () => fetchAllStudents(selectedYear),
+    });
+  const { data: TeacherDataCount, isFetching: isTeacherDataFetching } =
+    useQuery({
+      queryKey: ["school-teacher-counts", selectedYear],
+      queryFn: () => fetchAllTeachers(selectedYear),
+    });
+  const { data: ParentDataCount, isFetching: isParentDataFetching } = useQuery({
+    queryKey: ["school-parent-counts", selectedYear],
+    queryFn: () => fetchAllParents(),
   });
   const { data: yearData, isFetching: isYearDataFetching } = useQuery({
     queryKey: ["academic-years"],
@@ -175,6 +188,36 @@ export default function StaffDashboard() {
           </Box>
         </AccordionDetails>
       </Accordion>
+      {selectedYear && (
+        <Box
+          sx={{
+            display: "flex",
+            flex: 1,
+            minWidth: "150px",
+          }}
+          mb={2}
+          gap={2}
+        >
+          <DashboardCard
+            variant="gradient"
+            title={`Student Count For ${selectedYear.year}`}
+            titleIcon={<BarChartIcon fontSize="large" />}
+            value={studentDataCount?.count}
+          />
+          <DashboardCard
+            variant="gradient"
+            title={`Teacher Count For ${selectedYear.year}`}
+            titleIcon={<BarChartIcon fontSize="large" />}
+            value={TeacherDataCount?.count}
+          />
+          <DashboardCard
+            variant="gradient"
+            title={`Parent Count For ${selectedYear.year}`}
+            titleIcon={<BarChartIcon fontSize="large" />}
+            value={ParentDataCount?.count}
+          />
+        </Box>
+      )}
 
       <Stack>
         {isFetching && (

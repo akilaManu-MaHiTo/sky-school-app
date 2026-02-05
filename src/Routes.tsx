@@ -73,6 +73,9 @@ const ManagementStudentReport = React.lazy(
 // Academics
 const AddMarks = React.lazy(() => import("./views/Academics/StudentMarksPage"));
 
+// Help
+const HelpPage = React.lazy(() => import("./views/Help/Help"));
+
 function withLayout(Layout: any, Component: any, restrictAccess = false) {
   return (
     <Layout>
@@ -288,6 +291,15 @@ const AppRoutes = () => {
             MainLayout,
             AddMarks,
             !userPermissionObject?.[PermissionKeys.ADD_MARKS_VIEW]
+          )}
+        />
+        {/* Help */}
+        <Route
+          path="/help"
+          element={withLayout(
+            MainLayout,
+            HelpPage,
+            false
           )}
         />
       </Route>

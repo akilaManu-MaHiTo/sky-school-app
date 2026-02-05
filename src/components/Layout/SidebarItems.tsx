@@ -8,6 +8,7 @@ import BookmarkAddedIcon from "@mui/icons-material/BookmarkAdded";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import AssessmentOutlinedIcon from "@mui/icons-material/Assessment";
 import AddTaskIcon from "@mui/icons-material/AddTask";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { PermissionKeys } from "../../views/Administration/SectionList";
 import HomeIcon from '@mui/icons-material/Home';
 
@@ -218,5 +219,15 @@ export const sidebarItems: Array<SidebarItem> = [
     icon: <AddTaskIcon fontSize="small" />,
     href: "/academics/add-marks",
     accessKey: PermissionKeys.ADD_MARKS_VIEW,
+  },
+  {
+    headline: "Help",
+    accessKeys: [PermissionKeys.HELP_VIEW],
+  },
+  {
+    title: "Help Guide",
+    icon: <HelpOutlineIcon fontSize="small" />,
+    href: "/help",
+    accessKey: PermissionKeys.HELP_VIEW,
   },
 ];
