@@ -16,7 +16,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { grey } from "@mui/material/colors";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import CustomButton from "../../../components/CustomButton";
 import useIsMobile from "../../../customHooks/useIsMobile";
@@ -25,6 +25,7 @@ import {
   AcademicDetail,
   AcademicMedium,
   createAcademicDetail,
+  createAcademicDetailByAdmin,
   updateAcademicDetail,
   updateAcademicDetailsByAdmin,
 } from "../../../api/OrganizationSettings/academicDetailsApi";
@@ -33,19 +34,22 @@ import {
   getGradesData,
   getYearsData,
 } from "../../../api/OrganizationSettings/organizationSettingsApi";
-import { getClassesData } from "../../../api/OrganizationSettings/academicGradeApi";
+import { getClassesDataByGrade } from "../../../api/OrganizationSettings/academicGradeApi";
 
 const AddOrEditAcademicDetailsByAdminDialog = ({
   open,
   setOpen,
   defaultValues,
+  teacherId,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
   defaultValues?: any;
+  teacherId: number;
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const { isMobile } = useIsMobile();
+  const [selectedGrade, setSelectedGrade] = useState<any>(null);
 
   const {
     handleSubmit,
@@ -53,6 +57,7 @@ const AddOrEditAcademicDetailsByAdminDialog = ({
     reset,
     register,
     control,
+    setValue,
   } = useForm<AcademicDetail>({
     defaultValues: defaultValues,
   });
@@ -69,8 +74,9 @@ const AddOrEditAcademicDetailsByAdminDialog = ({
   });
 
   const { data: classData } = useQuery({
-    queryKey: ["academic-classes"],
-    queryFn: getClassesData,
+    queryKey: ["academic-classes", selectedGrade?.grade],
+    queryFn: () => getClassesDataByGrade(selectedGrade?.grade),
+    enabled: !!selectedGrade?.grade,
   });
 
   const { data: yearData, isFetching: isYearDataFetching } = useQuery({
@@ -99,40 +105,43 @@ const AddOrEditAcademicDetailsByAdminDialog = ({
     }
 
     if (defaultValues) {
-      const matchedGrade =
-        gradeData?.find(
-          (grade: any) => grade?.id === defaultValues?.grade?.id
-        ) ??
-        defaultValues?.grade ??
-        null;
-
-      const matchedSubject =
-        subjectData?.find(
-          (subject: any) => subject?.id === defaultValues?.subject?.id
-        ) ??
-        defaultValues?.subject ??
-        null;
-
-      const matchedClass =
-        classData?.find(
-          (clazz: any) => clazz?.id === defaultValues?.class?.id
-        ) ??
-        defaultValues?.class ??
-        null;
+      const normalizedGrade =
+        defaultValues?.grades ?? defaultValues?.grade ?? null;
+      const rawSubject =
+        defaultValues?.subjects ?? defaultValues?.subject ?? null;
+      const normalizedSubject = rawSubject
+        ? {
+            ...rawSubject,
+            subjectMedium:
+              rawSubject.subjectMedium ?? defaultValues?.academicMedium ?? "",
+          }
+        : null;
+      const normalizedClass =
+        defaultValues?.classes ?? defaultValues?.class ?? null;
 
       reset({
         ...defaultValues,
-        grades: matchedGrade,
-        subjects: matchedSubject,
-        classes: matchedClass,
+        grades: normalizedGrade,
+        subjects: normalizedSubject,
+        classes: normalizedClass,
       });
-    } else {
-      reset({ grades: null, subjects: null, classes: null });
+      setSelectedGrade(normalizedGrade);
+      return;
     }
-  }, [open, defaultValues, gradeData, subjectData, classData, reset]);
+
+    reset({ grades: null, subjects: null, classes: null });
+    setSelectedGrade(null);
+  }, [open, defaultValues, reset]);
+
+  const handleClose = () => {
+    setOpen(false);
+    reset();
+    setSelectedGrade(null);
+  };
 
   const { mutate: createMutation, isPending: isCreating } = useMutation({
-    mutationFn: createAcademicDetail,
+    mutationFn: (payload: AcademicDetail) =>
+      createAcademicDetailByAdmin(payload, teacherId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-data"] });
       queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -175,15 +184,12 @@ const AddOrEditAcademicDetailsByAdminDialog = ({
       return;
     }
 
-    // createMutation(data);
+    createMutation(data);
   };
   return (
     <Dialog
       open={open}
-      onClose={() => {
-        setOpen(false);
-        reset();
-      }}
+      onClose={handleClose}
       fullScreen={isMobile}
       fullWidth
       maxWidth="md"
@@ -205,7 +211,7 @@ const AddOrEditAcademicDetailsByAdminDialog = ({
         </Typography>
         <IconButton
           aria-label="close"
-          onClick={() => setOpen(false)}
+          onClick={handleClose}
           edge="start"
           sx={{ color: "#024271" }}
         >
@@ -227,7 +233,11 @@ const AddOrEditAcademicDetailsByAdminDialog = ({
                 isOptionEqualToValue={(option, value) =>
                   option?.id === value?.id
                 }
-                onChange={(event, newValue) => field.onChange(newValue)}
+                onChange={(_event, newValue) => {
+                  field.onChange(newValue);
+                  setSelectedGrade(newValue);
+                  setValue("classes", null);
+                }}
                 value={field.value || null}
                 size="small"
                 sx={{ flex: 1, margin: "0.5rem" }}
@@ -334,10 +344,7 @@ const AddOrEditAcademicDetailsByAdminDialog = ({
         </Box>
       </DialogContent>
       <DialogActions sx={{ padding: "1rem" }}>
-        <Button
-          onClick={() => setOpen(false)}
-          sx={{ color: "var(--pallet-blue)" }}
-        >
+        <Button onClick={handleClose} sx={{ color: "var(--pallet-blue)" }}>
           Cancel
         </Button>
         <CustomButton

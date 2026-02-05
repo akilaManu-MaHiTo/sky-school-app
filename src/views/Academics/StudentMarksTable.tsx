@@ -26,6 +26,7 @@ import {
   Switch,
   InputAdornment,
   Tooltip,
+  Alert,
 } from "@mui/material";
 import ColumnVisibilitySelector from "../../components/ColumnVisibilitySelector";
 import CustomButton from "../../components/CustomButton";
@@ -62,6 +63,10 @@ interface StudentMarksTableProps {
   isDataLoading?: boolean;
   selectedMonth: string;
   refetchData?: () => void;
+  selectedGrade: any;
+  selectedClass: any;
+  selectedMedium: any;
+  studentCount: number;
 }
 
 // Form Values Interface
@@ -83,7 +88,7 @@ type MarkMutationPayload = {
   selectedMonth: string;
 };
 const normalizeMarkValue = (
-  value: string | number | null | undefined
+  value: string | number | null | undefined,
 ): string => {
   if (value === null || value === undefined) {
     return "";
@@ -98,11 +103,11 @@ const deriveAbsencesFromRows = (rows: StudentMarkRow[] | null | undefined) =>
   (rows ?? []).map((row) => Boolean(row.isAbsentStudent));
 
 const buildRowSignature = (
-  rows: StudentMarkRow[] | null | undefined
+  rows: StudentMarkRow[] | null | undefined,
 ): Array<{ key: string; mark: string; isAbsent: boolean }> =>
   (rows ?? []).map((row, index) => ({
     key: String(
-      row.studentProfileId ?? row.student?.employeeNumber ?? `row-${index}`
+      row.studentProfileId ?? row.student?.employeeNumber ?? `row-${index}`,
     ),
     mark: normalizeMarkValue(row.studentMark),
     isAbsent: Boolean(row.isAbsentStudent),
@@ -123,7 +128,7 @@ const gradeColorMap: Record<
 const MARK_RANGE_ERROR_MESSAGE = "Marks must be between 0 and 100";
 
 const validateMarkRange = (
-  value: string | number | null | undefined
+  value: string | number | null | undefined,
 ): true | string => {
   if (value === "" || value === null || value === undefined) {
     return true;
@@ -142,7 +147,7 @@ const validateMarkRange = (
   return true;
 };
 const isMarkValueWithinRange = (
-  value: string | number | null | undefined
+  value: string | number | null | undefined,
 ): boolean => validateMarkRange(value) === true;
 
 // Main Function
@@ -154,11 +159,15 @@ const StudentMarksTable = ({
   isDataLoading,
   selectedMonth,
   refetchData,
+  selectedGrade,
+  selectedClass,
+  selectedMedium,
+  studentCount,
 }: StudentMarksTableProps) => {
   //Utils
   const { enqueueSnackbar } = useSnackbar();
   const isMobile = useMediaQuery((theme: Theme) =>
-    theme.breakpoints.down("md")
+    theme.breakpoints.down("md"),
   );
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -171,6 +180,65 @@ const StudentMarksTable = ({
   const excelInputRef = useRef<HTMLInputElement | null>(null);
   const debounceTimeouts = useRef<Map<number, NodeJS.Timeout>>(new Map());
   const successToastTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const filtersForExport = useMemo(() => {
+    const filters: { label: string; value: string }[] = [];
+
+    if (selectedYear) {
+      const yearValue =
+        (selectedYear as any)?.academicYear ??
+        (selectedYear as any)?.year ??
+        selectedYear;
+      filters.push({ label: "Year", value: String(yearValue) });
+    }
+
+    if (selectedGrade) {
+      const gradeValue = (selectedGrade as any)?.grade ?? selectedGrade;
+      filters.push({ label: "Grade", value: `Grade ${gradeValue}` });
+    }
+
+    if (selectedClass) {
+      const className = (selectedClass as any)?.className ?? selectedClass;
+      filters.push({ label: "Class", value: String(className) });
+    }
+
+    if (selectedMedium) {
+      const mediumName =
+        (selectedMedium as any)?.academicMedium ?? selectedMedium;
+      filters.push({ label: "Medium", value: String(mediumName) });
+    }
+
+    if (selectedSubject) {
+      const subjectName =
+        (selectedSubject as any)?.subjectName ??
+        (selectedSubject as any)?.name ??
+        (selectedSubject as any)?.id ??
+        selectedSubject;
+      filters.push({ label: "Subject", value: String(subjectName) });
+    }
+
+    if (selectedTerm) {
+      filters.push({ label: "Exam", value: String(selectedTerm) });
+    }
+
+    if (selectedTerm === "Monthly Exam" && selectedMonth) {
+      const monthLabel =
+        (selectedMonth as any)?.label ??
+        (selectedMonth as any)?.name ??
+        selectedMonth;
+      filters.push({ label: "Month", value: String(monthLabel) });
+    }
+
+    return filters;
+  }, [
+    selectedYear,
+    selectedGrade,
+    selectedClass,
+    selectedMedium,
+    selectedSubject,
+    selectedTerm,
+    selectedMonth,
+  ]);
 
   //Use Form For the mutation
   const { control, watch, formState, setValue, getValues, reset } =
@@ -227,7 +295,7 @@ const StudentMarksTable = ({
       return undefined;
     }
     const rowWithSubject = rows.find(
-      (studentRow) => studentRow.subject?.subjectName
+      (studentRow) => studentRow.subject?.subjectName,
     );
     return rowWithSubject?.subject?.subjectName ?? undefined;
   }, [rows]);
@@ -253,12 +321,12 @@ const StudentMarksTable = ({
     });
   }, [reset, rows]);
   const lastSyncedSignatureRef = useRef<string>(
-    JSON.stringify(buildRowSignature(rows))
+    JSON.stringify(buildRowSignature(rows)),
   );
 
   const getStudentKey = (
     admissionNumber?: string | null,
-    studentName?: string | null
+    studentName?: string | null,
   ) => {
     if (!admissionNumber || !studentName) {
       return null;
@@ -302,13 +370,27 @@ const StudentMarksTable = ({
         queryClient.invalidateQueries({ queryKey: ["class-report-bar-chart"] });
         queryClient.invalidateQueries({ queryKey: ["class-report-card"] });
         queryClient.invalidateQueries({ queryKey: ["class-report-all-card"] });
+        // Ensure class report charts that aggregate across all terms and mark grades
+        // are also refreshed after marks are saved/updated.
+        queryClient.invalidateQueries({
+          queryKey: ["class-report-all-bar-chart"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["class-report-all-bar-chart-mark-grades"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["class-report-mark-grades-table"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["class-report-all-mark-grades-table"],
+        });
         scheduleSuccessToast();
       },
       onError: (error: any) => {
         const message = error?.data?.message || error?.message || "Failed";
         enqueueSnackbar(message, { variant: "error" });
       },
-    }
+    },
   );
 
   // Debounced Mutation Function
@@ -325,7 +407,7 @@ const StudentMarksTable = ({
       }, 750);
       timeoutMap.set(studentProfileId, timeoutId);
     },
-    [persistMarkMutation]
+    [persistMarkMutation],
   );
 
   const cancelPendingMutation = useCallback(
@@ -340,7 +422,7 @@ const StudentMarksTable = ({
         timeoutMap.delete(studentProfileId);
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -358,7 +440,7 @@ const StudentMarksTable = ({
       row: StudentMarkRow,
       markValue: string | number | null,
       isAbsentStudent?: boolean,
-      options?: { immediate?: boolean }
+      options?: { immediate?: boolean },
     ) => {
       if (!row.studentProfileId || !selectedSubject?.id) {
         return;
@@ -402,7 +484,7 @@ const StudentMarksTable = ({
       selectedSubject,
       selectedTerm,
       selectedYear,
-    ]
+    ],
   );
 
   const handleExcelUpload = useCallback(
@@ -431,8 +513,8 @@ const StudentMarksTable = ({
                     : String(studentMark),
                 isAbsent: isAbsentStudent,
               },
-            ]
-          )
+            ],
+          ),
         );
         const marksFromForm = getValues("studentMarks");
         const absencesFromForm = getValues("isAbsentStudents");
@@ -451,7 +533,7 @@ const StudentMarksTable = ({
         rows.forEach((row, index) => {
           const rowKey = getStudentKey(
             row.student?.employeeNumber ?? null,
-            row.student?.name ?? null
+            row.student?.nameWithInitials ?? row.student?.name ?? null,
           );
           if (!rowKey) {
             return;
@@ -464,8 +546,8 @@ const StudentMarksTable = ({
               mappedValue?.isAbsent !== null;
             const resolvedAbsent = hasExcelAbsent
               ? Boolean(mappedValue?.isAbsent)
-              : currentAbsences[index] ?? Boolean(row.isAbsentStudent);
-            const markValue = resolvedAbsent ? "" : mappedValue?.mark ?? "";
+              : (currentAbsences[index] ?? Boolean(row.isAbsentStudent));
+            const markValue = resolvedAbsent ? "" : (mappedValue?.mark ?? "");
             currentMarks[index] = markValue;
             currentAbsences[index] = resolvedAbsent;
             pendingUpdates.push({
@@ -498,7 +580,7 @@ const StudentMarksTable = ({
           }`,
           {
             variant: "success",
-          }
+          },
         );
       } catch (error) {
         enqueueSnackbar("Failed to read Excel file", { variant: "error" });
@@ -511,7 +593,7 @@ const StudentMarksTable = ({
       rows,
       setValue,
       triggerMarkMutation,
-    ]
+    ],
   );
 
   const handleExcelInputChange = useCallback(
@@ -522,13 +604,12 @@ const StudentMarksTable = ({
       }
       event.target.value = "";
     },
-    [handleExcelUpload]
+    [handleExcelUpload],
   );
 
   // Column Definitions and Visibility Setup
   const columns = useMemo<ColumnDefinition[]>(
     () => [
-      { key: "markId", label: "Mark Id" },
       { key: "admissionNumber", label: "Admission Number" },
       { key: "name", label: "Name" },
       { key: "academicYear", label: "Academic Year", defaultVisible: false },
@@ -541,12 +622,12 @@ const StudentMarksTable = ({
       { key: "studentMark", label: "Mark" },
       { key: "markGrade", label: "Grade Mark" },
     ],
-    []
+    [],
   );
   const { visibility, columnSelectorProps } = useColumnVisibility({ columns });
   const visibleColumnCount = useMemo(
     () => columns.filter((col) => visibility[col.key]).length,
-    [columns, visibility]
+    [columns, visibility],
   );
 
   const marksDataForExport = useMemo<StudentMarkRow[]>(() => {
@@ -566,11 +647,13 @@ const StudentMarksTable = ({
       const gradeValue = isAbsentValue
         ? "Absent"
         : hasWatchedValue && watchedValue !== ""
-        ? isMarkValueWithinRange(watchedValue)
-          ? getMarkGrade(watchedValue)
-          : "-"
-        : row.markGrade ??
-          (row.studentMark !== undefined ? getMarkGrade(row.studentMark) : "-");
+          ? isMarkValueWithinRange(watchedValue)
+            ? getMarkGrade(watchedValue)
+            : "-"
+          : (row.markGrade ??
+            (row.studentMark !== undefined
+              ? getMarkGrade(row.studentMark)
+              : "-"));
       const academicTermValue =
         resolvedMonthlyTermLabel !== undefined
           ? resolvedMonthlyTermLabel
@@ -601,6 +684,9 @@ const StudentMarksTable = ({
         academicYear: selectedYear,
         academicTerm: resolvedMonthlyTermLabel ?? selectedTerm,
         title: "Student Marks Report",
+        columns,
+        visibility,
+        filters: filtersForExport,
       });
     } catch (error) {
       console.error("Unable to generate student marks PDF:", error);
@@ -614,6 +700,9 @@ const StudentMarksTable = ({
     resolvedSubjectName,
     selectedTerm,
     selectedYear,
+    columns,
+    visibility,
+    filtersForExport,
   ]);
 
   return (
@@ -677,6 +766,7 @@ const StudentMarksTable = ({
               isLoading={isDataLoading || isSavingMarks}
               displayMode={isMobile ? "icon" : "button"}
               tooltip="Download Excel"
+              filters={filtersForExport}
             />
             {isMobile ? (
               <Tooltip title="Download PDF">
@@ -748,6 +838,9 @@ const StudentMarksTable = ({
             )}
           </Stack>
         </Stack>
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Student Count {studentCount}
+        </Alert>
         <TableContainer
           component={Paper}
           elevation={2}
@@ -760,7 +853,7 @@ const StudentMarksTable = ({
           <Table aria-label="simple table">
             <TableHead sx={{ backgroundColor: "#f3f3f3ff" }}>
               <TableRow>
-                {visibility.markId && <TableCell>Is Marked</TableCell>}
+                {/* {visibility.markId && <TableCell>Is Marked</TableCell>} */}
                 {visibility.admissionNumber && (
                   <TableCell>Admission Number</TableCell>
                 )}
@@ -804,10 +897,10 @@ const StudentMarksTable = ({
                     ? shouldUseWatchedGrade
                       ? getMarkGrade(watchedValue)
                       : "-"
-                    : row.markGrade ??
+                    : (row.markGrade ??
                       (row.studentMark !== undefined
                         ? getMarkGrade(row.studentMark)
-                        : "-");
+                        : "-"));
                   const displayGrade = currentIsAbsent ? "Absent" : baseGrade;
                   const markError = formState.errors?.studentMarks?.[index];
                   const markErrorMessage =
@@ -820,7 +913,7 @@ const StudentMarksTable = ({
                       key={row.id ?? index}
                       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                     >
-                      {visibility.markId && (
+                      {/* {visibility.markId && (
                         <TableCell>
                           {row.markId ? (
                             <IconButton
@@ -841,14 +934,16 @@ const StudentMarksTable = ({
                             "-"
                           )}
                         </TableCell>
-                      )}
+                      )} */}
                       {visibility.admissionNumber && (
                         <TableCell>
                           {row.student?.employeeNumber ?? "-"}
                         </TableCell>
                       )}
                       {visibility.name && (
-                        <TableCell>{row.student?.userName ?? "-"}</TableCell>
+                        <TableCell>
+                          {row.student?.nameWithInitials ?? "-"}
+                        </TableCell>
                       )}
                       {visibility.academicYear && (
                         <TableCell>{row.academicYear ?? "-"}</TableCell>
@@ -896,13 +991,13 @@ const StudentMarksTable = ({
                                     ? ""
                                     : normalizeMarkValue(
                                         getValues(markFieldName) ??
-                                          row.studentMark
+                                          row.studentMark,
                                       );
                                   triggerMarkMutation(
                                     row,
                                     latestMark,
                                     checked,
-                                    { immediate: true }
+                                    { immediate: true },
                                   );
                                 }}
                               />
@@ -969,11 +1064,11 @@ const StudentMarksTable = ({
                                         triggerMarkMutation(
                                           row,
                                           val,
-                                          currentIsAbsent
+                                          currentIsAbsent,
                                         );
                                       } else {
                                         cancelPendingMutation(
-                                          row.studentProfileId
+                                          row.studentProfileId,
                                         );
                                       }
                                     }
@@ -1007,7 +1102,7 @@ const StudentMarksTable = ({
                               color={
                                 displayGrade === "Absent"
                                   ? "default"
-                                  : gradeColorMap[displayGrade] ?? "default"
+                                  : (gradeColorMap[displayGrade] ?? "default")
                               }
                               size="small"
                               sx={{

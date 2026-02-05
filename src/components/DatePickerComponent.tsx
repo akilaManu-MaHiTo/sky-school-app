@@ -30,14 +30,7 @@ function DatePickerComponent({
 
   return (
     <Stack>
-      {label && (
-        <Typography
-          variant="caption"
-          sx={{ marginBottom: "0.1rem", color: grey[700] }}
-        >
-          {label}
-        </Typography>
-      )}
+      
       {isMobile ? (
         <MobileDatePicker
           value={value}
@@ -56,6 +49,7 @@ function DatePickerComponent({
         <DatePicker
           value={value}
           onChange={onChange}
+          label={label}
           defaultValue={defaultValue}
           className="date-picker"
           disablePast={disablePast} // Use the passed prop
@@ -67,15 +61,15 @@ function DatePickerComponent({
             border: error ? "1px solid var(--pallet-red)" : "",
             padding: 0,
           }}
-          slotProps={{
-            textField: {
-              InputProps: {
-                sx: {
-                  height: "2.5rem",
-                },
-              },
-            },
-          }}
+          // slotProps={{
+          //   textField: {
+          //     InputProps: {
+          //       sx: {
+          //         height: "2.5rem",
+          //       },
+          //     },
+          //   },
+          // }}
         />
       )}
       {error && (

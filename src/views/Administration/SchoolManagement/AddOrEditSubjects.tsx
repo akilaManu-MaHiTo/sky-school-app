@@ -37,7 +37,18 @@ import {
   AcademicMedium,
   BasketGroup,
 } from "../../../api/OrganizationSettings/academicDetailsApi";
-
+import {
+  Slider,
+  Sketch,
+  Material,
+  Colorful,
+  Compact,
+  Circle,
+  Wheel,
+  Block,
+  Github,
+  Chrome,
+} from "@uiw/react-color";
 export const AddOrEditSubjects = ({
   open,
   setOpen,
@@ -65,6 +76,7 @@ export const AddOrEditSubjects = ({
 
   const isBasketSubject = defaultValues?.isBasketSubject || false;
   const watchBasketSubject = watch("isBasketSubject");
+  const selectedColorCode = watch("colorCode");
 
   const handleCreateNewYear = (data) => {
     if (defaultValues) {
@@ -196,6 +208,30 @@ export const AddOrEditSubjects = ({
               sx={{ margin: "0.5rem", flex: 1 }}
             />
           </Box>
+          <Box
+            border={`1px solid ${grey[400]}`}
+            borderRadius={"4px"}
+            margin={"0.5rem"}
+          >
+            <Box m={"0.82rem"}>
+              <Typography variant="inherit" color="#00000098">
+                Subject Color
+              </Typography>
+            </Box>
+            <Controller
+              name="colorCode"
+              control={control}
+              defaultValue={defaultValues?.colorCode ?? "#fff"}
+              render={({ field }) => (
+                <Sketch
+                  style={{ marginLeft: "0.82rem", marginBottom: "1.5rem" }}
+                  color={field.value || "#fff"}
+                  onChange={(newShade) => field.onChange(newShade.hex)}
+                />
+              )}
+            />
+          </Box>
+
           <Controller
             name="subjectMedium"
             control={control}

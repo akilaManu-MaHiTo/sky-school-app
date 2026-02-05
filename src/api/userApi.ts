@@ -82,6 +82,9 @@ export const userSchema = z.object({
   studentProfile: z.array(teacherProfileSchema),
   employeeType: z.nativeEnum(EmployeeType),
   address: z.string().optional(),
+
+  nationalId: z.string().optional(),
+  dateOfRegister: z.date().optional(),
 });
 
 export type User = z.infer<typeof userSchema>;
@@ -276,8 +279,50 @@ export async function updateUserProfileDetails({
   address,
   email,
   nameWithInitials,
+  nationalId,
+  dateOfRegister,
 }: {
   id: number;
+  name: string;
+  gender: string;
+  mobile: string;
+  birthDate: Date;
+  address: string;
+  email: string;
+  nameWithInitials: string;
+  nationalId: string;
+  dateOfRegister: Date;
+}) {
+  const data = {
+    name,
+    gender,
+    mobile,
+    birthDate,
+    address,
+    email,
+    nameWithInitials,
+    nationalId,
+    dateOfRegister,
+  };
+
+  const res = await axios.post(`/api/user/${id}/profile-update`, data);
+
+  return res.data;
+}
+
+export async function updateUserProfileDetailsByAdmin({
+  id,
+  employeeNumber,
+  name,
+  gender,
+  mobile,
+  birthDate,
+  address,
+  email,
+  nameWithInitials,
+}: {
+  id: number;
+  employeeNumber: string;
   name: string;
   gender: string;
   mobile: string;
@@ -288,6 +333,7 @@ export async function updateUserProfileDetails({
 }) {
   const data = {
     name,
+    employeeNumber,
     gender,
     mobile,
     birthDate,
@@ -296,7 +342,7 @@ export async function updateUserProfileDetails({
     nameWithInitials,
   };
 
-  const res = await axios.post(`/api/user/${id}/profile-update`, data);
+  const res = await axios.post(`/api/user/${id}/profile-update-by-admin`, data);
 
   return res.data;
 }
@@ -343,7 +389,16 @@ export async function resetProfileEmailConfirm({
 // Search Student by employeeId (admission number)
 export async function searchStudentByEmployeeId(employeeId: string) {
   const res = await axios.get(
-    `/api/users/Student/search?employeeId=${encodeURIComponent(employeeId)}`
+    `/api/users/Student/search?employeeId=${encodeURIComponent(employeeId)}`,
   );
+  return res.data;
+}
+
+export async function fetchMyChildrenData(parentId: number) {
+  const res = await axios.get(`/api/my-children/${parentId}`);
+  return res.data;
+}
+export async function fetchStudentData() {
+  const res = await axios.get(`/api/student-users`);
   return res.data;
 }

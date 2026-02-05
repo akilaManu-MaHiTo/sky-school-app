@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import {
+  Alert,
   Box,
   Button,
   IconButton,
@@ -18,8 +19,9 @@ import {
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import DownloadIcon from "@mui/icons-material/Download";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import { exportClassReportToExcel } from "../../../reportsUtils/ClassReportExcel";
-import { generateClassReportPdf } from "../../../reportsUtils/ClassReportPDF";
+import { exportClassReportToExcel } from "../../../../reportsUtils/ClassReportExcel";
+import { generateClassReportPdf } from "../../../../reportsUtils/ClassReportPDF";
+import useCurrentOrganization from "../../../../hooks/useCurrentOrganization";
 
 interface ClassReportTableProps {
   reportData?: any;
@@ -27,6 +29,8 @@ interface ClassReportTableProps {
   isMobile: boolean;
   isTablet?: boolean;
   title: string;
+  showGroupColumns?: boolean;
+  year?: string;
 }
 
 const GROUP_NAMES: string[] = ["Group 1", "Group 2", "Group 3"];
@@ -37,6 +41,8 @@ function ClassReportTable({
   isMobile,
   title,
   isTablet,
+  showGroupColumns = true,
+  year,
 }: ClassReportTableProps) {
   const [groupFilter, setGroupFilter] = useState<Record<string, string | null>>(
     {}
@@ -48,12 +54,15 @@ function ClassReportTable({
     null
   );
 
+  const { organization } = useCurrentOrganization();
+  const organizationName = organization?.organizationName;
+
   const classReportTableData = useMemo(() => {
     if (!reportData || !reportData.data) {
       return {
         subjects: [] as any[],
         exportSubjects: [] as any[],
-        groupNames: GROUP_NAMES,
+        groupNames: showGroupColumns ? GROUP_NAMES : [],
         rows: [] as any[],
         basketSubjectsByGroup: {} as Record<string, any[]>,
       };
@@ -106,6 +115,7 @@ function ClassReportTable({
 
       return {
         id: student.userName,
+        admissionNumber: student.admissionNumber,
         userName: student.userName,
         nameWithInitials: student.nameWithInitials,
         email: student.email,
@@ -120,11 +130,11 @@ function ClassReportTable({
     return {
       subjects,
       exportSubjects: allSubjects,
-      groupNames: GROUP_NAMES,
+      groupNames: showGroupColumns ? GROUP_NAMES : [],
       rows,
       basketSubjectsByGroup,
     };
-  }, [reportData]);
+  }, [reportData, showGroupColumns]);
 
   const filteredRows = useMemo(() => {
     const rows = classReportTableData.rows ?? [];
@@ -145,11 +155,30 @@ function ClassReportTable({
   const handleExportExcel = () => {
     if (!filteredRows.length) return;
 
+    const meta = reportData?.data ?? {};
+    const gradeLabel = meta.grade ? String(meta.grade) : undefined;
+    const classLabel = meta.className ? String(meta.className) : undefined;
+    const yearLabel =
+      typeof year === "string"
+        ? year
+        : (year as any)?.academicYear ??
+          (year as any)?.year ??
+          (year != null ? String(year) : undefined);
+    const termLabel = meta.term ?? undefined;
+
     exportClassReportToExcel({
       title,
       subjects: classReportTableData.exportSubjects,
-      groupNames: classReportTableData.groupNames,
+      groupNames: showGroupColumns ? classReportTableData.groupNames : [],
       rows: filteredRows,
+      options: {
+        title,
+        organizationName,
+        gradeLabel,
+        classLabel,
+        yearLabel,
+        termLabel,
+      },
     } as any);
   };
 
@@ -157,10 +186,23 @@ function ClassReportTable({
     if (!filteredRows.length) return;
 
     try {
+      const meta = reportData?.data ?? {};
+      const gradeLabel = meta.grade ? String(meta.grade) : undefined;
+      const classLabel = meta.className ? String(meta.className) : undefined;
+      const yearLabel = meta.academicYear ?? meta.year ?? undefined;
+      const termLabel = meta.term ?? undefined;
+
       generateClassReportPdf({
-        headerData: { title },
+        headerData: {
+          title,
+          organizationName,
+          gradeLabel,
+          classLabel,
+          yearLabel,
+          termLabel,
+        },
         subjects: classReportTableData.exportSubjects,
-        groupNames: classReportTableData.groupNames,
+        groupNames: showGroupColumns ? classReportTableData.groupNames : [],
         rows: filteredRows,
       } as any);
     } catch (err) {
@@ -209,7 +251,9 @@ function ClassReportTable({
           </Button>
         </Box>
       </Box>
-
+      <Alert severity="info" sx={{ mb: 2 }}>
+        Student Count {reportData?.data?.studentCount}
+      </Alert>
       <TableContainer
         component={Paper}
         elevation={2}
@@ -222,11 +266,10 @@ function ClassReportTable({
         <Table aria-label="class report table">
           <TableHead sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}>
             <TableRow>
-              <TableCell>Student</TableCell>
-              <TableCell>Username</TableCell>
-              <TableCell>Email</TableCell>
+              <TableCell>Admission Number</TableCell>
+              <TableCell>Student Name</TableCell>
               <TableCell align="right">Average</TableCell>
-              <TableCell align="right">Position</TableCell>
+              <TableCell align="right">Rank</TableCell>
               {classReportTableData.subjects.map((subject: any) => (
                 <TableCell key={subject.id} align="right">
                   {subject.subjectName}
@@ -291,14 +334,15 @@ function ClassReportTable({
                   }}
                 >
                   <TableCell component="th" scope="row">
-                    {row.nameWithInitials ?? row.userName ?? "--"}
+                    {row.admissionNumber ?? "--"}
                   </TableCell>
-                  <TableCell>{row.userName ?? "--"}</TableCell>
-                  <TableCell>{row.email ?? "--"}</TableCell>
+                  <TableCell component="th" scope="row">
+                    {row.nameWithInitials}
+                  </TableCell>
                   <TableCell align="right">
                     {typeof row.averageOfMarks === "number"
-                      ? row.averageOfMarks.toFixed(2)
-                      : row.averageOfMarks ?? "--"}
+                      ? row.averageOfMarks.toFixed(2) + "%"
+                      : row.averageOfMarks + "%"}
                   </TableCell>
                   <TableCell align="right">{row.position ?? "--"}</TableCell>
                   {classReportTableData.subjects.map((subject: any) => {
