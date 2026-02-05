@@ -73,7 +73,7 @@ export const updateOrganization = async (organization: Organization) => {
     const response = await axios.post(
       `/api/organizations/${organization.id}/update`,
       formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
+      { headers: { "Content-Type": "multipart/form-data" } },
     );
 
     return response.data;
@@ -122,14 +122,14 @@ export async function getUserData({
   sortBy: string;
 }) {
   const res = await axios.get(
-    `/api/users/${role}/${sortBy}/search?keyword=${query}`
+    `/api/users/${role}/${sortBy}/search?keyword=${query}`,
   );
   return res.data;
 }
 
 export async function updateUserActiveStatus(
   id: number,
-  availability: boolean
+  availability: boolean,
 ) {
   const res = await axios.post(`/api/users/${id}/active-status`, {
     availability,
@@ -153,19 +153,56 @@ export async function getMyChildClasses(studentId: number) {
 export async function getMyChildReport(
   studentId: number,
   year: string,
-  examType: string
+  examType: string,
 ) {
   const res = await axios.get(
-    `/api/parent-report/${studentId}/${year}/${examType}`
+    `/api/parent-report/${studentId}/${year}/${examType}`,
   );
   return res.data;
 }
 
-export async function getMyChildReportLineChart(
+export async function getMyChildReportLineChart(studentId: number) {
+  const res = await axios.get(`/api/parent-report-line-chart/${studentId}`);
+  return res.data;
+}
+
+export async function getMyChildClassAverage(
   studentId: number,
+  year: string,
+  examType: string,
 ) {
   const res = await axios.get(
-    `/api/parent-report-line-chart/${studentId}`
+    `/api/student-class-average/${studentId}/${year}/${examType}`,
+  );
+  return res.data;
+}
+export async function getMyChildWeekSubject(
+  studentId: number,
+  year: string,
+  examType: string,
+) {
+  const res = await axios.get(
+    `/api/student-class-week-subject/${studentId}/${year}/${examType}`,
+  );
+  return res.data;
+}
+export async function getMyChildTopSubject(
+  studentId: number,
+  year: string,
+  examType: string,
+) {
+  const res = await axios.get(
+    `/api/student-class-strong-subject/${studentId}/${year}/${examType}`,
+  );
+  return res.data;
+}
+export async function getMyChildAISuggestions(
+  studentId: number,
+  year: string,
+  examType: string,
+) {
+  const res = await axios.get(
+    `/api/student-class-ai-assistance/${studentId}/${year}/${examType}`,
   );
   return res.data;
 }
