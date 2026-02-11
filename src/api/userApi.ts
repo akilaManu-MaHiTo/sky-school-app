@@ -42,6 +42,7 @@ export enum EmployeeType {
   TEACHER = "Teacher",
   STUDENT = "Student",
   PARENT = "Parent",
+  OLDSTUDENT = "OldStudent",
 }
 export type UserLevel = z.infer<typeof userLevelSchema>;
 
@@ -400,5 +401,10 @@ export async function fetchMyChildrenData(parentId: number) {
 }
 export async function fetchStudentData() {
   const res = await axios.get(`/api/student-users`);
+  return res.data;
+}
+
+export async function fetchOldStudentUniversityData(studentId: number) {
+  const res = await axios.get(`/api/old-students-universities/${studentId}/byStudent`);
   return res.data;
 }

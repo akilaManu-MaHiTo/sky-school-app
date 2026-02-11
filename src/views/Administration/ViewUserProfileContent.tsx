@@ -21,9 +21,14 @@ import {
 } from "@mui/material";
 import { DrawerContentItem } from "../../components/ViewDataDrawer";
 import useIsMobile from "../../customHooks/useIsMobile";
-import { EmployeeType, updateUserProfileImage, User } from "../../api/userApi";
+import {
+  EmployeeType,
+  fetchOldStudentUniversityData,
+  updateUserProfileImage,
+  User,
+} from "../../api/userApi";
 import { useMemo, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import queryClient from "../../state/queryClient";
 import { enqueueSnackbar } from "notistack";
 import { DrawerUpdateButtons } from "../../components/ViewProfileDataDrawer";
@@ -49,6 +54,8 @@ import AddOrEditStudentAcademicDetailsDialog from "./AcademicDetails/AddOrEditSt
 import { getPlainAddress } from "../../util/plainText.util";
 import AddOrEditChildrenDetailsDialog from "./AcademicDetails/AddOrEditChildrenDetailsDialog";
 import TeacherDetailsAccordion from "./TeacherDetailsAccordion";
+import AddOrEditOldStudentsUniversityDialog from "./OldStudentsDetails/AddOrEditOldStudentsUniversityDialog";
+import { deleteOldStudentUniversity } from "../../api/oldStudentsApi";
 
 type BasketSubject = {
   id: number;
@@ -85,6 +92,20 @@ type ParentChildProfile = {
   gender?: string | null;
   employeeId?: string | null;
   academicProfiles?: ParentAcademicProfile[];
+};
+
+type OldStudentUniversityEntry = {
+  id: number;
+  studentId: number;
+  universityName: string;
+  country: string;
+  city: string;
+  degree: string;
+  faculty: string;
+  yearOfAdmission: string;
+  yearOfGraduation: string;
+  created_at?: string | null;
+  updated_at?: string | null;
 };
 
 const extractStudentSubjectGroups = (profiles: StudentProfileEntry[]) => {
@@ -155,6 +176,19 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
   const [openDeleteChildDialog, setOpenDeleteChildDialog] = useState(false);
 
   const [
+    openOldStudentUniversityDialog,
+    setOpenOldStudentUniversityDialog,
+  ] = useState(false);
+  const [
+    editOldStudentUniversity,
+    setEditOldStudentUniversity,
+  ] = useState<OldStudentUniversityEntry | null>(null);
+  const [
+    openDeleteOldStudentUniversityDialog,
+    setOpenDeleteOldStudentUniversityDialog,
+  ] = useState(false);
+
+  const [
     openAcademicStudentDetailsDialog,
     setOpenAcademicStudentDetailsDialog,
   ] = useState(false);
@@ -164,6 +198,15 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
     openDeleteAcademicStudentDetailsDialog,
     setOpenDeleteAcademicStudentDetailsDialog,
   ] = useState(false);
+
+  const {
+    data: OldStudentUniversityData,
+    isLoading: isLoadingOldStudentUniversity,
+  } = useQuery<OldStudentUniversityEntry[]>({
+    queryKey: ["old-student-university-data", selectedUser?.id],
+    queryFn: () => fetchOldStudentUniversityData(selectedUser.id),
+  });
+  console.log("OldStudentUniversityData", OldStudentUniversityData);
 
   const transformParentProfileData = useMemo(() => {
     if (!selectedUser || !(selectedUser as any).parentProfile) return [];
@@ -300,6 +343,28 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
     },
     onError: (error: any) => {
       const message = error?.data?.message || "Remove child profile failed";
+      enqueueSnackbar(message, { variant: "error" });
+    },
+  });
+
+  const {
+    mutate: deleteOldStudentUniversityMutation,
+    isPending: isDeletingOldStudentUniversity,
+  } = useMutation({
+    mutationFn: (id: number | string) => deleteOldStudentUniversity(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["old-student-university-data"],
+      });
+      enqueueSnackbar("University/college details removed successfully!", {
+        variant: "success",
+      });
+      setOpenDeleteOldStudentUniversityDialog(false);
+      setEditOldStudentUniversity(null);
+    },
+    onError: (error: any) => {
+      const message =
+        error?.data?.message || "Failed to remove university/college details";
       enqueueSnackbar(message, { variant: "error" });
     },
   });
@@ -613,7 +678,8 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
         {selectedUser.employeeType === EmployeeType.TEACHER && (
           <TeacherDetailsAccordion teacherId={selectedUser.id} />
         )}
-        {selectedUser.employeeType === EmployeeType.STUDENT && (
+        {(selectedUser.employeeType === EmployeeType.STUDENT ||
+          selectedUser.employeeType === EmployeeType.OLDSTUDENT) && (
           <Accordion
             variant="elevation"
             sx={{
@@ -776,6 +842,178 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                   </Accordion>
                 );
               })}
+            </AccordionDetails>
+          </Accordion>
+        )}
+        {selectedUser.employeeType === EmployeeType.OLDSTUDENT && (
+          <Accordion
+            variant="elevation"
+            sx={{
+              paddingTop: 0,
+              borderRadius: "8px",
+              marginTop: "1rem",
+            }}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="panel1a-content"
+              style={{
+                borderBottom: `1px solid${colors.grey[100]}`,
+                borderRadius: "8px",
+              }}
+              id="panel1a-header"
+            >
+              <Box
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  margin: "10px 0",
+                }}
+              >
+                <Typography
+                  color="textSecondary"
+                  variant="body2"
+                  sx={{
+                    color: "black",
+                    fontWeight: "semi-bold",
+                  }}
+                >
+                  OLD STUDENT UNIVERSITY/COLLEGE DETAILS
+                </Typography>
+              </Box>
+            </AccordionSummary>
+
+            <AccordionDetails>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  mt: "1rem",
+                  marginBottom: theme.spacing(2),
+                }}
+              >
+                <CustomButton
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "var(--pallet-blue)",
+                  }}
+                  size="medium"
+                  startIcon={<AddIcon />}
+                  onClick={() => {
+                    setEditOldStudentUniversity(null);
+                    setOpenOldStudentUniversityDialog(true);
+                  }}
+                >
+                  Add University/College Details
+                </CustomButton>
+              </Box>
+              {isLoadingOldStudentUniversity && (
+                <LinearProgress sx={{ width: "100%", mb: 2 }} />
+              )}
+              {Array.isArray(OldStudentUniversityData) &&
+              OldStudentUniversityData.length > 0
+                ? OldStudentUniversityData.map((uni) => (
+                    <Accordion
+                      key={uni.id}
+                      variant="elevation"
+                      sx={{ borderRadius: "8px", mt: "1rem" }}
+                    >
+                      <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        sx={{
+                          borderBottom: `1px solid ${colors.grey[100]}`,
+                          borderRadius: "8px",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            width: "100%",
+                          }}
+                        >
+                          <Typography sx={{ color: "var(--pallet-blue)" }}>
+                            {uni.universityName}{" "}
+                            {uni.degree && `- ${uni.faculty}`}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            {uni.city}, {uni.country}
+                          </Typography>
+                        </Box>
+                      </AccordionSummary>
+
+                      <AccordionDetails>
+                        <Stack spacing={1} sx={{ mt: 1 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "flex-end",
+                              mb: 1,
+                              gap: 1,
+                            }}
+                          >
+                            <IconButton
+                              onClick={() => {
+                                setEditOldStudentUniversity(uni);
+                                setOpenOldStudentUniversityDialog(true);
+                              }}
+                            >
+                              <EditIcon color="primary" />
+                            </IconButton>
+                            <IconButton
+                              onClick={() => {
+                                setEditOldStudentUniversity(uni);
+                                setOpenDeleteOldStudentUniversityDialog(true);
+                              }}
+                              disabled={isDeletingOldStudentUniversity}
+                            >
+                              <DeleteIcon color="error" />
+                            </IconButton>
+                          </Box>
+                          <Stack flexDirection={isMobile ? "column" : "row"}>
+                            <DrawerContentItem
+                              label="Degree"
+                              value={uni.degree}
+                              sx={{ flex: 1 }}
+                            />
+                            <DrawerContentItem
+                              label="Faculty"
+                              value={uni.faculty}
+                              sx={{ flex: 1 }}
+                            />
+                          </Stack>
+
+                          <Stack flexDirection={isMobile ? "column" : "row"}>
+                            <DrawerContentItem
+                              label="Year of Admission"
+                              value={uni.yearOfAdmission}
+                              sx={{ flex: 1 }}
+                            />
+                            <DrawerContentItem
+                              label="Year of Graduation"
+                              value={uni.yearOfGraduation}
+                              sx={{ flex: 1 }}
+                            />
+                          </Stack>
+
+                          <DrawerContentItem
+                            label="Location"
+                            value={uni.city + ", " + uni.country}
+                            sx={{ flex: 1 }}
+                          />
+                        </Stack>
+                      </AccordionDetails>
+                    </Accordion>
+                  ))
+                : !isLoadingOldStudentUniversity && (
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      sx={{ mt: 1 }}
+                    >
+                      No university/college details available.
+                    </Typography>
+                  )}
             </AccordionDetails>
           </Accordion>
         )}
@@ -1262,6 +1500,44 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
           open={openChildEditDialog}
           setOpen={setOpenChildEditDialog}
           defaultValues={editChildDetails}
+        />
+      )}
+      {openDeleteOldStudentUniversityDialog && editOldStudentUniversity && (
+        <DeleteConfirmationModal
+          open={openDeleteOldStudentUniversityDialog}
+          title="Remove University/College Details Confirmation"
+          content={
+            <>
+              Are you sure you want to remove this university/college
+              details?
+              <Alert severity="warning" style={{ marginTop: "1rem" }}>
+                This action is not reversible.
+              </Alert>
+            </>
+          }
+          handleClose={() => {
+            setOpenDeleteOldStudentUniversityDialog(false);
+            setEditOldStudentUniversity(null);
+          }}
+          deleteFunc={async () => {
+            deleteOldStudentUniversityMutation(editOldStudentUniversity.id);
+          }}
+          onSuccess={() => {
+            setOpenDeleteOldStudentUniversityDialog(false);
+            setEditOldStudentUniversity(null);
+          }}
+          handleReject={() => {
+            setOpenDeleteOldStudentUniversityDialog(false);
+            setEditOldStudentUniversity(null);
+          }}
+        />
+      )}
+      {openOldStudentUniversityDialog && (
+        <AddOrEditOldStudentsUniversityDialog
+          open={openOldStudentUniversityDialog}
+          setOpen={setOpenOldStudentUniversityDialog}
+          studentId={selectedUser.id}
+          defaultValues={editOldStudentUniversity}
         />
       )}
     </Stack>
