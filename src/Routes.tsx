@@ -81,6 +81,11 @@ const ManagementStudentReport = React.lazy(
 // Academics
 const AddMarks = React.lazy(() => import("./views/Academics/StudentMarksPage"));
 
+// Old Student Portal
+const OldStudentPortal = React.lazy(
+  () => import("./views/OldStudentPortal/OldStudentPortal"),
+);
+
 // Help
 const HelpPage = React.lazy(() => import("./views/Help/Help"));
 
@@ -309,6 +314,15 @@ const AppRoutes = () => {
             MainLayout,
             AddMarks,
             !userPermissionObject?.[PermissionKeys.ADD_MARKS_VIEW],
+          )}
+        />
+        {/* Old Student Portal */}
+        <Route
+          path="/old-students"
+          element={withLayout(
+            MainLayout,
+            OldStudentPortal,
+            !userPermissionObject?.[PermissionKeys.OLD_STUDENT_PORTAL_VIEW],
           )}
         />
         {/* Help */}

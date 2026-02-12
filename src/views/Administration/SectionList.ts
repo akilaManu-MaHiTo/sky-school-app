@@ -216,6 +216,21 @@ export const PermissionSectionsMap: PermissionSection[] = [
       },
     ],
   },
+  {
+    mainSection: "Old Student Portal",
+    subSections: [
+      {
+        name: "Old Student Portal",
+        key: "OLD_STUDENT_PORTAL",
+        permissionsExists: {
+          VIEW: true,
+          CREATE: false,
+          EDIT: false,
+          DELETE: false,
+        },
+      },
+    ],
+  },
 ];
 
 export interface PermissionSection {
@@ -292,6 +307,8 @@ export enum PermissionKeys {
   ADD_MARKS_DELETE = "ADD_MARKS_DELETE",
   // Help
   HELP_VIEW = "HELP_VIEW",
+  // Old Student Portal
+  OLD_STUDENT_PORTAL_VIEW = "OLD_STUDENT_PORTAL_VIEW",
 }
 
 // Create the Zod schema using the enum values
@@ -361,4 +378,6 @@ export const defaultViewerPermissions: PermissionKeysObject = {
   ADD_MARKS_DELETE: true,
   // Help
   HELP_VIEW: true,
+  // Old Student Portal
+  OLD_STUDENT_PORTAL_VIEW: true,
 };

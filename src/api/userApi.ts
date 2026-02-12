@@ -408,3 +408,10 @@ export async function fetchOldStudentUniversityData(studentId: number) {
   const res = await axios.get(`/api/old-students-universities/${studentId}/byStudent`);
   return res.data;
 }
+
+export async function fetchOldStudentOccupationData(studentId: number) {
+  const res = await axios.get(
+    `/api/old-students-occupations/${studentId}/byStudent`,
+  );
+  return res.data;
+}
