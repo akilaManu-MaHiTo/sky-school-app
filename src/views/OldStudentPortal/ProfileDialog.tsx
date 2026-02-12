@@ -282,7 +282,8 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
                       display="block"
                       color="text.disabled"
                     >
-                      {o.city}, {o.country} &middot; Since {o.dateOfRegistration}
+                      {o.city}, {o.country} &middot; Since{" "}
+                      {o.dateOfRegistration}
                     </Typography>
                   </Box>
                 </Stack>
