@@ -112,7 +112,7 @@ const NotificationDetailsDialog = ({
             severity={notification.markedAsRead ? "info" : "warning"}
             sx={{ px: 2, borderRadius: 1.5 }}
           >
-            <Typography variant="body2" sx={{ color: "#3d3d3d" }}>
+            <Typography variant="body2" sx={{ color: "#3d3d3d",textAlign:"justify" }}>
               {notification.description}
             </Typography>
           </Alert>

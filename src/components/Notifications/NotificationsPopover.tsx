@@ -17,6 +17,8 @@ import {
   fetchStudentNotifications,
   markAsRead,
   markAllAsRead,
+  fetchParentNotificationCount,
+  fetchParentNotifications,
 } from "../../api/notificationApi";
 import NotificationDetailsDialog, {
   StudentNotificationItem,
@@ -25,6 +27,8 @@ import { useSnackbar } from "notistack";
 import CheckIcon from "@mui/icons-material/Check";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import useIsMobile from "../../customHooks/useIsMobile";
+import useCurrentUser from "../../hooks/useCurrentUser";
+import { EmployeeType } from "../../api/userApi";
 
 const NotificationsPopover = () => {
   const [notificationAnchorEl, setNotificationAnchorEl] =
@@ -38,16 +42,31 @@ const NotificationsPopover = () => {
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
   const { isMobile } = useIsMobile();
+  const { user } = useCurrentUser();
 
   const { data: notificationCount } = useQuery({
     queryKey: ["student-notify-count"],
     queryFn: fetchStudentNotificationCount,
     refetchInterval: 10000,
+    enabled: user?.employeeType === EmployeeType.STUDENT,
+  });
+  const { data: parentNotificationCount } = useQuery({
+    queryKey: ["parent-notify-count"],
+    queryFn: fetchParentNotificationCount,
+    refetchInterval: 10000,
+    enabled: user?.employeeType === EmployeeType.PARENT,
   });
   const { data: studentNotification } = useQuery({
     queryKey: ["student-notify"],
     queryFn: fetchStudentNotifications,
     refetchInterval: 10000,
+    enabled: user?.employeeType === EmployeeType.STUDENT,
+  });
+  const { data: parentNotification } = useQuery({
+    queryKey: ["parent-notify"],
+    queryFn: fetchParentNotifications,
+    refetchInterval: 10000,
+    enabled: user?.employeeType === EmployeeType.PARENT,
   });
 
   const markAsReadMutation = useMutation({
@@ -57,6 +76,8 @@ const NotificationsPopover = () => {
       enqueueSnackbar(message, { variant: "success" });
       queryClient.invalidateQueries({ queryKey: ["student-notify-count"] });
       queryClient.invalidateQueries({ queryKey: ["student-notify"] });
+      queryClient.invalidateQueries({ queryKey: ["parent-notify-count"] });
+      queryClient.invalidateQueries({ queryKey: ["parent-notify"] });
     },
   });
 
@@ -70,14 +91,19 @@ const NotificationsPopover = () => {
       enqueueSnackbar(message, { variant: "success" });
       queryClient.invalidateQueries({ queryKey: ["student-notify-count"] });
       queryClient.invalidateQueries({ queryKey: ["student-notify"] });
+      queryClient.invalidateQueries({ queryKey: ["parent-notify-count"] });
+      queryClient.invalidateQueries({ queryKey: ["parent-notify"] });
     },
   });
 
   const handleMarkAllAsRead = () => {
-    const notificationIds =
-      studentNotification
-        ?.filter((item) => !item.markedAsRead)
-        ?.map((item) => item.id) ?? [];
+    const notificationIds = Array.from(
+      new Set(
+        [...(studentNotification ?? []), ...(parentNotification ?? [])]
+          .filter((item) => !item.markedAsRead)
+          .map((item) => item.id),
+      ),
+    );
 
     if (notificationIds.length === 0) {
       enqueueSnackbar("All notifications are already read", {
@@ -120,7 +146,7 @@ const NotificationsPopover = () => {
       <Badge
         sx={{ marginRight: "2rem", marginTop: "0.5rem" }}
         color="error"
-        badgeContent={notificationCount}
+        badgeContent={notificationCount || parentNotificationCount}
       >
         <IconButton size="small" onClick={handleNotificationOpen}>
           <NotificationsIcon
@@ -153,12 +179,24 @@ const NotificationsPopover = () => {
           sx: {
             width: isMobile ? 360 : 500,
             maxHeight: 360,
-            p: 1,
+            px: 1,
+            pb: 1,
+            pt: 0,
+            overflowY: "auto",
           },
         }}
       >
-        <Box sx={{ px: 1, py: 0.5 }}>
-          <Box sx={{ display: "flex", alignItems: "center" }}>
+        <Box
+          sx={{
+            px: 1,
+            py: 0.5,
+            position: "sticky",
+            top: 0,
+            zIndex: 1,
+            bgcolor: "background.paper",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center",mt: 1.5 }}>
             <Typography
               variant="caption"
               sx={{ color: "var(--pallet-blue)", fontWeight: 500 }}
@@ -168,7 +206,9 @@ const NotificationsPopover = () => {
             <Typography
               variant="caption"
               onClick={
-                studentNotification?.some((item) => !item.markedAsRead)
+                (studentNotification || parentNotification)?.some(
+                  (item) => !item.markedAsRead,
+                )
                   ? handleMarkAllAsRead
                   : undefined
               }
@@ -178,10 +218,14 @@ const NotificationsPopover = () => {
                 color: "var(--pallet-blue)",
                 fontWeight: 500,
                 px: 1,
-                cursor: studentNotification?.some((item) => !item.markedAsRead)
+                cursor: (studentNotification || parentNotification)?.some(
+                  (item) => !item.markedAsRead,
+                )
                   ? "pointer"
                   : "not-allowed",
-                opacity: studentNotification?.some((item) => !item.markedAsRead)
+                opacity: (studentNotification || parentNotification)?.some(
+                  (item) => !item.markedAsRead,
+                )
                   ? 1
                   : 0.5,
               }}
@@ -189,11 +233,12 @@ const NotificationsPopover = () => {
               Mark All
             </Typography>
           </Box>
-        </Box>
         <Divider sx={{ mb: 1 }} />
+
+        </Box>
         <Stack spacing={1} sx={{ px: 1, pb: 1 }}>
-          {studentNotification?.length > 0 ? (
-            studentNotification?.map((item) => (
+          {(studentNotification || parentNotification)?.length > 0 ? (
+            (studentNotification || parentNotification)?.map((item) => (
               <Alert
                 severity={item.markedAsRead ? "info" : "warning"}
                 icon={false}

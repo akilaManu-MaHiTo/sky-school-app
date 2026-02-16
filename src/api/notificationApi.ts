@@ -17,18 +17,28 @@ export const StudentNotificationSchema = z.object({
 
 export type StudentNotification = z.infer<typeof StudentNotificationSchema>;
 
-// export async function fetchStudentNotifications() {
-//   const res = await axios.get("/api/student-notifications");
-//   return res.data;
-// }
-
+export async function fetchAllStudentNotifications() {
+  const res = await axios.get("/api/student-notifications");
+  return res.data;
+}
+export async function fetchStudentNotificationsCreatedBy() {
+  const res = await axios.get("/api/student-notifications-created-by");
+  return res.data;
+}
 export async function fetchStudentNotificationCount() {
   const res = await axios.get("/api/student-notifications-count-by-student");
   return res.data;
 }
-
+export async function fetchParentNotificationCount() {
+  const res = await axios.get("/api/student-notifications-count-by-parent");
+  return res.data;
+}
 export async function fetchStudentNotifications() {
   const res = await axios.get("/api/student-notifications-by-student");
+  return res.data;
+}
+export async function fetchParentNotifications() {
+  const res = await axios.get("/api/student-notifications-by-parent");
   return res.data;
 }
 

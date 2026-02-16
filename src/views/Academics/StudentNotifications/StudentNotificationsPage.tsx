@@ -30,7 +30,9 @@ import DeleteConfirmationModal from "../../../components/DeleteConfirmationModal
 import queryClient from "../../../state/queryClient";
 import {
   deleteStudentNotification,
+  fetchAllStudentNotifications,
   fetchStudentNotifications,
+  fetchStudentNotificationsCreatedBy,
   StudentNotification,
 } from "../../../api/notificationApi";
 import AddOrEditNotificationDialog from "./AddOrEditNotificationDialog";
@@ -128,8 +130,8 @@ const StudentNotificationsPage = () => {
     isFetching,
     refetch,
   } = useQuery({
-    queryKey: ["student-notifications"],
-    queryFn: () => fetchStudentNotifications(),
+    queryKey: ["student-notifications-created-by"],
+    queryFn: () => fetchStudentNotificationsCreatedBy(),
   });
 
   const rows = Array.isArray(notifications) ? notifications : [];
