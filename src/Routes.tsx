@@ -326,6 +326,8 @@ const AppRoutes = () => {
             MainLayout,
             OldStudentPortal,
             !userPermissionObject?.[PermissionKeys.OLD_STUDENT_PORTAL_VIEW],
+          )}
+        />
         {/* Academics > Student Notifications */}
         <Route
           path="/academics/student-notifications"
