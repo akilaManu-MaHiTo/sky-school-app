@@ -242,4 +242,14 @@ export const sidebarItems: Array<SidebarItem> = [
     href: "/help",
     accessKey: PermissionKeys.HELP_VIEW,
   },
+  {
+    headline: "Old Student Portal",
+    accessKeys: [PermissionKeys.OLD_STUDENT_PORTAL_VIEW],
+  },
+  {
+    title: "Old Student Portal",
+    icon: <PeopleAltIcon fontSize="small" />,
+    href: "/old-students",
+    accessKey: PermissionKeys.OLD_STUDENT_PORTAL_VIEW,
+  },
 ];

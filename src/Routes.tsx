@@ -84,6 +84,11 @@ const StudentNotificationsPage = React.lazy(
   () => import("./views/Academics/StudentNotifications/StudentNotificationsPage"),
 );
 
+// Old Student Portal
+const OldStudentPortal = React.lazy(
+  () => import("./views/OldStudentPortal/OldStudentPortal"),
+);
+
 // Help
 const HelpPage = React.lazy(() => import("./views/Help/Help"));
 
@@ -314,6 +319,13 @@ const AppRoutes = () => {
             !userPermissionObject?.[PermissionKeys.ADD_MARKS_VIEW],
           )}
         />
+        {/* Old Student Portal */}
+        <Route
+          path="/old-students"
+          element={withLayout(
+            MainLayout,
+            OldStudentPortal,
+            !userPermissionObject?.[PermissionKeys.OLD_STUDENT_PORTAL_VIEW],
         {/* Academics > Student Notifications */}
         <Route
           path="/academics/student-notifications"
