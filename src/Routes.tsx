@@ -80,6 +80,9 @@ const ManagementStudentReport = React.lazy(
 
 // Academics
 const AddMarks = React.lazy(() => import("./views/Academics/StudentMarksPage"));
+const StudentNotificationsPage = React.lazy(
+  () => import("./views/Academics/StudentNotifications/StudentNotificationsPage"),
+);
 
 // Help
 const HelpPage = React.lazy(() => import("./views/Help/Help"));
@@ -309,6 +312,17 @@ const AppRoutes = () => {
             MainLayout,
             AddMarks,
             !userPermissionObject?.[PermissionKeys.ADD_MARKS_VIEW],
+          )}
+        />
+        {/* Academics > Student Notifications */}
+        <Route
+          path="/academics/student-notifications"
+          element={withLayout(
+            MainLayout,
+            StudentNotificationsPage,
+            !userPermissionObject?.[
+              PermissionKeys.ADD_STUDENT_NOTIFICATIONS_VIEW
+            ],
           )}
         />
         {/* Help */}
