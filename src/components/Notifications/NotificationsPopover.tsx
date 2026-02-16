@@ -179,10 +179,7 @@ const NotificationsPopover = () => {
           sx: {
             width: isMobile ? 360 : 500,
             maxHeight: 360,
-            px: 1,
-            pb: 1,
-            pt: 0,
-            overflowY: "auto",
+            p: 1,
           },
         }}
       >

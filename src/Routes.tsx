@@ -42,6 +42,10 @@ const SchoolSettings = React.lazy(
 const AddClassTeacher = React.lazy(
   () => import("./views/Administration/StaffManagement/ClassTeacherTable"),
 );
+// Administration > Staff Management > Teacher Work Records
+const TeacherWorkRecords = React.lazy(
+  () => import("./views/Administration/StaffManagement/TeacherWorkRecords"),
+);
 // Administration > Student Management > Student Promotion
 const StudentPromotion = React.lazy(
   () => import("./views/Administration/StudentManagement/StudentPromotion"),
@@ -82,6 +86,12 @@ const ManagementStudentReport = React.lazy(
 const AddMarks = React.lazy(() => import("./views/Academics/StudentMarksPage"));
 const StudentNotificationsPage = React.lazy(
   () => import("./views/Academics/StudentNotifications/StudentNotificationsPage"),
+);
+const TeacherAcademicRecordsPage = React.lazy(
+  () =>
+    import(
+      "./views/Academics/TeacherAcademicRecords/TeacherAcademicRecordsPage"
+    ),
 );
 
 // Old Student Portal
@@ -229,6 +239,15 @@ const AppRoutes = () => {
             !userPermissionObject?.[PermissionKeys.ADD_CLASS_TEACHER_VIEW],
           )}
         />
+        {/* Administration > Staff Management > Teacher Work Records */}
+        <Route
+          path="/admin/teacher-work-records"
+          element={withLayout(
+            MainLayout,
+            TeacherWorkRecords,
+            !userPermissionObject?.[PermissionKeys.TEACHER_WORK_RECORDS_VIEW],
+          )}
+        />
         {/* Administration > Student Management > Student Promotion */}
         <Route
           path="/admin/student-promotion"
@@ -336,6 +355,17 @@ const AppRoutes = () => {
             StudentNotificationsPage,
             !userPermissionObject?.[
               PermissionKeys.ADD_STUDENT_NOTIFICATIONS_VIEW
+            ],
+          )}
+        />
+        {/* Academics > Teacher Academic Records */}
+        <Route
+          path="/academics/teacher-academic-records"
+          element={withLayout(
+            MainLayout,
+            TeacherAcademicRecordsPage,
+            !userPermissionObject?.[
+              PermissionKeys.TEACHER_ACADEMIC_RECORDS_VIEW
             ],
           )}
         />

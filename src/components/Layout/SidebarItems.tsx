@@ -10,7 +10,7 @@ import AssessmentOutlinedIcon from "@mui/icons-material/Assessment";
 import AddTaskIcon from "@mui/icons-material/AddTask";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { PermissionKeys } from "../../views/Administration/SectionList";
-import HomeIcon from '@mui/icons-material/Home';
+import HomeIcon from "@mui/icons-material/Home";
 
 export interface SidebarItem {
   title?: string;
@@ -83,6 +83,7 @@ export const sidebarItems: Array<SidebarItem> = [
       PermissionKeys.SCHOOL_SETTINGS_VIEW,
       PermissionKeys.ADD_CLASS_TEACHER_VIEW,
       PermissionKeys.STUDENT_PROMOTION_VIEW,
+      PermissionKeys.TEACHER_WORK_RECORDS_VIEW,
     ],
   },
   {
@@ -127,6 +128,12 @@ export const sidebarItems: Array<SidebarItem> = [
         href: "/admin/add-class-teacher",
         icon: <BookmarkAddedIcon fontSize="small" />,
         accessKey: PermissionKeys.ADD_CLASS_TEACHER_VIEW,
+      },
+      {
+        title: "Teacher Work Records",
+        href: "/admin/teacher-work-records",
+        icon: <BookmarkAddedIcon fontSize="small" />,
+        accessKey: PermissionKeys.TEACHER_WORK_RECORDS_VIEW,
       },
     ],
   },
@@ -218,7 +225,11 @@ export const sidebarItems: Array<SidebarItem> = [
   },
   {
     headline: "Academics",
-    accessKeys: [PermissionKeys.ADD_MARKS_VIEW],
+    accessKeys: [
+      PermissionKeys.ADD_MARKS_VIEW,
+      PermissionKeys.ADD_STUDENT_NOTIFICATIONS_VIEW,
+      PermissionKeys.TEACHER_ACADEMIC_RECORDS_VIEW,
+    ],
   },
   {
     title: "Student Marks",
@@ -231,6 +242,12 @@ export const sidebarItems: Array<SidebarItem> = [
     icon: <AddTaskIcon fontSize="small" />,
     href: "/academics/student-notifications",
     accessKey: PermissionKeys.ADD_STUDENT_NOTIFICATIONS_VIEW,
+  },
+  {
+    title: "Teacher Academic Records",
+    icon: <AddTaskIcon fontSize="small" />,
+    href: "/academics/teacher-academic-records",
+    accessKey: PermissionKeys.TEACHER_ACADEMIC_RECORDS_VIEW,
   },
   {
     headline: "Help",
