@@ -14,6 +14,7 @@ function DatePickerComponent({
   minDate,
   maxDate,
   disabled,
+  shouldDisableDate,
 }: {
   value: Date | null;
   onChange: (value: Date) => void;
@@ -25,6 +26,7 @@ function DatePickerComponent({
   minDate?: Date;
   maxDate?: Date;
   disabled?: boolean;
+  shouldDisableDate?: (date: Date) => boolean;
 }) {
   const { isMobile } = useIsMobile();
 
@@ -41,6 +43,7 @@ function DatePickerComponent({
           minDate={minDate}
           maxDate={maxDate}
           disabled={disabled}
+          shouldDisableDate={shouldDisableDate}
           sx={{
             border: error ? "1px solid var(--pallet-red)" : "",
           }}
@@ -57,6 +60,7 @@ function DatePickerComponent({
           minDate={minDate}
           maxDate={maxDate}
           disabled={disabled}
+          shouldDisableDate={shouldDisableDate}
           sx={{
             border: error ? "1px solid var(--pallet-red)" : "",
             padding: 0,

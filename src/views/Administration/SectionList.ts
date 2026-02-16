@@ -104,6 +104,16 @@ export const PermissionSectionsMap: PermissionSection[] = [
         },
       },
       {
+        name: "Teacher Work Records",
+        key: "TEACHER_WORK_RECORDS",
+        permissionsExists: {
+          VIEW: true,
+          CREATE: true,
+          EDIT: true,
+          DELETE: true,
+        },
+      },
+      {
         break: true,
         name: "Student Management",
       },
@@ -209,6 +219,16 @@ export const PermissionSectionsMap: PermissionSection[] = [
           DELETE: true,
         },
       },
+      {
+        name: "Teacher Academic Records",
+        key: "TEACHER_ACADEMIC_RECORDS",
+        permissionsExists: {
+          VIEW: true,
+          CREATE: true,
+          EDIT: true,
+          DELETE: true,
+        },
+      },
     ],
   },
   {
@@ -294,6 +314,11 @@ export enum PermissionKeys {
   ADD_CLASS_TEACHER_CREATE = "ADD_CLASS_TEACHER_CREATE",
   ADD_CLASS_TEACHER_EDIT = "ADD_CLASS_TEACHER_EDIT",
   ADD_CLASS_TEACHER_DELETE = "ADD_CLASS_TEACHER_DELETE",
+  // Administration > Staff Management > Teacher Work Records
+  TEACHER_WORK_RECORDS_VIEW = "TEACHER_WORK_RECORDS_VIEW",
+  TEACHER_WORK_RECORDS_CREATE = "TEACHER_WORK_RECORDS_CREATE",
+  TEACHER_WORK_RECORDS_EDIT = "TEACHER_WORK_RECORDS_EDIT",
+  TEACHER_WORK_RECORDS_DELETE = "TEACHER_WORK_RECORDS_DELETE",
   // Administration > Student Management > Student Promotion
   STUDENT_PROMOTION_VIEW = "STUDENT_PROMOTION_VIEW",
   STUDENT_PROMOTION_CREATE = "STUDENT_PROMOTION_CREATE",
@@ -319,6 +344,10 @@ export enum PermissionKeys {
   ADD_STUDENT_NOTIFICATIONS_CREATE = "ADD_STUDENT_NOTIFICATIONS_CREATE",
   ADD_STUDENT_NOTIFICATIONS_EDIT = "ADD_STUDENT_NOTIFICATIONS_EDIT",
   ADD_STUDENT_NOTIFICATIONS_DELETE = "ADD_STUDENT_NOTIFICATIONS_DELETE",
+  TEACHER_ACADEMIC_RECORDS_VIEW = "TEACHER_ACADEMIC_RECORDS_VIEW",
+  TEACHER_ACADEMIC_RECORDS_CREATE = "TEACHER_ACADEMIC_RECORDS_CREATE",
+  TEACHER_ACADEMIC_RECORDS_EDIT = "TEACHER_ACADEMIC_RECORDS_EDIT",
+  TEACHER_ACADEMIC_RECORDS_DELETE = "TEACHER_ACADEMIC_RECORDS_DELETE",
   // Help
   HELP_VIEW = "HELP_VIEW",
   // Old Student Portal
@@ -370,6 +399,11 @@ export const defaultViewerPermissions: PermissionKeysObject = {
   ADD_CLASS_TEACHER_CREATE: true,
   ADD_CLASS_TEACHER_EDIT: true,
   ADD_CLASS_TEACHER_DELETE: true,
+  // Administration > Staff Management > Teacher Work Records
+  TEACHER_WORK_RECORDS_VIEW: true,
+  TEACHER_WORK_RECORDS_CREATE: true,
+  TEACHER_WORK_RECORDS_EDIT: true,
+  TEACHER_WORK_RECORDS_DELETE: true,
   // Administration > Student Management > Student Promotion
   STUDENT_PROMOTION_VIEW: true,
   STUDENT_PROMOTION_CREATE: true,
@@ -394,6 +428,10 @@ export const defaultViewerPermissions: PermissionKeysObject = {
   ADD_STUDENT_NOTIFICATIONS_CREATE: true,
   ADD_STUDENT_NOTIFICATIONS_EDIT: true,
   ADD_STUDENT_NOTIFICATIONS_DELETE: true,
+  TEACHER_ACADEMIC_RECORDS_VIEW: true,
+  TEACHER_ACADEMIC_RECORDS_CREATE: true,
+  TEACHER_ACADEMIC_RECORDS_EDIT: true,
+  TEACHER_ACADEMIC_RECORDS_DELETE: true,
   // Help
   HELP_VIEW: true,
   // Old Student Portal
