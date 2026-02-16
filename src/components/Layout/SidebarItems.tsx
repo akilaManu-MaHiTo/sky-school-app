@@ -227,6 +227,12 @@ export const sidebarItems: Array<SidebarItem> = [
     accessKey: PermissionKeys.ADD_MARKS_VIEW,
   },
   {
+    title: "Student Notifications",
+    icon: <AddTaskIcon fontSize="small" />,
+    href: "/academics/student-notifications",
+    accessKey: PermissionKeys.ADD_STUDENT_NOTIFICATIONS_VIEW,
+  },
+  {
     headline: "Help",
     accessKeys: [PermissionKeys.HELP_VIEW],
   },

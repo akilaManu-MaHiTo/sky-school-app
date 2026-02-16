@@ -199,6 +199,16 @@ export const PermissionSectionsMap: PermissionSection[] = [
           DELETE: true,
         },
       },
+      {
+        name: "Student Notifications",
+        key: "ADD_STUDENT_NOTIFICATIONS",
+        permissionsExists: {
+          VIEW: true,
+          CREATE: true,
+          EDIT: true,
+          DELETE: true,
+        },
+      },
     ],
   },
   {
@@ -305,6 +315,10 @@ export enum PermissionKeys {
   ADD_MARKS_CREATE = "ADD_MARKS_CREATE",
   ADD_MARKS_EDIT = "ADD_MARKS_EDIT",
   ADD_MARKS_DELETE = "ADD_MARKS_DELETE",
+  ADD_STUDENT_NOTIFICATIONS_VIEW = "ADD_STUDENT_NOTIFICATIONS_VIEW",
+  ADD_STUDENT_NOTIFICATIONS_CREATE = "ADD_STUDENT_NOTIFICATIONS_CREATE",
+  ADD_STUDENT_NOTIFICATIONS_EDIT = "ADD_STUDENT_NOTIFICATIONS_EDIT",
+  ADD_STUDENT_NOTIFICATIONS_DELETE = "ADD_STUDENT_NOTIFICATIONS_DELETE",
   // Help
   HELP_VIEW = "HELP_VIEW",
   // Old Student Portal
@@ -376,6 +390,10 @@ export const defaultViewerPermissions: PermissionKeysObject = {
   ADD_MARKS_CREATE: true,
   ADD_MARKS_EDIT: true,
   ADD_MARKS_DELETE: true,
+  ADD_STUDENT_NOTIFICATIONS_VIEW: true,
+  ADD_STUDENT_NOTIFICATIONS_CREATE: true,
+  ADD_STUDENT_NOTIFICATIONS_EDIT: true,
+  ADD_STUDENT_NOTIFICATIONS_DELETE: true,
   // Help
   HELP_VIEW: true,
   // Old Student Portal

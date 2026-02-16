@@ -44,7 +44,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getOrganization } from "../../api/OrganizationSettings/organizationSettingsApi";
 import logoUrl from "../../assets/company-logo1.jpg";
 import { hasSignedUrl } from "../../views/Administration/SchoolManagement/schoolUtils";
-
+import NotificationsPopover from "../Notifications/NotificationsPopover";
 const drawerWidth = 275;
 
 const openedMixin = (theme: Theme): CSSObject => ({
@@ -312,6 +312,8 @@ export default function MainLayout({ children }: Props) {
                 {user?.name?.charAt(0).toUpperCase()}
               </Avatar> */}
 
+              <NotificationsPopover />
+
               <Badge
                 overlap="circular"
                 anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
@@ -472,7 +474,7 @@ const DrawerContent = ({
 
           if (item.headline && item.accessKeys) {
             const canShowHeadline = item.accessKeys.some(
-              (key) => userPermissionObject[key]
+              (key) => userPermissionObject[key],
             );
 
             if (canShowHeadline) {
@@ -685,7 +687,7 @@ const NestedItem = React.memo(
         </Collapse>
       </React.Fragment>
     );
-  }
+  },
 );
 
 interface LinkButtonProps {
@@ -744,5 +746,5 @@ export const LinkButton = React.memo(
         </Button>
       </Link>
     );
-  }
+  },
 );
