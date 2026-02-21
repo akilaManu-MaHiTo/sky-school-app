@@ -54,7 +54,7 @@ import useIsMobile from "../../../customHooks/useIsMobile";
 import useCurrentOrganization from "../../../hooks/useCurrentOrganization";
 import { ResponsiveContainer } from "recharts";
 import useCurrentUser from "../../../hooks/useCurrentUser";
-import { fetchMyChildrenData } from "../../../api/userApi";
+import { EmployeeType, fetchMyChildrenData } from "../../../api/userApi";
 import SubjectLineChart from "./SubjectLineChart";
 import { exportParentReportToExcel } from "../../../reportsUtils/ParentReportExcel";
 import { generateParentReportPdf } from "../../../reportsUtils/ParentReportPDF";
@@ -89,77 +89,71 @@ export default function GradeReport() {
   const { organization } = useCurrentOrganization();
   const { user } = useCurrentUser();
   const parentId = user?.id;
+  const studentId =
+    user?.employeeType === EmployeeType.PARENT ? selectedMyChild?.id : user?.id;
 
   const { data: yearData, isFetching: isYearDataFetching } = useQuery({
-    queryKey: ["my-academic-years", selectedMyChild?.id],
-    queryFn: () => getMyChildYears(selectedMyChild?.id),
+    queryKey: ["my-academic-years", studentId],
+    queryFn: () => getMyChildYears(studentId),
   });
   const { data: gradeData, isFetching: isGradeDataFetching } = useQuery({
-    queryKey: ["my-academic-grades", selectedMyChild?.id],
-    queryFn: () => getMyChildGrades(selectedMyChild?.id),
+    queryKey: ["my-academic-grades", studentId],
+    queryFn: () => getMyChildGrades(studentId),
   });
   const { data: classData, isFetching: isClassDataFetching } = useQuery({
-    queryKey: ["my-academic-classes", selectedMyChild?.id],
-    queryFn: () => getMyChildClasses(selectedMyChild?.id),
+    queryKey: ["my-academic-classes", studentId],
+    queryFn: () => getMyChildClasses(studentId),
   });
 
   const { data: myChildrenData, isFetching: isMyChildrenDataFetching } =
     useQuery({
-      queryKey: ["my-children"],
+      queryKey: ["my-children", parentId],
       queryFn: () => fetchMyChildrenData(parentId),
+      enabled: !!parentId,
     });
   const { data: myChildrenReport, isFetching: isMyChildrenReportFetching } =
     useQuery({
-      queryKey: ["my-children-report", selectedMyChild?.id, year, selectedTerm],
-      queryFn: () => getMyChildReport(selectedMyChild?.id, year, selectedTerm),
-      enabled: !!selectedMyChild && !!year && !!selectedTerm,
+      queryKey: ["my-children-report", studentId, year, selectedTerm],
+      queryFn: () => getMyChildReport(studentId, year, selectedTerm),
+      enabled: !!studentId && !!year && !!selectedTerm,
     });
   const {
     data: myChildrenLineChart,
     isFetching: isMyChildrenLineChartFetching,
   } = useQuery({
-    queryKey: ["my-children-line-chart", selectedMyChild?.id],
-    queryFn: () => getMyChildReportLineChart(selectedMyChild?.id),
-    enabled: !!selectedMyChild,
+    queryKey: ["my-children-line-chart", studentId],
+    queryFn: () => getMyChildReportLineChart(studentId),
+    enabled: !!studentId,
   });
   const { data: myChildrenStats, isFetching: isMyChildrenStatsFetching } =
     useQuery({
-      queryKey: ["my-children-stats", selectedMyChild?.id, year, selectedTerm],
-      queryFn: () =>
-        getMyChildClassAverage(selectedMyChild?.id, year, selectedTerm),
-      enabled: !!selectedMyChild && !!year && !!selectedTerm,
+      queryKey: ["my-children-stats", studentId, year, selectedTerm],
+      queryFn: () => getMyChildClassAverage(studentId, year, selectedTerm),
+      enabled: !!studentId && !!year && !!selectedTerm,
     });
   const {
     data: myChildrenWeekSubject,
     isFetching: isMyChildrenWeekSubjectFetching,
   } = useQuery({
-    queryKey: ["my-children-week", selectedMyChild?.id, year, selectedTerm],
-    queryFn: () =>
-      getMyChildWeekSubject(selectedMyChild?.id, year, selectedTerm),
-    enabled: !!selectedMyChild && !!year && !!selectedTerm,
+    queryKey: ["my-children-week", studentId, year, selectedTerm],
+    queryFn: () => getMyChildWeekSubject(studentId, year, selectedTerm),
+    enabled: !!studentId && !!year && !!selectedTerm,
   });
   const {
     data: myChildrenStrongSubject,
     isFetching: isMyChildrenStrongSubjectFetching,
   } = useQuery({
-    queryKey: ["my-children-strong", selectedMyChild?.id, year, selectedTerm],
-    queryFn: () =>
-      getMyChildTopSubject(selectedMyChild?.id, year, selectedTerm),
-    enabled: !!selectedMyChild && !!year && !!selectedTerm,
+    queryKey: ["my-children-strong", studentId, year, selectedTerm],
+    queryFn: () => getMyChildTopSubject(studentId, year, selectedTerm),
+    enabled: !!studentId && !!year && !!selectedTerm,
   });
   const {
     data: myChildrenAISuggestions,
     isFetching: isMyChildrenAISuggestionsFetching,
   } = useQuery({
-    queryKey: [
-      "my-children-AI-suggestion",
-      selectedMyChild?.id,
-      year,
-      selectedTerm,
-    ],
-    queryFn: () =>
-      getMyChildAISuggestions(selectedMyChild?.id, year, selectedTerm),
-    enabled: !!selectedMyChild && !!year && !!selectedTerm,
+    queryKey: ["my-children-AI-suggestion", studentId, year, selectedTerm],
+    queryFn: () => getMyChildAISuggestions(studentId, year, selectedTerm),
+    enabled: !!studentId && !!year && !!selectedTerm,
   });
   const { isMobile, isTablet } = useIsMobile();
 
@@ -434,41 +428,43 @@ export default function GradeReport() {
                 flexDirection: isMobile || isTablet ? "column" : "row",
               }}
             >
-              <Box sx={{ flex: 1, minWidth: 220, margin: "0.5rem" }}>
-                <Controller
-                  name="myChild"
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <Autocomplete
-                      {...field}
-                      value={field.value ?? null}
-                      onChange={(e, newVal) => {
-                        field.onChange(newVal);
-                        setValue("year", null, {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        });
-                      }}
-                      size="small"
-                      options={myChildrenData ?? []}
-                      getOptionLabel={(option) => option.nameWithInitials}
-                      sx={{ flex: 1 }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          required
-                          error={!!errors.myChild}
-                          helperText={errors.myChild && "Required"}
-                          label="Select My Child"
-                          name="myChild"
-                        />
-                      )}
-                    />
-                  )}
-                />
-              </Box>
-              {selectedMyChild && (
+              {user.employeeType === EmployeeType.PARENT && (
+                <Box sx={{ flex: 1, minWidth: 220, margin: "0.5rem" }}>
+                  <Controller
+                    name="myChild"
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                      <Autocomplete
+                        {...field}
+                        value={field.value ?? null}
+                        onChange={(e, newVal) => {
+                          field.onChange(newVal);
+                          setValue("year", null, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }}
+                        size="small"
+                        options={myChildrenData ?? []}
+                        getOptionLabel={(option) => option.nameWithInitials}
+                        sx={{ flex: 1 }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            required
+                            error={!!errors.myChild}
+                            helperText={errors.myChild && "Required"}
+                            label="Select My Child"
+                            name="myChild"
+                          />
+                        )}
+                      />
+                    )}
+                  />
+                </Box>
+              )}
+              {selectedMyChild || studentId && (
                 <>
                   <Box sx={{ flex: 1, minWidth: 220, margin: "0.5rem" }}>
                     <Controller
@@ -978,7 +974,8 @@ export default function GradeReport() {
                       width: 44,
                       height: 44,
                       borderRadius: "12px",
-                      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      background:
+                        "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -987,7 +984,10 @@ export default function GradeReport() {
                     <AutoAwesomeIcon sx={{ fontSize: 24, color: "#fff" }} />
                   </Box>
                   <Box>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "#333" }}>
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ fontWeight: 600, color: "#333" }}
+                    >
                       AI Study Suggestions
                     </Typography>
                     <Typography variant="caption" sx={{ color: "#666" }}>
@@ -1020,7 +1020,8 @@ export default function GradeReport() {
                             width: 8,
                             height: 8,
                             borderRadius: "50%",
-                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            background:
+                              "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                             mt: 0.8,
                             flexShrink: 0,
                           }}
