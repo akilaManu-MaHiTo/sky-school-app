@@ -464,7 +464,7 @@ export default function GradeReport() {
                   />
                 </Box>
               )}
-              {selectedMyChild || studentId && (
+              {(!!selectedMyChild || !!studentId) && (
                 <>
                   <Box sx={{ flex: 1, minWidth: 220, margin: "0.5rem" }}>
                     <Controller
