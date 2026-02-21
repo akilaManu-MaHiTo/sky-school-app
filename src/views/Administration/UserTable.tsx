@@ -444,6 +444,24 @@ function UserTable() {
               onClick={() => setUserRole("Parent")}
               {...a11yProps(3)}
             />
+             <Tab
+              label={
+                <Box
+                  sx={{
+                    color: "var(--pallet-blue)",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  {/* <Filter1Icon fontSize="small" /> */}
+                  <Typography variant="body2" sx={{ ml: "0.3rem" }}>
+                    Old Students
+                  </Typography>
+                </Box>
+              }
+              onClick={() => setUserRole("OldStudent")}
+              {...a11yProps(4)}
+            />
           </Tabs>
         </AppBar>
         <TabPanel value={activeTab} index={0} dir={theme.direction}>
@@ -1009,6 +1027,168 @@ function UserTable() {
                 Export PDF
               </Button>
             </Box>
+          <Stack sx={{ alignItems: "center" }}>
+            <TableContainer
+              component={Paper}
+              elevation={2}
+              sx={{
+                overflowX: "auto",
+                maxWidth: isMobile ? "65vw" : "100%",
+              }}
+            >
+              {isSearchingUsers && <LinearProgress sx={{ width: "100%" }} />}
+              <Table aria-label="simple table">
+                <TableHead
+                  sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
+                >
+                  <TableRow>
+                    <TableCell>
+                      Id
+                      <IconButton
+                        sx={{ alignContent: "center" }}
+                        onClick={() => {
+                          if (selectedSortBy === "user_id_asc") {
+                            setSelectedSortBy("user_id_desc");
+                            return;
+                          } else {
+                            setSelectedSortBy("user_id_asc");
+                          }
+                        }}
+                      >
+                        {selectedSortBy === "user_id_asc" ? (
+                          <ArrowDropDownIcon fontSize="small" />
+                        ) : (
+                          <ArrowDropUpIcon fontSize="small" />
+                        )}
+                      </IconButton>
+                    </TableCell>
+                    <TableCell align="left">Name With Initials</TableCell>
+                    <TableCell align="left">Email</TableCell>
+                    <TableCell align="left">Mobile Number</TableCell>
+                    <TableCell align="left">Address</TableCell>
+                    <TableCell align="left">Birthday</TableCell>
+                    <TableCell align="left">Gender</TableCell>
+                    <TableCell align="center">User Role</TableCell>
+                    <TableCell align="center">Access Role</TableCell>
+                    <TableCell align="center">Status</TableCell>
+                    <TableCell align="center">Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {paginatedUsersData?.length > 0 ? (
+                    paginatedUsersData?.map((row) => (
+                      <TableRow
+                        key={`${row.id}`}
+                        sx={{
+                          "&:last-child td, &:last-child th": { border: 0 },
+                          cursor: "pointer",
+                        }}
+                        // onClick={() => {
+                        //   setSelectedUserId(row.id);
+                        //   setOpenViewDrawer(true);
+                        // }}
+                      >
+                        <TableCell align="left">{row.id}</TableCell>
+                        <TableCell align="left">
+                          {row.nameWithInitials}
+                        </TableCell>
+                        <TableCell align="left">{row.email}</TableCell>
+                        <TableCell align="left">{row.mobile}</TableCell>
+                        <TableCell align="left">
+                          {getPlainAddress(row.address)}
+                        </TableCell>
+                        <TableCell align="left">
+                          {row?.birthDate
+                            ? format(new Date(row.birthDate), "yyyy-MM-dd")
+                            : "--"}
+                        </TableCell>
+                        <TableCell align="right">
+                          {row.gender ?? "--"}
+                        </TableCell>
+
+                        <TableCell align="center">
+                          {row.employeeType ?? "--"}
+                        </TableCell>
+                        <TableCell align="center">
+                          {row.userType.userType ?? "--"}
+                        </TableCell>
+                        <TableCell align="center">
+                          {row.availability ? (
+                            <Chip
+                              label="Active"
+                              sx={{
+                                backgroundColor: green[100],
+                                color: green[800],
+                              }}
+                            />
+                          ) : (
+                            <Chip
+                              label="Inactive"
+                              sx={{
+                                backgroundColor: grey[100],
+                                color: grey[800],
+                              }}
+                            />
+                          )}
+                        </TableCell>
+                        <TableCell align="center">
+                          <IconButton
+                            onClick={(event) =>
+                              handleOpenActionMenu(event, row.id)
+                            }
+                          >
+                            <MoreVertIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={11} align="center">
+                        <Typography variant="body2">No Users found</Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+                <TableFooter>
+                  <TableRow>
+                    <TablePagination
+                      rowsPerPageOptions={[
+                        5,
+                        10,
+                        25,
+                        { label: "All", value: -1 },
+                      ]}
+                      colSpan={100}
+                      count={searchedUserData?.length}
+                      rowsPerPage={rowsPerPage}
+                      page={page}
+                      showFirstButton={true}
+                      showLastButton={true}
+                      onPageChange={handleChangePage}
+                      onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
+                  </TableRow>
+                </TableFooter>
+              </Table>
+            </TableContainer>
+          </Stack>
+        </TabPanel>
+        <TabPanel value={activeTab} index={4} dir={theme.direction}>
+          <Box
+            mb={2}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <SearchInput
+              placeholder="Search Users..."
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onSearch={handleSearch}
+              isSearching={isSearchingUsers}
+            />
+          </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
               component={Paper}

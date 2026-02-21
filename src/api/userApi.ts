@@ -321,6 +321,7 @@ export async function updateUserProfileDetailsByAdmin({
   address,
   email,
   nameWithInitials,
+  employeeType,
 }: {
   id: number;
   employeeNumber: string;
@@ -331,6 +332,7 @@ export async function updateUserProfileDetailsByAdmin({
   address: string;
   email: string;
   nameWithInitials: string;
+  employeeType: string;
 }) {
   const data = {
     name,
@@ -341,6 +343,7 @@ export async function updateUserProfileDetailsByAdmin({
     address,
     email,
     nameWithInitials,
+    employeeType,
   };
 
   const res = await axios.post(`/api/user/${id}/profile-update-by-admin`, data);
