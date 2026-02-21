@@ -21,6 +21,7 @@ import { useSnackbar } from "notistack";
 import CustomButton from "../../components/CustomButton";
 import useIsMobile from "../../customHooks/useIsMobile";
 import {
+  EmployeeType,
   updateUserProfileDetails,
   updateUserProfileDetailsByAdmin,
   User,
@@ -97,6 +98,7 @@ export default function UpdateUserProfile({
       mobile: data.mobile,
       birthDate: data.birthDate!,
       address: data.address,
+      employeeType: data.employeeType!,
     });
   };
   return (
@@ -150,6 +152,27 @@ export default function UpdateUserProfile({
                 size="small"
                 sx={{ flex: 1, margin: "0.5rem", width: "full" }}
                 {...register("employeeNumber")}
+              />
+              <Controller
+                control={control}
+                name="employeeType"
+                render={({ field }) => (
+                  <Autocomplete
+                    options={EmployeeType ? Object.values(EmployeeType) : []}
+                    size="small"
+                    sx={{ flex: 1, margin: "0.5rem" }}
+                    value={field.value || null}
+                    onChange={(_, value) => field.onChange(value)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        error={!!errors.gender}
+                        label="User Role"
+                        name="employeeType"
+                      />
+                    )}
+                  />
+                )}
               />
               <TextField
                 id="name"
