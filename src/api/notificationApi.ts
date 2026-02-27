@@ -21,8 +21,14 @@ export async function fetchAllStudentNotifications() {
   const res = await axios.get("/api/student-notifications");
   return res.data;
 }
-export async function fetchStudentNotificationsCreatedBy() {
-  const res = await axios.get("/api/student-notifications-created-by");
+export async function fetchStudentNotificationsCreatedBy(
+  year: string,
+  gradeId: number,
+  classId: number,
+) {
+  const res = await axios.get(
+    `/api/student-notifications-created-by/${year}/${gradeId}/${classId}`,
+  );
   return res.data;
 }
 export async function fetchStudentNotificationCount() {
@@ -61,17 +67,23 @@ export async function createStudentNotification(payload: StudentNotification) {
   const data = {
     ...payload,
     year: payload.year.year,
-    gradeId: payload.gradeId.id,
-    classId: payload.classId.id,
+    gradeId: payload.gradeId?.id,
+    classId: payload.classId?.id,
   };
   const res = await axios.post("/api/student-notifications", data);
   return res.data;
 }
 
 export async function updateStudentNotification(payload: StudentNotification) {
+  const data = {
+    ...payload,
+    year: payload.year.year,
+    gradeId: payload.gradeId.id,
+    classId: payload.classId.id,
+  };
   const res = await axios.post(
     `/api/student-notifications/${payload.id}`,
-    payload,
+    data,
   );
   return res.data;
 }

@@ -32,8 +32,11 @@ import {
   AcademicClass,
   AcademicGrade,
   AcademicYear,
+  getGradesAllData,
+  getClassesAllData,
 } from "../../../api/OrganizationSettings/academicGradeApi";
 import { getYearsData } from "../../../api/OrganizationSettings/organizationSettingsApi";
+import { set } from "date-fns";
 
 interface AddOrEditNotificationDialogProps {
   open: boolean;
@@ -57,8 +60,11 @@ const AddOrEditNotificationDialog = ({
     reset,
     control,
     register,
+    watch,
   } = useForm<StudentNotification>();
 
+  const selectedYear = watch("year");
+  const selectedGrade = watch("gradeId");
   console.log("Default Values: ", defaultValues);
   const { data: yearData, isFetching: isYearDataFetching } = useQuery({
     queryKey: ["academic-years"],
@@ -66,13 +72,13 @@ const AddOrEditNotificationDialog = ({
   });
 
   const { data: gradeData, isFetching: isGradeDataFetching } = useQuery({
-    queryKey: ["academic-grades"],
-    queryFn: getGradesData,
+    queryKey: ["academic-grades-all"],
+    queryFn: getGradesAllData,
   });
 
   const { data: classData, isFetching: isClassDataFetching } = useQuery({
-    queryKey: ["academic-classes"],
-    queryFn: getClassesData,
+    queryKey: ["academic-classes-all"],
+    queryFn: getClassesAllData,
   });
 
   const resolvedDefaults = useMemo(() => {
@@ -87,39 +93,42 @@ const AddOrEditNotificationDialog = ({
     }
 
     const rawYear = (defaultValues as any).year;
-    const rawGrade = (defaultValues as any).gradeId ?? (defaultValues as any).grade;
-    const rawClass = (defaultValues as any).classId ?? (defaultValues as any).class;
+    const rawGrade =
+      (defaultValues as any).gradeId ?? (defaultValues as any).grade;
+    const rawClass =
+      (defaultValues as any).classId ?? (defaultValues as any).class;
 
     const yearValue =
       typeof rawYear === "string"
-        ? (yearData ?? []).find((item: AcademicYear) => item.year === rawYear) ??
-          null
+        ? ((yearData ?? []).find(
+            (item: AcademicYear) => item.year === rawYear,
+          ) ?? null)
         : rawYear && typeof rawYear === "object"
-          ? (yearData ?? []).find(
+          ? ((yearData ?? []).find(
               (item: AcademicYear) => item.id === rawYear.id,
-            ) ?? rawYear
+            ) ?? rawYear)
           : null;
 
     const gradeValue =
       typeof rawGrade === "number"
-        ? (gradeData ?? []).find(
+        ? ((gradeData ?? []).find(
             (item: AcademicGrade) => item.id === rawGrade,
-          ) ?? null
+          ) ?? null)
         : rawGrade && typeof rawGrade === "object"
-          ? (gradeData ?? []).find(
+          ? ((gradeData ?? []).find(
               (item: AcademicGrade) => item.id === rawGrade.id,
-            ) ?? rawGrade
+            ) ?? rawGrade)
           : null;
 
     const classValue =
       typeof rawClass === "number"
-        ? (classData ?? []).find(
+        ? ((classData ?? []).find(
             (item: AcademicClass) => item.id === rawClass,
-          ) ?? null
+          ) ?? null)
         : rawClass && typeof rawClass === "object"
-          ? (classData ?? []).find(
+          ? ((classData ?? []).find(
               (item: AcademicClass) => item.id === rawClass.id,
-            ) ?? rawClass
+            ) ?? rawClass)
           : null;
 
     return {
@@ -138,8 +147,16 @@ const AddOrEditNotificationDialog = ({
 
   const { mutate: createMutation, isPending: isCreating } = useMutation({
     mutationFn: createStudentNotification,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["student-notifications"] });
+    onSuccess: (data: any) => {
+      const message =
+        data?.data?.message ||
+        data?.message ||
+        "Student notification created successfully.";
+      enqueueSnackbar(message, { variant: "success" });
+      queryClient.invalidateQueries({
+        queryKey: ["student-notifications-created-by"],
+      });
+      setOpen(false);
     },
     onError: (error: any) => {
       const message =
@@ -152,8 +169,15 @@ const AddOrEditNotificationDialog = ({
 
   const { mutate: updateMutation, isPending: isUpdating } = useMutation({
     mutationFn: updateStudentNotification,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["student-notifications"] });
+    onSuccess: (data: any) => {
+      const message =
+        data?.data?.message ||
+        data?.message ||
+        "Student notification Updated successfully.";
+      queryClient.invalidateQueries({
+        queryKey: ["student-notifications-created-by"],
+      });
+      setOpen(false);
     },
     onError: (error: any) => {
       const message =
@@ -266,65 +290,101 @@ const AddOrEditNotificationDialog = ({
             )}
           />
 
-          <Controller
-            name="gradeId"
-            control={control}
-            rules={{ required: true }}
-            render={({ field }) => (
-              <Autocomplete
-                {...field}
-                value={field.value ?? null}
-                onChange={(e, newVal) => {
-                  field.onChange(newVal);
-                }}
-                size="small"
-                options={gradeData ?? []}
-                getOptionLabel={(option) => `Grade ` + option.grade}
-                isOptionEqualToValue={(option, value) => option.id === value.id}
-                sx={{ flex: 1, margin: "0.5rem" }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    required
-                    error={!!errors.gradeId}
-                    helperText={errors.gradeId && "Required"}
-                    label="Select Grade"
-                    name="grade"
-                  />
-                )}
-              />
-            )}
-          />
+          {selectedYear && (
+            <Controller
+              name="gradeId"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Autocomplete
+                  {...field}
+                  value={field.value ?? null}
+                  onChange={(e, newVal) => {
+                    field.onChange(newVal);
+                  }}
+                  size="small"
+                  options={gradeData ?? []}
+                  getOptionLabel={(option) => {
+                    if (option.grade === "All") {
+                      const yearLabel =
+                        (selectedYear as AcademicYear | null)?.year ?? "";
+                      return yearLabel ? `All ${yearLabel} Year` : "All";
+                    }
+                    return `Grade ${option.grade}`;
+                  }}
+                  isOptionEqualToValue={(option, value) =>
+                    option.id === value.id
+                  }
+                  sx={{ flex: 1, margin: "0.5rem" }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      required
+                      error={!!errors.gradeId}
+                      helperText={errors.gradeId && "Required"}
+                      label="Select Grade"
+                      name="grade"
+                    />
+                  )}
+                />
+              )}
+            />
+          )}
 
-          <Controller
-            name="classId"
-            control={control}
-            rules={{ required: true }}
-            render={({ field }) => (
-              <Autocomplete
-                {...field}
-                value={field.value ?? null}
-                onChange={(e, newVal) => {
-                  field.onChange(newVal);
-                }}
-                size="small"
-                options={classData ?? []}
-                getOptionLabel={(option) => option.className}
-                isOptionEqualToValue={(option, value) => option.id === value.id}
-                sx={{ flex: 1, margin: "0.5rem" }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    required
-                    error={!!errors.classId}
-                    helperText={errors.classId && "Required"}
-                    label="Select Class"
-                    name="class"
-                  />
-                )}
-              />
-            )}
-          />
+          {selectedGrade && (
+            <Controller
+              name="classId"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Autocomplete
+                  {...field}
+                  value={field.value ?? null}
+                  onChange={(e, newVal) => {
+                    field.onChange(newVal);
+                  }}
+                  size="small"
+                  options={
+                    (classData ?? []).filter((option: AcademicClass) => {
+                      const grade =
+                        (selectedGrade as AcademicGrade | null) ?? null;
+                      if (grade && grade.grade === "All") {
+                        return option.className === "All";
+                      }
+                      return true;
+                    })
+                  }
+                  getOptionLabel={(option) => {
+                    if (option.className === "All") {
+                      const gradeLabel =
+                        (selectedGrade as AcademicGrade | null)?.grade ?? "";
+
+                      if (gradeLabel === "All") {
+                        return "All Grades";
+                      }
+
+                      return gradeLabel ? `All Grade ${gradeLabel}` : "All";
+                    }
+                    return option.className;
+                  }}
+                  isOptionEqualToValue={(option, value) =>
+                    option.id === value.id
+                  }
+                  sx={{ flex: 1, margin: "0.5rem" }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      required
+                      error={!!errors.classId}
+                      helperText={errors.classId && "Required"}
+                      label="Select Class"
+                      name="class"
+                    />
+                  )}
+                />
+              )}
+            />
+          )}
         </Box>
       </DialogContent>
       <DialogActions sx={{ padding: "1rem" }}>

@@ -43,7 +43,6 @@ import useIsMobile from "../../../customHooks/useIsMobile";
 import useCurrentUserHaveAccess from "../../../hooks/useCurrentUserHaveAccess";
 import { PermissionKeys } from "../../Administration/SectionList";
 import DatePickerComponent from "../../../components/DatePickerComponent";
-import { fetchTeacherData } from "../../../api/classTeacherApi";
 import { getAllSubjectData } from "../../../api/OrganizationSettings/organizationSettingsApi";
 import { AcademicSubject } from "../../../api/OrganizationSettings/academicGradeApi";
 import { User } from "../../../api/userApi";
@@ -84,16 +83,6 @@ const TeacherAcademicRecordsPage = () => {
     { title: "Teacher Academic Records" },
   ];
 
-  const { data: teacherData } = useQuery({
-    queryKey: ["teacher-users"],
-    queryFn: fetchTeacherData,
-  });
-
-  const { data: subjectData } = useQuery({
-    queryKey: ["subject-data"],
-    queryFn: getAllSubjectData,
-  });
-
   const {
     data: academicWorks,
     isFetching,
@@ -103,22 +92,6 @@ const TeacherAcademicRecordsPage = () => {
     queryFn: () => fetchTeacherAcademicWorksByDate(formattedDate ?? ""),
     enabled: !!formattedDate,
   });
-
-  const teacherMap = useMemo(() => {
-    const map = new Map<number, User>();
-    (teacherData ?? []).forEach((teacher: User) => {
-      map.set(teacher.id, teacher);
-    });
-    return map;
-  }, [teacherData]);
-
-  const subjectMap = useMemo(() => {
-    const map = new Map<number, AcademicSubject>();
-    (subjectData ?? []).forEach((subject: AcademicSubject) => {
-      map.set(subject.id, subject);
-    });
-    return map;
-  }, [subjectData]);
 
   const rows = Array.isArray(academicWorks) ? academicWorks : [];
   const showTable = !!formattedDate;
@@ -304,24 +277,12 @@ const TeacherAcademicRecordsPage = () => {
             <TableBody>
               {rows.length > 0 ? (
                 rows.map((row) => {
-                  const teacher =
-                    row.teacher ?? teacherMap.get(row.teacherId) ?? null;
-                  const subject =
-                    row.subject ?? subjectMap.get(row.subjectId) ?? null;
-
                   return (
                     <TableRow key={String(row.id)} hover>
                       <TableCell>
-                        {teacher?.nameWithInitials ??
-                          teacher?.name ??
-                          teacher?.userName ??
-                          "--"}
+                        {row?.teacher?.nameWithInitials ?? "--"}
                       </TableCell>
-                      <TableCell>
-                        {subject
-                          ? `${subject.subjectName} - ${subject.subjectMedium} Medium`
-                          : "--"}
-                      </TableCell>
+                      <TableCell>{row.subject.subjectName ?? "--"}</TableCell>
                       <TableCell>{row.title}</TableCell>
                       <TableCell>{row.academicWork}</TableCell>
                       <TableCell>{row.date}</TableCell>

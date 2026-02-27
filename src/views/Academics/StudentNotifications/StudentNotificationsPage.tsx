@@ -100,15 +100,6 @@ const StudentNotificationsPage = () => {
     queryFn: getClassesData,
   });
 
-  const filteredClasses = useMemo(() => {
-    if (!selectedGrade) {
-      return classData ?? [];
-    }
-    return (classData ?? []).filter(
-      (item: AcademicClass) => item.gradeId === selectedGrade.id,
-    );
-  }, [classData, selectedGrade]);
-
   const gradeMap = useMemo(() => {
     const map = new Map<number, AcademicGrade>();
     (gradeData ?? []).forEach((grade: AcademicGrade) => {
@@ -130,8 +121,18 @@ const StudentNotificationsPage = () => {
     isFetching,
     refetch,
   } = useQuery({
-    queryKey: ["student-notifications-created-by"],
-    queryFn: () => fetchStudentNotificationsCreatedBy(),
+    queryKey: [
+      "student-notifications-created-by",
+      selectedYear?.year,
+      selectedGrade?.id,
+      selectedClass?.id,
+    ],
+    queryFn: () =>
+      fetchStudentNotificationsCreatedBy(
+        selectedYear?.year,
+        selectedGrade?.id,
+        selectedClass?.id,
+      ),
   });
 
   const rows = Array.isArray(notifications) ? notifications : [];
@@ -291,8 +292,7 @@ const StudentNotificationsPage = () => {
                       field.onChange(newVal);
                     }}
                     size="small"
-                    options={filteredClasses}
-                    loading={isClassDataFetching}
+                    options={classData ?? []}
                     getOptionLabel={(option) => option.className}
                     isOptionEqualToValue={(option, value) =>
                       option.id === value.id
@@ -374,17 +374,15 @@ const StudentNotificationsPage = () => {
             </TableHead>
             <TableBody>
               {rows.map((row) => {
-                const grade = gradeMap.get(row.gradeId);
-                const academicClass = classMap.get(row.classId);
                 return (
                   <TableRow key={String(row.id)} hover>
                     <TableCell>{row.title}</TableCell>
                     <TableCell>{row.description}</TableCell>
                     <TableCell>{row.year}</TableCell>
                     <TableCell>
-                      {grade?.grade ? `Grade ${grade.grade}` : "--"}
+                      {row?.grade?.grade ?? "--"}
                     </TableCell>
-                    <TableCell>{academicClass?.className ?? "--"}</TableCell>
+                    <TableCell>{row?.class?.className ?? "--"}</TableCell>
                     <TableCell align="center">
                       <IconButton
                         onClick={() => handleEdit(row)}
