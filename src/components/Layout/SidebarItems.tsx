@@ -83,6 +83,7 @@ export const sidebarItems: Array<SidebarItem> = [
       PermissionKeys.SCHOOL_SETTINGS_VIEW,
       PermissionKeys.ADD_CLASS_TEACHER_VIEW,
       PermissionKeys.STUDENT_PROMOTION_VIEW,
+      PermissionKeys.OLD_STUDENT_PROMOTION_VIEW,
       PermissionKeys.TEACHER_WORK_RECORDS_VIEW,
     ],
   },
@@ -147,6 +148,12 @@ export const sidebarItems: Array<SidebarItem> = [
         href: "/admin/student-promotion",
         icon: <FileUploadIcon fontSize="small" />,
         accessKey: PermissionKeys.STUDENT_PROMOTION_VIEW,
+      },
+      {
+        title: "Old Student Promotion",
+        href: "/admin/old-student-promotion",
+        icon: <FileUploadIcon fontSize="small" />,
+        accessKey: PermissionKeys.OLD_STUDENT_PROMOTION_VIEW,
       },
       {
         title: "Student Service Charges",

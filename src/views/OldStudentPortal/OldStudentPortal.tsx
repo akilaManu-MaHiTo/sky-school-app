@@ -20,13 +20,16 @@ import theme from "../../theme";
 import useIsMobile from "../../customHooks/useIsMobile";
 
 const getInitials = (student: OldStudent) => {
-  if (student.nameWithInitials) {
-    const parts = student.nameWithInitials.trim().split(/\s+/);
-    return parts.length >= 2
-      ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
-      : parts[0][0].toUpperCase();
-  }
-  return student.name.charAt(0).toUpperCase();
+  const source =
+    student.nameWithInitials || student.name || student.userName || "?";
+
+  const trimmed = source.trim();
+  if (!trimmed) return "?";
+
+  const parts = trimmed.split(/\s+/);
+  return parts.length >= 2
+    ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
+    : parts[0][0].toUpperCase();
 };
 
 const OldStudentPortal: React.FC = () => {

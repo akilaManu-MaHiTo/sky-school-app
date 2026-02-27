@@ -127,6 +127,16 @@ export const PermissionSectionsMap: PermissionSection[] = [
           DELETE: true,
         },
       },
+      {
+        name: "Old Student Promotion",
+        key: "OLD_STUDENT_PROMOTION",
+        permissionsExists: {
+          VIEW: true,
+          CREATE: true,
+          EDIT: true,
+          DELETE: true,
+        },
+      },
     ],
   },
   {
@@ -324,6 +334,11 @@ export enum PermissionKeys {
   STUDENT_PROMOTION_CREATE = "STUDENT_PROMOTION_CREATE",
   STUDENT_PROMOTION_EDIT = "STUDENT_PROMOTION_EDIT",
   STUDENT_PROMOTION_DELETE = "STUDENT_PROMOTION_DELETE",
+  // Administration > Student Management > Old Student Promotion
+  OLD_STUDENT_PROMOTION_VIEW = "OLD_STUDENT_PROMOTION_VIEW",
+  OLD_STUDENT_PROMOTION_CREATE = "OLD_STUDENT_PROMOTION_CREATE",
+  OLD_STUDENT_PROMOTION_EDIT = "OLD_STUDENT_PROMOTION_EDIT",
+  OLD_STUDENT_PROMOTION_DELETE = "OLD_STUDENT_PROMOTION_DELETE",
   // Reports > Student/Parent Reports > Parent Reports
   STUDENT_PARENT_PARENT_REPORTS_VIEW = "STUDENT_PARENT_PARENT_REPORTS_VIEW",
   // Reports > Teacher Reports > Class Reports
@@ -409,6 +424,11 @@ export const defaultViewerPermissions: PermissionKeysObject = {
   STUDENT_PROMOTION_CREATE: true,
   STUDENT_PROMOTION_EDIT: true,
   STUDENT_PROMOTION_DELETE: true,
+  // Administration > Student Management > Old Student Promotion
+  OLD_STUDENT_PROMOTION_VIEW: true,
+  OLD_STUDENT_PROMOTION_CREATE: true,
+  OLD_STUDENT_PROMOTION_EDIT: true,
+  OLD_STUDENT_PROMOTION_DELETE: true,
   // Reports > Student/Parent Reports > Parent Reports
   STUDENT_PARENT_PARENT_REPORTS_VIEW: true,
   // Reports > Teacher Reports > Class Reports

@@ -50,6 +50,13 @@ const TeacherWorkRecords = React.lazy(
 const StudentPromotion = React.lazy(
   () => import("./views/Administration/StudentManagement/StudentPromotion"),
 );
+// Administration > Student Management > Old Student Promotion
+const OldStudentPromotion = React.lazy(
+  () =>
+    import(
+      "./views/Administration/StudentManagement/OldStudentPromotion/OldStudentPromotion"
+    ),
+);
 // Administration > Student Management > Student Service Charges
 const StudentServiceCharges = React.lazy(
   () => import("./views/Administration/StudentManagement/StudentServiceCharges/StudentServiceChargesTable")
@@ -255,6 +262,17 @@ const AppRoutes = () => {
             MainLayout,
             StudentPromotion,
             !userPermissionObject?.[PermissionKeys.STUDENT_PROMOTION_VIEW],
+          )}
+        />
+        {/* Administration > Student Management > Old Student Promotion */}
+        <Route
+          path="/admin/old-student-promotion"
+          element={withLayout(
+            MainLayout,
+            OldStudentPromotion,
+            !userPermissionObject?.[
+              PermissionKeys.OLD_STUDENT_PROMOTION_VIEW
+            ],
           )}
         />
         <Route
