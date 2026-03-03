@@ -1,11 +1,11 @@
 import axios from "axios";
 import { z } from "zod";
 import { userSchema, type User } from "./userApi";
-import { AcademicYearSchema } from "./OrganizationSettings/academicGradeApi";
+import { AcademicYearSchema, paymentCategorySchema } from "./OrganizationSettings/academicGradeApi";
 
 export const studentServiceChargeSchema = z.object({
   student: userSchema,
-  chargesCategory: z.string(),
+  chargesCategoryId: paymentCategorySchema,
   yearForCharge: AcademicYearSchema,
   amount: z.number(),
   dateCharged: z.date(),
@@ -42,7 +42,7 @@ function mapToApiPayload(
 ) {
   return {
     studentId: (data.student as User).id,
-    chargesCategory: data.chargesCategory,
+    chargesCategoryId: data.chargesCategoryId.id,
     yearForCharge: data.yearForCharge.year,
     amount: data.amount,
     dateCharged: data.dateCharged.toISOString().split("T")[0],

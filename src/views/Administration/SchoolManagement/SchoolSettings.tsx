@@ -46,7 +46,9 @@ import { AddOrEditAcademicClass } from "./AddOrEditAcademicClass";
 import {
   deleteAcademicClass,
   deleteAcademicGrade,
+  deletePaymentCategoryName,
   getClassesData,
+  getPaymentCategoryName,
 } from "../../../api/OrganizationSettings/academicGradeApi";
 import { DrawerContentItem } from "../../../components/ViewDataDrawer";
 import { hasSignedUrl } from "./schoolUtils";
@@ -69,6 +71,7 @@ import {
 } from "../../../reportsUtils/SubjectsReportPDF";
 import useCurrentOrganization from "../../../hooks/useCurrentOrganization";
 import { title } from "process";
+import AddOrEditPaymentCategoryDialog from "./AddOrEditPaymetCategoryDialog";
 interface TabPanelProps {
   children?: React.ReactNode;
   dir?: string;
@@ -132,20 +135,27 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
   const [openDeleteAcademicClassDialog, setOpenDeleteAcademicClassDialog] =
     useState(false);
 
+  // Payment Category Dialogs
+  const [editPaymentCategoryData, setEditPaymentCategoryData] = useState(null);
+  const [openPaymentCategoryDialog, setOpenPaymentCategoryDialog] =
+    useState(false);
+  const [openDeletePaymentCategoryDialog, setOpenDeletePaymentCategoryDialog] =
+    useState(false);
+
   // Column visibility configs
   const gradeColumns = useMemo(
     () => [
       { key: "id", label: "Id" },
       { key: "grade", label: "Grade" },
     ],
-    []
+    [],
   );
   const classColumns = useMemo(
     () => [
       { key: "id", label: "Id" },
       { key: "className", label: "Class Name" },
     ],
-    []
+    [],
   );
 
   const {
@@ -225,6 +235,11 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
     queryFn: getClassesData,
   });
 
+  // Fetch Payment Category Data
+  const { data: paymentCategoryData, isFetching: isPaymentData } = useQuery({
+    queryKey: ["payment-category"],
+    queryFn: getPaymentCategoryName,
+  });
   // Delete Year
   const {
     mutate: deleteAcademicYearMutation,
@@ -289,6 +304,27 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
     },
   });
   // Delete Class
+  const {
+    mutate: deletePaymentCategoryMutation,
+    isPending: isPaymentCategoryDeleting,
+  } = useMutation({
+    mutationFn: deletePaymentCategoryName,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["payment-category"],
+      });
+      enqueueSnackbar("Payment Category Delete Successfully!", {
+        variant: "success",
+      });
+      setOpenDeleteAcademicYearDialog(false);
+      setEditAcademicYearData(null);
+    },
+    onError: (error: any) => {
+      const message = error?.data?.message || "Payment Category Delete Failed";
+      enqueueSnackbar(message, { variant: "error" });
+    },
+  });
+  // Delete Payment Category
   const {
     mutate: deleteAcademicClassMutation,
     isPending: isAcademicClassDeleting,
@@ -448,6 +484,23 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                 </Box>
               }
               {...a11yProps(4)}
+            />
+            <Tab
+              label={
+                <Box
+                  sx={{
+                    color: "var(--pallet-blue)",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <ClassIcon fontSize="small" />
+                  <Typography variant="body2" sx={{ ml: "0.3rem" }}>
+                    Payment Categories
+                  </Typography>
+                </Box>
+              }
+              {...a11yProps(5)}
             />
           </Tabs>
         </AppBar>
@@ -818,7 +871,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
               searchedSubjectData
                 .filter(
                   (item: any) =>
-                    Array.isArray(item.subjects) && item.subjects.length > 0
+                    Array.isArray(item.subjects) && item.subjects.length > 0,
                 )
                 .map((item: any) => (
                   <Box key={item.letter} sx={{ mb: 2 }}>
@@ -1063,6 +1116,103 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
             </TableContainer>
           </Stack>
         </TabPanel>
+        <TabPanel value={activeTab} index={5} dir={theme.direction}>
+          <Stack>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                flexDirection: isMobile ? "column" : "row",
+                gap: 2,
+                marginBottom: theme.spacing(2),
+              }}
+            >
+              <CustomButton
+                variant="contained"
+                sx={{ backgroundColor: "var(--pallet-blue)" }}
+                size="medium"
+                startIcon={<AddIcon />}
+                onClick={() => {
+                  setEditPaymentCategoryData(null);
+                  setOpenPaymentCategoryDialog(true);
+                }}
+              >
+                Add New Payment Category
+              </CustomButton>
+            </Box>
+            <TableContainer
+              component={Paper}
+              elevation={2}
+              sx={{ overflowX: "auto", maxWidth: isMobile ? "88vw" : "100%" }}
+            >
+              {(isPaymentData || isAcademicClassDeleting) && (
+                <LinearProgress sx={{ width: "100%" }} />
+              )}
+              <Table aria-label="classes table">
+                <TableHead
+                  sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
+                >
+                  <TableRow>
+                    <TableCell align="left">Id</TableCell>
+                    <TableCell align="left">Category Name</TableCell>
+                    <TableCell align="center">Created By</TableCell>
+                    <TableCell align="center"></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {paymentCategoryData?.length > 0 ? (
+                    paymentCategoryData?.map((row: any) => (
+                      <TableRow
+                        key={`${row.id}`}
+                        sx={{
+                          "&:last-child td, &:last-child th": { border: 0 },
+                          cursor: "pointer",
+                        }}
+                      >
+                        <TableCell align="left">{row.id}</TableCell>
+                        <TableCell align="left">
+                          {row.categoryName}
+                        </TableCell>
+                        <TableCell align="center">
+                          {row?.createdByData?.nameWithInitials ?? "-"}
+                        </TableCell>
+                        <TableCell align="center">
+                          <IconButton
+                            onClick={() => {
+                              setEditPaymentCategoryData(row);
+                              setOpenPaymentCategoryDialog(true);
+                            }}
+                            disabled={isAcademicClassDeleting}
+                          >
+                            <EditIcon color="primary" />
+                          </IconButton>
+                          <IconButton
+                            onClick={() => {
+                              setEditPaymentCategoryData(row);
+                              setOpenDeletePaymentCategoryDialog(true);
+                            }}
+                            disabled={isAcademicClassDeleting}
+                          >
+                            <DeleteIcon color="error" />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={11} align="center">
+                        <Typography variant="body2">
+                          No Payment Categories found
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Stack>
+        </TabPanel>
       </Box>
       {openAcademicGradeDialog && (
         <AddOrEditAcademicGrade
@@ -1100,6 +1250,14 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
           defaultValues={editAcademicClassData}
         />
       )}
+      {openPaymentCategoryDialog && (
+        <AddOrEditPaymentCategoryDialog
+          open={openPaymentCategoryDialog}
+          setOpen={setOpenPaymentCategoryDialog}
+          defaultValues={editPaymentCategoryData}
+        />
+      )}
+
       {openDeleteAcademicYearDialog && (
         <DeleteConfirmationModal
           open={openDeleteAcademicYearDialog}
@@ -1204,6 +1362,33 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
           }}
         />
       )}
+
+      {
+        <DeleteConfirmationModal
+          open={openDeletePaymentCategoryDialog}
+          title="Remove Payment Category Confirmation"
+          content={
+            <>
+              Are you sure you want to remove this Payment Category?
+              <Alert severity="warning" style={{ marginTop: "1rem" }}>
+                This action is not reversible.
+              </Alert>
+            </>
+          }
+          handleClose={() => setOpenDeletePaymentCategoryDialog(false)}
+          deleteFunc={async () => {
+            deletePaymentCategoryMutation(editPaymentCategoryData.id);
+          }}
+          onSuccess={() => {
+            setOpenDeletePaymentCategoryDialog(false);
+            setEditPaymentCategoryData(null);
+          }}
+          handleReject={() => {
+            setOpenDeletePaymentCategoryDialog(false);
+            setEditPaymentCategoryData(null);
+          }}
+        />
+      }
     </Stack>
   );
 }

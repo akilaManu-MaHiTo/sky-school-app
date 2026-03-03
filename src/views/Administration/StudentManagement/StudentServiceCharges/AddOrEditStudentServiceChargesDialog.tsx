@@ -34,6 +34,7 @@ import {
 } from "../../../../api/studentServiceChargesApi";
 import { fetchStudentData } from "../../../../api/userApi";
 import { getYearsData } from "../../../../api/OrganizationSettings/organizationSettingsApi";
+import { getPaymentCategoryName } from "../../../../api/OrganizationSettings/academicGradeApi";
 
 interface AddOrEditStudentServiceChargesDialogProps {
   open: boolean;
@@ -53,14 +54,28 @@ const AddOrEditStudentServiceChargesDialog = ({
     apiResponse: any;
     formData: StudentServiceChargeForm;
   } | null>(null);
-
+  
   const isEdit = Boolean(defaultValues && defaultValues.id);
+
+  const { data: students, isFetching: isStudentsFetching } = useQuery({
+    queryKey: ["student-users"],
+    queryFn: fetchStudentData,
+  });
+  const { data: yearData, isFetching: isYearDataFetching } = useQuery({
+    queryKey: ["academic-years"],
+    queryFn: getYearsData,
+  });
+  const { data: paymentCategoryData, isFetching: isPaymentData } = useQuery({
+    queryKey: ["payment-category"],
+    queryFn: getPaymentCategoryName,
+  });
 
   const initialValues: StudentServiceChargeForm = useMemo(() => {
     if (!defaultValues) {
       return {
         student: undefined as any,
-        chargesCategory: "",
+        chargesCategoryId: undefined as any,
+        yearForCharge: undefined as any,
         amount: 0,
         dateCharged: new Date(),
         remarks: "",
@@ -69,14 +84,17 @@ const AddOrEditStudentServiceChargesDialog = ({
 
     return {
       student: defaultValues.student ?? undefined,
-      chargesCategory: defaultValues.chargesCategory ?? "",
+      chargesCategoryId: defaultValues.category ?? undefined,
+      yearForCharge: defaultValues.yearForCharge 
+        ? yearData?.find((y: any) => y.year === String(defaultValues.yearForCharge))
+        : undefined,
       amount: Number(defaultValues.amount ?? 0),
       dateCharged: defaultValues.dateCharged
         ? new Date(defaultValues.dateCharged)
         : new Date(),
       remarks: defaultValues.remarks ?? "",
     };
-  }, [defaultValues]);
+  }, [defaultValues, yearData]);
 
   const {
     handleSubmit,
@@ -93,15 +111,6 @@ const AddOrEditStudentServiceChargesDialog = ({
       reset(initialValues);
     }
   }, [open, initialValues, reset]);
-
-  const { data: students, isFetching: isStudentsFetching } = useQuery({
-    queryKey: ["student-users"],
-    queryFn: fetchStudentData,
-  });
-  const { data: yearData, isFetching: isYearDataFetching } = useQuery({
-    queryKey: ["academic-years"],
-    queryFn: getYearsData,
-  });
 
   const handleFinalSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ["student-service-charges"] });
@@ -310,6 +319,7 @@ const AddOrEditStudentServiceChargesDialog = ({
                 size="small"
                 options={yearData ?? []}
                 getOptionLabel={(option) => option.year}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
                 sx={{ flex: 1, margin: "0.5rem" }}
                 renderInput={(params) => (
                   <TextField
@@ -326,24 +336,26 @@ const AddOrEditStudentServiceChargesDialog = ({
           />
 
           <Controller
-            name="chargesCategory"
+            name="chargesCategoryId"
             control={control}
-            {...register("chargesCategory", { required: true })}
+            {...register("chargesCategoryId", { required: true })}
             render={({ field }) => (
               <Autocomplete
-                options={chargeCategories}
+                options={paymentCategoryData ?? []}
+                getOptionLabel={(option) => option.categoryName}
                 size="small"
                 value={field.value ?? null}
                 onChange={(_, value) => field.onChange(value ?? "")}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
                 sx={{ flex: 1, margin: "0.5rem" }}
                 renderInput={(params) => (
                   <TextField
                     {...params}
                     label="Charges Category"
                     required
-                    error={!!errors.chargesCategory}
+                    error={!!errors.chargesCategoryId}
                     helperText={
-                      errors.chargesCategory && "Charges category is required"
+                      errors.chargesCategoryId && "Charges category is required"
                     }
                   />
                 )}

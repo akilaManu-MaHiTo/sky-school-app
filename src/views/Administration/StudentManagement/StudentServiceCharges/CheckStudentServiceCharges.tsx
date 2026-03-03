@@ -48,6 +48,7 @@ import { fetchStudentData } from "../../../../api/userApi";
 import {
   getClassesData,
   getGradesData,
+  getPaymentCategoryName,
 } from "../../../../api/OrganizationSettings/academicGradeApi";
 import { getYearsData } from "../../../../api/OrganizationSettings/organizationSettingsApi";
 import useCurrentOrganization from "../../../../hooks/useCurrentOrganization";
@@ -91,6 +92,8 @@ const CheckStudentServiceCharges = () => {
   const selectedGrade = watch("grade");
   const selectedClass = watch("class");
   const selectedCategory = watch("category");
+  const categoryName =
+    selectedCategory === "All" ? "All" : selectedCategory?.id;
 
   const { data: yearData, isFetching: isYearDataFetching } = useQuery({
     queryKey: ["academic-years"],
@@ -104,6 +107,11 @@ const CheckStudentServiceCharges = () => {
     queryKey: ["academic-classes"],
     queryFn: getClassesData,
   });
+  const { data: paymentCategoryData, isFetching: isPaymentData } = useQuery({
+    queryKey: ["payment-category"],
+    queryFn: getPaymentCategoryName,
+  });
+
   const { data: checkChargesData, isFetching: isChargesDataFetching } =
     useQuery({
       queryKey: [
@@ -111,20 +119,17 @@ const CheckStudentServiceCharges = () => {
         selectedYear,
         selectedGrade,
         selectedClass,
-        selectedCategory,
+        categoryName,
       ],
       queryFn: () =>
         fetchCheckingStudentServiceCharges(
           selectedYear,
           selectedGrade,
           selectedClass,
-          selectedCategory,
+          categoryName,
         ),
       enabled:
-        !!selectedYear &&
-        !!selectedGrade &&
-        !!selectedClass &&
-        !!selectedCategory,
+        !!selectedYear && !!selectedGrade && !!selectedClass && !!categoryName,
     });
 
   console.log("checkChargesData", checkChargesData);
@@ -169,7 +174,7 @@ const CheckStudentServiceCharges = () => {
         rows.push({
           id: charge.id,
           ...baseInfo,
-          chargesCategory: charge.chargesCategory,
+          chargesCategory: charge.category?.categoryName || "-",
           amount: charge.amount,
           dateCharged: charge.dateCharged
             ? format(new Date(charge.dateCharged), "yyyy-MM-dd")
@@ -400,7 +405,10 @@ const CheckStudentServiceCharges = () => {
                     }}
                     defaultValue={"All"}
                     size="small"
-                    options={chargeFilterCategories}
+                    options={[...(paymentCategoryData ?? []), "All"]}
+                    getOptionLabel={(option) =>
+                      typeof option === "string" ? option : option.categoryName
+                    }
                     sx={{ flex: 1, margin: "0.5rem" }}
                     renderInput={(params) => (
                       <TextField
@@ -494,7 +502,11 @@ const CheckStudentServiceCharges = () => {
                     <TableCell>{row.remarks}</TableCell>
                     <TableCell>
                       <Chip
-                        label={row.amount === "-" ? "Payment Pending" : "Payment Done"}
+                        label={
+                          row.amount === "-"
+                            ? "Payment Pending"
+                            : "Payment Done"
+                        }
                         color={row.amount === "-" ? "default" : "success"}
                       />
                     </TableCell>
