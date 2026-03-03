@@ -67,8 +67,9 @@ export default function UpdateUserProfile({
       enqueueSnackbar("Profile updated successfully!", { variant: "success" });
       handleClose();
     },
-    onError: () => {
-      enqueueSnackbar("Profile update failed", { variant: "error" });
+    onError: (error: any) => {
+      const message = error?.data?.message || "Profile update failed";
+      enqueueSnackbar(message, { variant: "error" });
     },
   });
 
