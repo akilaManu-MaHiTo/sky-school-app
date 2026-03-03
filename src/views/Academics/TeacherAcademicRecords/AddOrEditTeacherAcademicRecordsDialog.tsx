@@ -28,8 +28,9 @@ import {
   updateTeacherAcademicWork,
 } from "../../../api/teacherAcademicWorksApi";
 import { getAllSubjectData } from "../../../api/OrganizationSettings/organizationSettingsApi";
-import { fetchTeacherData } from "../../../api/classTeacherApi";
+import {  fetchTeacherDataByStudents } from "../../../api/classTeacherApi";
 import DatePickerComponent from "../../../components/DatePickerComponent";
+import useCurrentUser from "../../../hooks/useCurrentUser";
 
 interface AddOrEditTeacherAcademicRecordsDialogProps {
   open: boolean;
@@ -53,7 +54,10 @@ const AddOrEditTeacherAcademicRecordsDialog = ({
     reset,
     control,
     register,
+    watch,
   } = useForm<TeacherAcademicWork>();
+
+  const { user } = useCurrentUser();
 
   useEffect(() => {
     if (!open) {
@@ -78,16 +82,17 @@ const AddOrEditTeacherAcademicRecordsDialog = ({
     reset({} as TeacherAcademicWork);
   }, [defaultValues, open, reset]);
 
+  const selectedSubject = watch("subject");
+  const year = new Date().getFullYear();
   const { data: subjectData } = useQuery({
     queryKey: ["subject-data"],
     queryFn: getAllSubjectData,
   });
 
   const { data: teacherData } = useQuery({
-    queryKey: ["teacher-users"],
-    queryFn: fetchTeacherData,
+    queryKey: ["teacher-users-by-students", selectedSubject?.id, user?.id, year],
+    queryFn: () => fetchTeacherDataByStudents(selectedSubject.id, user.id, year),
   });
-
 
   const { mutate: createMutation, isPending: isCreating } = useMutation({
     mutationFn: createTeacherAcademicWork,
@@ -137,9 +142,10 @@ const AddOrEditTeacherAcademicRecordsDialog = ({
   const isSubmitting = isCreating || isUpdating;
 
   const disableWeekends = (date: Date) => {
-    const day = (date as unknown as { getDay?: () => number; day?: () => number })
-      .getDay?.() ??
-      (date as unknown as { day?: () => number }).day?.();
+    const day =
+      (
+        date as unknown as { getDay?: () => number; day?: () => number }
+      ).getDay?.() ?? (date as unknown as { day?: () => number }).day?.();
 
     return day === 0 || day === 6;
   };
@@ -196,40 +202,6 @@ const AddOrEditTeacherAcademicRecordsDialog = ({
           >
             <Box sx={{ flex: 1, minWidth: 220, margin: "0.5rem" }}>
               <Controller
-                name="teacher"
-                control={control}
-                rules={{ required: true }}
-                render={({ field }) => (
-                  <Autocomplete
-                    {...field}
-                    value={field.value ?? null}
-                    onChange={(_event, newValue) => field.onChange(newValue)}
-                    size="small"
-                    options={teacherData ?? []}
-                    getOptionLabel={(option) =>
-                      option.nameWithInitials ?? option.name ?? option.userName
-                    }
-                    isOptionEqualToValue={(option, value) =>
-                      option?.id === value?.id
-                    }
-                    sx={{ flex: 1 }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        required
-                        error={!!errors.teacher}
-                        helperText={errors.teacher && "Required"}
-                        label="Teacher"
-                        fullWidth
-                      />
-                    )}
-                  />
-                )}
-              />
-            </Box>
-
-            <Box sx={{ flex: 1, minWidth: 220, margin: "0.5rem" }}>
-              <Controller
                 name="subject"
                 control={control}
                 rules={{ required: true }}
@@ -254,6 +226,39 @@ const AddOrEditTeacherAcademicRecordsDialog = ({
                         error={!!errors.subject}
                         helperText={errors.subject && "Required"}
                         label="Subject"
+                        fullWidth
+                      />
+                    )}
+                  />
+                )}
+              />
+            </Box>
+            <Box sx={{ flex: 1, minWidth: 220, margin: "0.5rem" }}>
+              <Controller
+                name="teacher"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <Autocomplete
+                    {...field}
+                    value={field.value ?? null}
+                    onChange={(_event, newValue) => field.onChange(newValue)}
+                    size="small"
+                    options={teacherData ?? []}
+                    getOptionLabel={(option) =>
+                      option.nameWithInitials ?? option.name ?? option.userName
+                    }
+                    isOptionEqualToValue={(option, value) =>
+                      option?.id === value?.id
+                    }
+                    sx={{ flex: 1 }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        required
+                        error={!!errors.teacher}
+                        helperText={errors.teacher && "Required"}
+                        label="Teacher"
                         fullWidth
                       />
                     )}

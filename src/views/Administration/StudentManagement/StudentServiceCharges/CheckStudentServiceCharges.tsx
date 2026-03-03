@@ -50,6 +50,8 @@ import {
   getGradesData,
 } from "../../../../api/OrganizationSettings/academicGradeApi";
 import { getYearsData } from "../../../../api/OrganizationSettings/organizationSettingsApi";
+import useCurrentOrganization from "../../../../hooks/useCurrentOrganization";
+import { generateStudentServiceChargesPdf } from "../../../../reportsUtils/StudentServiceChargesPDF";
 
 const CheckStudentServiceCharges = () => {
   const {
@@ -62,6 +64,7 @@ const CheckStudentServiceCharges = () => {
     formState: { errors },
   } = useForm();
   const { enqueueSnackbar } = useSnackbar();
+  const { organization } = useCurrentOrganization();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedCharge, setSelectedCharge] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
@@ -241,6 +244,35 @@ const CheckStudentServiceCharges = () => {
     [groupedChargesByYear],
   );
 
+  const hasExportData = flattenedChargesRows.length > 0;
+
+  const handleExportPdf = () => {
+    if (!hasExportData) {
+      enqueueSnackbar("No student service charges to export", {
+        variant: "warning",
+      });
+      return;
+    }
+
+    try {
+      generateStudentServiceChargesPdf(flattenedChargesRows, {
+        title: "Student Service Charges",
+        organizationName: organization?.organizationName,
+        yearLabel: selectedYear?.year ?? undefined,
+        gradeLabel:
+          selectedGrade?.grade != null
+            ? `Grade ${selectedGrade.grade}`
+            : undefined,
+        classLabel: selectedClass?.className ?? undefined,
+      });
+    } catch (error) {
+      console.error("Failed to generate student service charges PDF:", error);
+      enqueueSnackbar("Failed to generate student service charges PDF", {
+        variant: "error",
+      });
+    }
+  };
+
   return (
     <Stack>
       <Accordion expanded={true}>
@@ -406,6 +438,22 @@ const CheckStudentServiceCharges = () => {
         </AccordionDetails>
       </Accordion>
       <Box sx={{ marginTop: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            mb: 1,
+          }}
+        >
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={handleExportPdf}
+            disabled={!hasExportData}
+          >
+            Export PDF
+          </Button>
+        </Box>
         {isChargesDataFetching && <LinearProgress />}
         {!isChargesDataFetching &&
           !!selectedYear &&
@@ -446,7 +494,7 @@ const CheckStudentServiceCharges = () => {
                     <TableCell>{row.remarks}</TableCell>
                     <TableCell>
                       <Chip
-                        label={row.amount === "-" ? "No Charges" : "Charged"}
+                        label={row.amount === "-" ? "Payment Pending" : "Payment Done"}
                         color={row.amount === "-" ? "default" : "success"}
                       />
                     </TableCell>

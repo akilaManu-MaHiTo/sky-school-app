@@ -47,6 +47,10 @@ export async function getGradesData() {
   const res = await axios.get(`/api/grade`);
   return res.data;
 }
+export async function getGradesAllData() {
+  const res = await axios.get(`/api/grade-all`);
+  return res.data;
+}
 export const createAcademicGrade = async (academicGrade: AcademicGrade) => {
   const res = await axios.post(`/api/grade`, academicGrade);
   return res.data;
@@ -98,6 +102,10 @@ export async function getClassesData() {
   return res.data;
 }
 
+export async function getClassesAllData() {
+  const res = await axios.get(`/api/class-all`);
+  return res.data;
+}
 export async function getClassesDataByGrade(grade: String) {
   const res = await axios.get(`/api/class-by-grade/${grade}`);
   return res.data;

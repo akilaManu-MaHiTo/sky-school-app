@@ -79,7 +79,7 @@ export async function deleteOldStudentOccupation(id: number | string) {
 
 export const oldStudentSchema = z.object({
   id: z.number(),
-  name: z.string(),
+  name: z.string().nullable().optional(),
   userName: z.string(),
   nameWithInitials: z.string().nullable().optional(),
   email: z.string().nullable().optional(),
@@ -116,4 +116,13 @@ export async function fetchOldStudents(search: string) {
   });
 
   return oldStudentsResponseSchema.parse(res.data);
+}
+
+// Promote existing users/students into the Old Student Portal
+export async function createOldStudents(userIds: number[]) {
+  const res = await axios.post("/api/old-student", {
+    userIds,
+  });
+
+  return res.data;
 }

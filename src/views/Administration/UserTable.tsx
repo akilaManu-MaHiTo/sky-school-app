@@ -222,6 +222,14 @@ function UserTable() {
     [currentUserList]
   );
 
+  const oldStudentList = useMemo(
+    () =>
+      (currentUserList ?? []).filter(
+        (u: any) => u.employeeType === "OldStudent"
+      ),
+    [currentUserList]
+  );
+
   const selectedRow = useMemo(() => {
     if (!selectedUserId) return null;
     return currentUserList.find((u: User) => u.id === selectedUserId) ?? null;
@@ -326,6 +334,40 @@ function UserTable() {
     } catch (error) {
       console.error("Unable to generate parent PDF:", error);
       enqueueSnackbar("Unable to generate parent PDF", { variant: "error" });
+    }
+  };
+
+  const handleExportOldStudentsExcel = () => {
+    if (!oldStudentList.length) {
+      enqueueSnackbar("No old student data to export", {
+        variant: "warning",
+      });
+      return;
+    }
+    exportStudentDetailsToExcel(oldStudentList, {
+      organizationName,
+      title: "Old Student Details",
+      fileName: "old-student-details.xlsx",
+    });
+  };
+
+  const handleExportOldStudentsPdf = () => {
+    if (!oldStudentList.length) {
+      enqueueSnackbar("No old student data to export", {
+        variant: "warning",
+      });
+      return;
+    }
+    try {
+      generateStudentDetailsPdf(oldStudentList, {
+        organizationName,
+        title: "Old Student Details Report",
+      });
+    } catch (error) {
+      console.error("Unable to generate old student PDF:", error);
+      enqueueSnackbar("Unable to generate old student PDF", {
+        variant: "error",
+      });
     }
   };
 
@@ -1188,6 +1230,26 @@ function UserTable() {
               onSearch={handleSearch}
               isSearching={isSearchingUsers}
             />
+          </Box>
+          <Box sx={{ display: "flex", gap: 1, mb: 2, justifyContent: "flex-end" }}>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<DownloadIcon fontSize="small" />}
+              onClick={handleExportOldStudentsExcel}
+              disabled={!oldStudentList.length}
+            >
+              Export Excel
+            </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<PictureAsPdfIcon fontSize="small" />}
+              onClick={handleExportOldStudentsPdf}
+              disabled={!oldStudentList.length}
+            >
+              Export PDF
+            </Button>
           </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer

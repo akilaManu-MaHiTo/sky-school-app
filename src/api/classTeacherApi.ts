@@ -23,8 +23,19 @@ export async function fetchClassTeacherData() {
   return res.data;
 }
 
-export async function fetchTeacherData() {
-  const res = await axios.get("/api/teacher-users");
+// export async function fetchTeacherData() {
+//   const res = await axios.get("/api/teacher-users");
+//   return res.data;
+// }
+
+export async function fetchTeacherDataByStudents(
+  subjectId: number,
+  studentId: number,
+  year: any,
+) {
+  const res = await axios.get(
+    `/api/teacher-by-student/${subjectId}/${studentId}/${year}`,
+  );
   return res.data;
 }
 
@@ -58,6 +69,8 @@ export async function deleteClassTeacher(id: string) {
 
 export async function fetchTeacherDashboardStats(teacherId: number, year: any) {
   const selectedYear = year.year;
-  const res = await axios.get(`/api/teacher-dashboard/${teacherId}/${selectedYear}`);
+  const res = await axios.get(
+    `/api/teacher-dashboard/${teacherId}/${selectedYear}`,
+  );
   return res.data;
 }
