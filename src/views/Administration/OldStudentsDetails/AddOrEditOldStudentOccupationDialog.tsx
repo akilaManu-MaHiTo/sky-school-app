@@ -16,8 +16,9 @@ import { grey } from "@mui/material/colors";
 import { useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
 import { useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import CustomButton from "../../../components/CustomButton";
+import DatePickerComponent from "../../../components/DatePickerComponent";
 import useIsMobile from "../../../customHooks/useIsMobile";
 import queryClient from "../../../state/queryClient";
 import {
@@ -74,6 +75,7 @@ const AddOrEditOldStudentOccupationDialog = ({
     formState: { errors },
     reset,
     register,
+    control,
   } = useForm<OldStudentOccupationForm>({
     defaultValues: initialValues,
   });
@@ -211,16 +213,28 @@ const AddOrEditOldStudentOccupationDialog = ({
             {...register("description")}
           />
 
-          <TextField
-            label="Date Of Registration"
-            size="small"
-            sx={{ flex: 1, margin: "0.5rem" }}
-            error={!!errors.dateOfRegistration}
-            helperText={
-              errors.dateOfRegistration && "Date of registration is required"
-            }
-            {...register("dateOfRegistration", { required: true })}
-          />
+          <Box sx={{ margin: "0.5rem", flex: 1 }}>
+            <Controller
+              control={control}
+              {...register("dateOfRegistration", { required: true })}
+              name="dateOfRegistration"
+              render={({ field }) => {
+                return (
+                  <DatePickerComponent
+                    onChange={(e) => field.onChange(e)}
+                    value={field.value ? new Date(field.value) : null}
+                    disableFuture
+                    label="Date Of Registration"
+                    error={
+                      errors?.dateOfRegistration
+                        ? "Date of registration is required"
+                        : ""
+                    }
+                  />
+                );
+              }}
+            />
+          </Box>
 
           <TextField
             label="Country"

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { stat } from "fs";
 import { z } from "zod";
+import { userSchema } from "../userApi";
 
 export const AcademicGradeSchema = z.object({
   id: z.number(),
@@ -43,6 +44,32 @@ export const ClassSchema = z.object({
 });
 export type AcademicClass = z.infer<typeof ClassSchema>;
 
+export const paymentCategorySchema = z.object({
+  id: z.number(),
+  categoryName: z.string(),
+  createdBy: userSchema,
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+export type PaymentCategory = z.infer<typeof paymentCategorySchema>;
+export const createPaymentCategoryName = async ( categoryName: PaymentCategory) => {
+  const res = await axios.post(`/api/payment-category`, categoryName);
+  return res.data;
+};
+export async function getPaymentCategoryName() {
+  const res = await axios.get(`/api/payment-category`);
+  return res.data;
+}
+export const updatePaymentCategoryName = async (categoryName: PaymentCategory) => {
+  const res = await axios.post(`/api/payment-category/${categoryName.id}`, categoryName);
+  return res.data;
+};
+export const deletePaymentCategoryName = async (id: String) => {
+  const res = await axios.delete(`/api/payment-category/${id}`);
+  return res.data;
+};
+
 export async function getGradesData() {
   const res = await axios.get(`/api/grade`);
   return res.data;
@@ -78,17 +105,17 @@ export const deleteAcademicYear = async (id: String) => {
 };
 
 export const createAcademicSubject = async (
-  academicSubject: AcademicSubject
+  academicSubject: AcademicSubject,
 ) => {
   const res = await axios.post(`/api/subject`, academicSubject);
   return res.data;
 };
 export const updateAcademicSubject = async (
-  academicSubject: AcademicSubject
+  academicSubject: AcademicSubject,
 ) => {
   const res = await axios.post(
     `/api/subject/${academicSubject.id}`,
-    academicSubject
+    academicSubject,
   );
   return res.data;
 };
@@ -129,12 +156,12 @@ export const deleteAcademicClass = async (id: String) => {
 export async function getStudentToPromoteData(
   year: string,
   grade: any,
-  academicClass: any
+  academicClass: any,
 ) {
   const gradeId = grade?.id;
   const classId = academicClass?.id;
   const res = await axios.get(
-    `/api/student-profiles/${year}/${gradeId}/${classId}`
+    `/api/student-profiles/${year}/${gradeId}/${classId}`,
   );
   return res.data;
 }
@@ -155,13 +182,13 @@ export const promoteStudents = async (payload: StudentPromotionItem[]) => {
 export const gradeReportBarChart = async (
   year: any,
   grade: any,
-  examType: number
+  examType: number,
 ) => {
   const gradeId = grade?.id;
   const yearId = year.year;
   console.log("API Grade ID:", gradeId);
   const res = await axios.get(
-    `/api/grade-report/${yearId}/${gradeId}/${examType}/bar-chart`
+    `/api/grade-report/${yearId}/${gradeId}/${examType}/bar-chart`,
   );
   return res.data;
 };
@@ -170,13 +197,13 @@ export const gradeReportMarkBarChart = async (
   year: any,
   grade: any,
   examType: number,
-  gradeMark: string
+  gradeMark: string,
 ) => {
   const gradeId = grade?.id;
   const yearId = year.year;
   console.log("API Grade ID:", gradeId);
   const res = await axios.get(
-    `/api/grade-report/${yearId}/${gradeId}/${examType}/${gradeMark}/bar-chart`
+    `/api/grade-report/${yearId}/${gradeId}/${examType}/${gradeMark}/bar-chart`,
   );
   return res.data;
 };

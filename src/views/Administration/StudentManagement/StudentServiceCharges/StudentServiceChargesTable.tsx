@@ -299,7 +299,7 @@ const StudentServiceChargesTable = () => {
                       <TableCell>
                         {row.student?.nameWithInitials ?? "--"}
                       </TableCell>
-                      <TableCell>{row.chargesCategory}</TableCell>
+                      <TableCell>{row.category?.categoryName}</TableCell>
                       <TableCell align="right">{row.amount}</TableCell>
                       <TableCell>
                         {row.yearForCharge

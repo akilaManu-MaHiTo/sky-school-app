@@ -1222,7 +1222,14 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                           <Stack flexDirection={isMobile ? "column" : "row"}>
                             <DrawerContentItem
                               label="Date Of Registration"
-                              value={occ.dateOfRegistration}
+                              value={
+                                occ.dateOfRegistration
+                                  ? format(
+                                      new Date(occ.dateOfRegistration),
+                                      "yyyy.MM.dd"
+                                    )
+                                  : "--"
+                              }
                               sx={{ flex: 1 }}
                             />
                             <DrawerContentItem
