@@ -66,9 +66,8 @@ import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 
 const breadcrumbItems = [
   { title: "Home", href: "/home" },
-  { title: "Reports" },
-  { title: "Student/Parent Report" },
-  { title: "Parent Report" },
+  { title: "Dashboard" },
+  { title: "Student Dashboard" },
 ];
 
 export default function GradeReport() {
@@ -397,7 +396,7 @@ export default function GradeReport() {
           backgroundColor: "#fff",
         }}
       >
-        <PageTitle title="Parent Report" />
+        <PageTitle title="Student Dashboard" />
         <Breadcrumb breadcrumbs={breadcrumbItems} />
       </Box>
       <Accordion expanded={true}>

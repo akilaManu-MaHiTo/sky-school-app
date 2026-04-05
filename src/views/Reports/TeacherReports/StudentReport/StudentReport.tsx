@@ -58,7 +58,7 @@ import { generateParentReportPdf } from "../../../../reportsUtils/ParentReportPD
 const breadcrumbItems = [
   { title: "Home", href: "/home" },
   { title: "Reports" },
-  { title: "Management Staff Report" },
+  { title: "Teacher Reports" },
   { title: "Student Report" },
 ];
 

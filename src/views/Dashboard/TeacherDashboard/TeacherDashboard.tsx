@@ -32,6 +32,7 @@ import TeacherStatsPieChart from "../../../components/TeacherStatsPieChart";
 
 const breadcrumbItems = [
   { title: "Home", href: "/home" },
+  { title: "Dashboard" },
   { title: "Teacher Dashboard" },
 ];
 

@@ -23,10 +23,10 @@ export async function fetchClassTeacherData() {
   return res.data;
 }
 
-// export async function fetchTeacherData() {
-//   const res = await axios.get("/api/teacher-users");
-//   return res.data;
-// }
+export async function fetchTeacherData() {
+  const res = await axios.get("/api/teacher-users");
+  return res.data;
+}
 
 export async function fetchTeacherDataByStudents(
   subjectId: number,

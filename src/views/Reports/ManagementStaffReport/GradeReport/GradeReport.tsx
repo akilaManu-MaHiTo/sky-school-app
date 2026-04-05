@@ -50,7 +50,7 @@ const breadcrumbItems = [
   { title: "Home", href: "/home" },
   { title: "Reports" },
   { title: "Management Staff Reports" },
-  { title: "Marks Entry Monitoring" },
+  { title: "Grade Report" },
 ];
 
 export default function GradeReport() {
@@ -262,7 +262,7 @@ export default function GradeReport() {
           backgroundColor: "#fff",
         }}
       >
-        <PageTitle title="Marks Entry Monitoring" />
+        <PageTitle title="Grade Report" />
         <Breadcrumb breadcrumbs={breadcrumbItems} />
       </Box>
       <Accordion expanded={true}>

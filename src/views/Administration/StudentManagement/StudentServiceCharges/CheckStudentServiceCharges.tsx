@@ -53,6 +53,7 @@ import {
 import { getYearsData } from "../../../../api/OrganizationSettings/organizationSettingsApi";
 import useCurrentOrganization from "../../../../hooks/useCurrentOrganization";
 import { generateStudentServiceChargesPdf } from "../../../../reportsUtils/StudentServiceChargesPDF";
+import { exportStudentServiceChargesToExcel } from "../../../../reportsUtils/StudentServiceChargesExcel";
 
 const CheckStudentServiceCharges = () => {
   const {
@@ -278,6 +279,32 @@ const CheckStudentServiceCharges = () => {
     }
   };
 
+  const handleExportExcel = () => {
+    if (!hasExportData) {
+      enqueueSnackbar("No student service charges to export", {
+        variant: "warning",
+      });
+      return;
+    }
+
+    try {
+      exportStudentServiceChargesToExcel(flattenedChargesRows, {
+        title: "Student Service Charges",
+        yearLabel: selectedYear?.year ?? undefined,
+        gradeLabel:
+          selectedGrade?.grade != null
+            ? `Grade ${selectedGrade.grade}`
+            : undefined,
+        classLabel: selectedClass?.className ?? undefined,
+      });
+    } catch (error) {
+      console.error("Failed to export student service charges Excel:", error);
+      enqueueSnackbar("Failed to export student service charges Excel", {
+        variant: "error",
+      });
+    }
+  };
+
   return (
     <Stack>
       <Accordion expanded={true}>
@@ -451,8 +478,17 @@ const CheckStudentServiceCharges = () => {
             display: "flex",
             justifyContent: "flex-end",
             mb: 1,
+            gap: 1,
           }}
         >
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={handleExportExcel}
+            disabled={!hasExportData}
+          >
+            Export Excel
+          </Button>
           <Button
             variant="outlined"
             size="small"

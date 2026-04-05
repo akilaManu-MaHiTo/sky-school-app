@@ -31,7 +31,8 @@ import DashboardCard from "../../../components/DashboardCard";
 
 const breadcrumbItems = [
   { title: "Home", href: "/home" },
-  { title: "Staff Dashboard" },
+  { title: "Dashboard" },
+  { title: "Management Dashboard" },
 ];
 
 interface BasketSubject {
@@ -104,7 +105,7 @@ export default function StaffDashboard() {
           overflowX: "hidden",
         }}
       >
-        <PageTitle title="Staff Dashboard" />
+        <PageTitle title="Management Dashboard" />
         <Breadcrumb breadcrumbs={breadcrumbItems} />
       </Box>
       <Accordion expanded={true}>
