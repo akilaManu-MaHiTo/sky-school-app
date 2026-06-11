@@ -408,7 +408,9 @@ export async function fetchStudentData() {
 }
 
 export async function fetchOldStudentUniversityData(studentId: number) {
-  const res = await axios.get(`/api/old-students-universities/${studentId}/byStudent`);
+  const res = await axios.get(
+    `/api/old-students-universities/${studentId}/byStudent`,
+  );
   return res.data;
 }
 
@@ -416,5 +418,10 @@ export async function fetchOldStudentOccupationData(studentId: number) {
   const res = await axios.get(
     `/api/old-students-occupations/${studentId}/byStudent`,
   );
+  return res.data;
+}
+
+export async function deleteStudent(id: string | number) {
+  const res = await axios.delete(`/api/users/${id}/delete`);
   return res.data;
 }

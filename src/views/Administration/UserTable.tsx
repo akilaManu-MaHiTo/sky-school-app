@@ -58,6 +58,8 @@ import { generateStudentDetailsPdf } from "../../reportsUtils/StudentDetailsPDF"
 import { generateParentDetailsPdf } from "../../reportsUtils/ParentDetailsPDF";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { deleteStudent } from "../../api/userApi";
 interface TabPanelProps {
   children?: React.ReactNode;
   dir?: string;
@@ -104,7 +106,7 @@ function UserTable() {
   };
   const [openViewDrawer, setOpenViewDrawer] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | string | null>(
-    null
+    null,
   );
   const [openEditUserRoleDialog, setOpenEditUserRoleDialog] = useState(false);
   const [selectedSortBy, setSelectedSortBy] = useState("user_id_desc");
@@ -153,13 +155,13 @@ function UserTable() {
   // handle pagination
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
-    newPage: number
+    newPage: number,
   ) => {
     setPage(newPage);
   };
 
   const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
@@ -173,7 +175,7 @@ function UserTable() {
   ];
 
   const isMobile = useMediaQuery((theme: Theme) =>
-    theme.breakpoints.down("md")
+    theme.breakpoints.down("md"),
   );
 
   const paginatedUsersData = useMemo(() => {
@@ -187,7 +189,7 @@ function UserTable() {
     }
     return sourceData.slice(
       page * rowsPerPage,
-      page * rowsPerPage + rowsPerPage
+      page * rowsPerPage + rowsPerPage,
     );
   }, [
     searchedUserData,
@@ -207,27 +209,27 @@ function UserTable() {
   const teacherList = useMemo(
     () =>
       (currentUserList ?? []).filter((u: any) => u.employeeType === "Teacher"),
-    [currentUserList]
+    [currentUserList],
   );
 
   const studentList = useMemo(
     () =>
       (currentUserList ?? []).filter((u: any) => u.employeeType === "Student"),
-    [currentUserList]
+    [currentUserList],
   );
 
   const parentList = useMemo(
     () =>
       (currentUserList ?? []).filter((u: any) => u.employeeType === "Parent"),
-    [currentUserList]
+    [currentUserList],
   );
 
   const oldStudentList = useMemo(
     () =>
       (currentUserList ?? []).filter(
-        (u: any) => u.employeeType === "OldStudent"
+        (u: any) => u.employeeType === "OldStudent",
       ),
-    [currentUserList]
+    [currentUserList],
   );
 
   const selectedRow = useMemo(() => {
@@ -252,6 +254,25 @@ function UserTable() {
       });
     },
   });
+
+  const { mutate: deleteStudentMutation, isPending: isDeletingStudent } =
+    useMutation({
+      mutationFn: deleteStudent,
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["user-data", debouncedQuery, userRole, selectedSortBy],
+        });
+        setDeleteDialogOpen(false);
+        enqueueSnackbar("Student Deleted Successfully!", {
+          variant: "success",
+        });
+      },
+      onError: (data: any) => {
+        const message =
+          data?.data?.message || data?.message || "Student Deletion Failed";
+        enqueueSnackbar(message, { variant: "error" });
+      },
+    });
 
   const handleExportTeachersExcel = () => {
     if (!teacherList.length) {
@@ -486,7 +507,7 @@ function UserTable() {
               onClick={() => setUserRole("Parent")}
               {...a11yProps(3)}
             />
-             <Tab
+            <Tab
               label={
                 <Box
                   sx={{
@@ -683,7 +704,9 @@ function UserTable() {
               isSearching={isSearchingUsers}
             />
           </Box>
-          <Box sx={{ display: "flex", gap: 1, mb: 2,justifyContent:"flex-end" }}>
+          <Box
+            sx={{ display: "flex", gap: 1, mb: 2, justifyContent: "flex-end" }}
+          >
             <Button
               variant="outlined"
               size="small"
@@ -864,28 +887,29 @@ function UserTable() {
               onSearch={handleSearch}
               isSearching={isSearchingUsers}
             />
-            
           </Box>
-          <Box sx={{ display: "flex", gap: 1, mb: 2,justifyContent:"flex-end" }}>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<DownloadIcon fontSize="small" />}
-                onClick={handleExportStudentsExcel}
-                disabled={!studentList.length}
-              >
-                Export Excel
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<PictureAsPdfIcon fontSize="small" />}
-                onClick={handleExportStudentsPdf}
-                disabled={!studentList.length}
-              >
-                Export PDF
-              </Button>
-            </Box>
+          <Box
+            sx={{ display: "flex", gap: 1, mb: 2, justifyContent: "flex-end" }}
+          >
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<DownloadIcon fontSize="small" />}
+              onClick={handleExportStudentsExcel}
+              disabled={!studentList.length}
+            >
+              Export Excel
+            </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<PictureAsPdfIcon fontSize="small" />}
+              onClick={handleExportStudentsPdf}
+              disabled={!studentList.length}
+            >
+              Export PDF
+            </Button>
+          </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
               component={Paper}
@@ -1047,28 +1071,29 @@ function UserTable() {
               onSearch={handleSearch}
               isSearching={isSearchingUsers}
             />
-            
           </Box>
-          <Box sx={{ display: "flex", gap: 1, mb: 2,justifyContent:"flex-end" }}>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<DownloadIcon fontSize="small" />}
-                onClick={handleExportParentsExcel}
-                disabled={!parentList.length}
-              >
-                Export Excel
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<PictureAsPdfIcon fontSize="small" />}
-                onClick={handleExportParentsPdf}
-                disabled={!parentList.length}
-              >
-                Export PDF
-              </Button>
-            </Box>
+          <Box
+            sx={{ display: "flex", gap: 1, mb: 2, justifyContent: "flex-end" }}
+          >
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<DownloadIcon fontSize="small" />}
+              onClick={handleExportParentsExcel}
+              disabled={!parentList.length}
+            >
+              Export Excel
+            </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<PictureAsPdfIcon fontSize="small" />}
+              onClick={handleExportParentsPdf}
+              disabled={!parentList.length}
+            >
+              Export PDF
+            </Button>
+          </Box>
           <Stack sx={{ alignItems: "center" }}>
             <TableContainer
               component={Paper}
@@ -1231,7 +1256,9 @@ function UserTable() {
               isSearching={isSearchingUsers}
             />
           </Box>
-          <Box sx={{ display: "flex", gap: 1, mb: 2, justifyContent: "flex-end" }}>
+          <Box
+            sx={{ display: "flex", gap: 1, mb: 2, justifyContent: "flex-end" }}
+          >
             <Button
               variant="outlined"
               size="small"
@@ -1425,6 +1452,17 @@ function UserTable() {
           <CheckCircleIcon fontSize="small" sx={{ mr: 1 }} color="success" />
           Active
         </MenuItem>
+        {userRole == "Student" && (
+          <MenuItem
+            onClick={() => {
+              setDeleteDialogOpen(true);
+              handleCloseActionMenu();
+            }}
+          >
+            <DeleteIcon fontSize="small" sx={{ mr: 1 }} color="error" />
+            Delete
+          </MenuItem>
+        )}
       </Menu>
 
       <ViewDataDrawer
@@ -1480,14 +1518,8 @@ function UserTable() {
             </>
           }
           handleClose={() => setDeleteDialogOpen(false)}
-          deleteFunc={async () => {}}
-          onSuccess={() => {
-            setOpenViewDrawer(false);
-            setSelectedUserId(null);
-            setDeleteDialogOpen(false);
-            enqueueSnackbar("User Deleted Successfully!", {
-              variant: "success",
-            });
+          deleteFunc={async () => {
+            deleteStudentMutation(selectedUserId!);
           }}
           handleReject={() => {
             setOpenViewDrawer(false);

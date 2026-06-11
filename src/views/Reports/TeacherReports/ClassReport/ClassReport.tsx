@@ -2,6 +2,7 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Alert,
   Autocomplete,
   Box,
   Button,
@@ -1028,6 +1029,14 @@ function RagDashboard() {
             >
               {"Subject Students Grades Counts"}
             </Typography>
+            <Box
+              mx={1}
+              my={2}
+            >
+              <Alert severity="info" sx={{ mb: 2 }}>
+                Student Count 
+              </Alert>
+            </Box>
             <Controller
               name="marksGrades"
               control={control}
