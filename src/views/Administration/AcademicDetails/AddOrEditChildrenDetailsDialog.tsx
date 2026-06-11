@@ -63,6 +63,7 @@ const AddOrEditChildrenDetailsDialog = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
   const [openAddStudentModal, setOpenAddStudentModal] = useState(false);
+  const [hasSearchedStudent, setHasSearchedStudent] = useState(false);
 
   const {
     data: searchedStudents,
@@ -73,7 +74,20 @@ const AddOrEditChildrenDetailsDialog = ({
     queryFn: ({ queryKey }) => searchStudentByEmployeeId(queryKey[1] as string),
     enabled: false,
   });
-  const studentsArray = searchedStudents ? [searchedStudents] : [];
+  const studentsArray = Array.isArray(searchedStudents)
+    ? searchedStudents.filter(
+        (student: any) =>
+          student &&
+          typeof student === "object" &&
+          Object.keys(student).length > 0,
+      )
+    : searchedStudents &&
+        typeof searchedStudents === "object" &&
+        Object.keys(searchedStudents).length > 0
+      ? [searchedStudents]
+      : [];
+  const showNoChildFound =
+    hasSearchedStudent && !isSearchingStudents && studentsArray.length === 0;
 
   const { mutate: addParentProfile, isPending: isAddingParent } = useMutation({
     mutationFn: (studentId: number) =>
@@ -207,7 +221,9 @@ const AddOrEditChildrenDetailsDialog = ({
             value={searchQuery}
             onChange={setSearchQuery}
             onSearch={async () => {
-              if (!searchQuery) return;
+              const query = searchQuery.trim();
+              if (!query) return;
+              setHasSearchedStudent(true);
               try {
                 await refetchStudents();
               } catch (error) {
@@ -216,6 +232,11 @@ const AddOrEditChildrenDetailsDialog = ({
             }}
             isSearching={isSearchingStudents}
           />
+          {showNoChildFound && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              No Child found
+            </Typography>
+          )}
           {studentsArray.length > 0 && (
             <TableContainer component={Paper} sx={{ mt: 2 }}>
               <Table size="small">

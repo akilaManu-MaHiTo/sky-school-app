@@ -41,6 +41,7 @@ const SearchBox = React.forwardRef<HTMLInputElement, SearchBoxProps>(
   ({ placeholder, value, onChange, onSearch, isSearching }, ref) => {
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (event.key === "Enter") {
+        event.preventDefault();
         onSearch(value);
       }
     };
@@ -49,7 +50,7 @@ const SearchBox = React.forwardRef<HTMLInputElement, SearchBoxProps>(
       <SearchContainer>
         <StyledInput
           inputRef={ref}
-          placeholder={placeholder || "Search"}
+          placeholder={placeholder || "Search"}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -64,7 +65,7 @@ const SearchBox = React.forwardRef<HTMLInputElement, SearchBoxProps>(
         </IconButton>
       </SearchContainer>
     );
-  }
+  },
 );
 
 export default SearchBox;
