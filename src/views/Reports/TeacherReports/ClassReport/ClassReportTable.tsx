@@ -45,13 +45,13 @@ function ClassReportTable({
   year,
 }: ClassReportTableProps) {
   const [groupFilter, setGroupFilter] = useState<Record<string, string | null>>(
-    {}
+    {},
   );
   const [groupMenuAnchor, setGroupMenuAnchor] = useState<null | HTMLElement>(
-    null
+    null,
   );
   const [activeGroupForMenu, setActiveGroupForMenu] = useState<string | null>(
-    null
+    null,
   );
 
   const { organization } = useCurrentOrganization();
@@ -71,7 +71,7 @@ function ClassReportTable({
     const allSubjects = reportData.data.subjects ?? [];
 
     const subjects = allSubjects.filter(
-      (subject: any) => !subject.isBasketSubject
+      (subject: any) => !subject.isBasketSubject,
     );
 
     const basketSubjectsByGroup: Record<string, any[]> = {
@@ -99,7 +99,7 @@ function ClassReportTable({
         subjectMarks[key] =
           subjectEntry && typeof subjectEntry.marks === "number"
             ? subjectEntry.marks
-            : subjectEntry?.marks ?? null;
+            : (subjectEntry?.marks ?? null);
       });
 
       const groupMarks: Record<string, number | null> = {};
@@ -109,7 +109,7 @@ function ClassReportTable({
         groupMarks[groupName] =
           groupEntry && typeof groupEntry.marks === "number"
             ? groupEntry.marks
-            : groupEntry?.marks ?? null;
+            : (groupEntry?.marks ?? null);
         groupSubjects[groupName] = groupEntry?.subject ?? null;
       });
 
@@ -119,6 +119,7 @@ function ClassReportTable({
         userName: student.userName,
         nameWithInitials: student.nameWithInitials,
         email: student.email,
+        totalMarks: student.totalMarks,
         averageOfMarks: student.averageOfMarks,
         position: student.position,
         subjectMarks,
@@ -161,9 +162,9 @@ function ClassReportTable({
     const yearLabel =
       typeof year === "string"
         ? year
-        : (year as any)?.academicYear ??
+        : ((year as any)?.academicYear ??
           (year as any)?.year ??
-          (year != null ? String(year) : undefined);
+          (year != null ? String(year) : undefined));
     const termLabel = meta.term ?? undefined;
 
     exportClassReportToExcel({
@@ -322,6 +323,7 @@ function ClassReportTable({
                   </Box>
                 </TableCell>
               ))}
+              <TableCell>Total Marks</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -361,6 +363,9 @@ function ClassReportTable({
                       </TableCell>
                     );
                   })}
+                  <TableCell component="th" scope="row">
+                    {row.totalMarks ?? "--"}
+                  </TableCell>
                 </TableRow>
               ))
             ) : (
