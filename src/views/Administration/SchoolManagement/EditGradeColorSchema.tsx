@@ -50,6 +50,7 @@ import {
   Github,
   Chrome,
 } from "@uiw/react-color";
+import { updateGradeColorSchema } from "../../../api/OrganizationSettings/organizationSettingsApi";
 export const EditGradeColorDialog = ({
   open,
   setOpen,
@@ -77,49 +78,35 @@ export const EditGradeColorDialog = ({
 
   const handleCreateNewYear = (data) => {
     if (defaultValues) {
-      updateAcademicSubjectMutation(data);
+      updateAcademicGradeColorMutation(data);
     } else {
-      createAcademicSubjectMutation(data);
+      return;
     }
   };
-  const {
-    mutate: createAcademicSubjectMutation,
-    isPending: isAcademicSubjectCreating,
-  } = useMutation({
-    mutationFn: createAcademicSubject,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["subject-data", query],
-      });
-      enqueueSnackbar("Academic Subject Created Successfully!", {
-        variant: "success",
-      });
-      reset();
-      setOpen(false);
-    },
-    onError: (error: any) => {
-      const message = error?.data?.message || "Academic Subject Create Failed";
-      enqueueSnackbar(message, { variant: "error" });
-    },
-  });
 
   const {
-    mutate: updateAcademicSubjectMutation,
+    mutate: updateAcademicGradeColorMutation,
     isPending: isUpdatingAcademicSubject,
   } = useMutation({
-    mutationFn: updateAcademicSubject,
+    mutationFn: updateGradeColorSchema,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["subject-data"],
+        queryKey: ["grade-color-schema"],
       });
-      enqueueSnackbar("Academic Subject Update Successfully!", {
+      queryClient.invalidateQueries({
+        queryKey: ["class-report-card"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["class-report-all-card"],
+      });
+      enqueueSnackbar("Grading Color Update Successfully!", {
         variant: "success",
       });
       reset();
       setOpen(false);
     },
     onError: (error: any) => {
-      const message = error?.data?.message || "Academic Subject Update Failed";
+      const message = error?.data?.message || "Grading Color Update Failed";
       enqueueSnackbar(message, { variant: "error" });
     },
   });
@@ -226,14 +213,11 @@ export const EditGradeColorDialog = ({
             backgroundColor: "var(--pallet-blue)",
           }}
           size="medium"
-          disabled={isAcademicSubjectCreating || isUpdatingAcademicSubject}
-          endIcon={
-            isUpdatingAcademicSubject ||
-            (isAcademicSubjectCreating && <CircularProgress size={20} />)
-          }
+          disabled={isUpdatingAcademicSubject}
+          endIcon={isUpdatingAcademicSubject && <CircularProgress size={20} />}
           onClick={handleSubmit(handleCreateNewYear)}
         >
-          {defaultValues ? "Update Subject" : "Create Subject"}
+          {defaultValues ? "Update Grading Color" : "Create Subject"}
         </CustomButton>
       </DialogActions>
     </Dialog>

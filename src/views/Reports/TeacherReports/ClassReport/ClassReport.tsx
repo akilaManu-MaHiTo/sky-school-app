@@ -981,6 +981,31 @@ function RagDashboard() {
                 : "Subject Percentage"}
             </Typography>
           </Box>
+          <Box mx={1} my={2}>
+            {selectedTerm === "All" ? (
+              <Box>
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  Term 1 Student Count{" "}
+                  {classAllReportCardData?.data?.term1?.studentCount ??
+                    "Not Marked Added Yet"}
+                </Alert>
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  Term 2 Student Count{" "}
+                  {classAllReportCardData?.data?.term2?.studentCount ??
+                    "Not Marked Added Yet"}
+                </Alert>
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  Term 3 Student Count{" "}
+                  {classAllReportCardData?.data?.term3?.studentCount ??
+                    "Not Marked Added Yet"}
+                </Alert>
+              </Box>
+            ) : (
+              <Alert severity="info" sx={{ mb: 2 }}>
+                {`Student Count ${classReportCardData?.data?.studentCount}`}
+              </Alert>
+            )}
+          </Box>
 
           <ResponsiveContainer width="100%" height={500}>
             {disableFetch ? (
@@ -1029,13 +1054,30 @@ function RagDashboard() {
             >
               {"Subject Students Grades Counts"}
             </Typography>
-            <Box
-              mx={1}
-              my={2}
-            >
-              <Alert severity="info" sx={{ mb: 2 }}>
-                Student Count 
-              </Alert>
+            <Box mx={1} my={2}>
+              {selectedTerm === "All" ? (
+                <Box>
+                  <Alert severity="info" sx={{ mb: 2 }}>
+                    Term 1 Student Count{" "}
+                    {classAllReportCardData?.data?.term1?.studentCount ??
+                      "Not Marked Added Yet"}
+                  </Alert>
+                  <Alert severity="info" sx={{ mb: 2 }}>
+                    Term 2 Student Count{" "}
+                    {classAllReportCardData?.data?.term2?.studentCount ??
+                      "Not Marked Added Yet"}
+                  </Alert>
+                  <Alert severity="info" sx={{ mb: 2 }}>
+                    Term 3 Student Count{" "}
+                    {classAllReportCardData?.data?.term3?.studentCount ??
+                      "Not Marked Added Yet"}
+                  </Alert>
+                </Box>
+              ) : (
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  {`Student Count ${classReportCardData?.data?.studentCount}`}
+                </Alert>
+              )}
             </Box>
             <Controller
               name="marksGrades"

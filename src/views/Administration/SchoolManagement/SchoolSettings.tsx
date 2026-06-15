@@ -1253,18 +1253,6 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                 marginBottom: theme.spacing(2),
               }}
             >
-              <CustomButton
-                variant="contained"
-                sx={{ backgroundColor: "var(--pallet-blue)" }}
-                size="medium"
-                startIcon={<AddIcon />}
-                onClick={() => {
-                  setEditGradeColorData(null);
-                  setOpenGradeColorDialog(true);
-                }}
-              >
-                Add New Grade Color
-              </CustomButton>
             </Box>
             <TableContainer
               component={Paper}
@@ -1282,7 +1270,6 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                     <TableCell align="left">Grade</TableCell>
                     <TableCell align="left">Marking range</TableCell>
                     <TableCell align="left">Color</TableCell>
-                    <TableCell align="center">Created By</TableCell>
                     <TableCell align="center"></TableCell>
                   </TableRow>
                 </TableHead>

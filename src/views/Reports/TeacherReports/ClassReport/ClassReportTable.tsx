@@ -3,6 +3,7 @@ import {
   Alert,
   Box,
   Button,
+  Chip,
   IconButton,
   LinearProgress,
   Menu,
@@ -93,6 +94,7 @@ function ClassReportTable({
       const marksRecord = (student.marks?.[0] ?? {}) as any;
 
       const subjectMarks: Record<string, number | null> = {};
+      const subjectMarkColors: Record<string, string | null> = {};
       allSubjects.forEach((subject: any) => {
         const key = subject.subjectName;
         const subjectEntry = marksRecord[key];
@@ -100,6 +102,7 @@ function ClassReportTable({
           subjectEntry && typeof subjectEntry.marks === "number"
             ? subjectEntry.marks
             : (subjectEntry?.marks ?? null);
+        subjectMarkColors[key] = subjectEntry?.gradingColor ?? null;
       });
 
       const groupMarks: Record<string, number | null> = {};
@@ -123,6 +126,7 @@ function ClassReportTable({
         averageOfMarks: student.averageOfMarks,
         position: student.position,
         subjectMarks,
+        subjectMarkColors,
         groupMarks,
         groupSubjects,
       };
@@ -351,7 +355,26 @@ function ClassReportTable({
                     const value = row.subjectMarks[subject.subjectName] ?? null;
                     return (
                       <TableCell key={`${row.id}-${subject.id}`} align="right">
-                        {value ?? "--"}
+                        <Chip
+                          sx={(theme) => {
+                            const backgroundColor =
+                              row.subjectMarkColors?.[subject.subjectName] ||
+                              theme.palette.action.hover;
+
+                            let color = theme.palette.text.primary;
+                            try {
+                              color = theme.palette.getContrastText(backgroundColor);
+                            } catch {
+                              color = theme.palette.text.primary;
+                            }
+
+                            return {
+                              backgroundColor,
+                              color,
+                            };
+                          }}
+                          label={value ?? "--"}
+                        />
                       </TableCell>
                     );
                   })}
