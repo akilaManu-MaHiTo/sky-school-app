@@ -21,6 +21,14 @@ export const AcademicYearSchema = z.object({
 });
 export type AcademicYear = z.infer<typeof AcademicYearSchema>;
 
+export const GradeColorSchema = z.object({
+  id: z.number(),
+  gradeName: z.string(),
+  marksRange: z.string(),
+  color: z.string(),
+});
+export type GradeColor = z.infer<typeof GradeColorSchema>;
+
 export const SubjectSchema = z.object({
   id: z.number(),
   subjectName: z.string(),
@@ -53,7 +61,9 @@ export const paymentCategorySchema = z.object({
 });
 
 export type PaymentCategory = z.infer<typeof paymentCategorySchema>;
-export const createPaymentCategoryName = async ( categoryName: PaymentCategory) => {
+export const createPaymentCategoryName = async (
+  categoryName: PaymentCategory,
+) => {
   const res = await axios.post(`/api/payment-category`, categoryName);
   return res.data;
 };
@@ -61,8 +71,13 @@ export async function getPaymentCategoryName() {
   const res = await axios.get(`/api/payment-category`);
   return res.data;
 }
-export const updatePaymentCategoryName = async (categoryName: PaymentCategory) => {
-  const res = await axios.post(`/api/payment-category/${categoryName.id}`, categoryName);
+export const updatePaymentCategoryName = async (
+  categoryName: PaymentCategory,
+) => {
+  const res = await axios.post(
+    `/api/payment-category/${categoryName.id}`,
+    categoryName,
+  );
   return res.data;
 };
 export const deletePaymentCategoryName = async (id: String) => {

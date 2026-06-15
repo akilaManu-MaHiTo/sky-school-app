@@ -87,6 +87,10 @@ export async function getGradesData() {
   const res = await axios.get(`/api/grade`);
   return res.data;
 }
+export async function getGradeColorData() {
+  const res = await axios.get(`/api/grade-color-schema`);
+  return res.data;
+}
 export async function getYearsData() {
   const res = await axios.get(`/api/year`);
   return res.data;

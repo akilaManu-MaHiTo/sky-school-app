@@ -24,6 +24,7 @@ import useIsMobile from "../../../customHooks/useIsMobile";
 import theme from "../../../theme";
 import EditIcon from "@mui/icons-material/Edit";
 import {
+  getGradeColorData,
   getGradesData,
   getOrganization,
   getSubjectData,
@@ -72,6 +73,7 @@ import {
 import useCurrentOrganization from "../../../hooks/useCurrentOrganization";
 import { title } from "process";
 import AddOrEditPaymentCategoryDialog from "./AddOrEditPaymetCategoryDialog";
+import { EditGradeColorDialog } from "./EditGradeColorSchema";
 interface TabPanelProps {
   children?: React.ReactNode;
   dir?: string;
@@ -141,6 +143,10 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
     useState(false);
   const [openDeletePaymentCategoryDialog, setOpenDeletePaymentCategoryDialog] =
     useState(false);
+
+  const [gradeColorData, setGradeColorData] = useState([]);
+  const [openGradeColorDialog, setOpenGradeColorDialog] = useState(false);
+  const [editGradeColorData, setEditGradeColorData] = useState(null);
 
   // Column visibility configs
   const gradeColumns = useMemo(
@@ -240,6 +246,13 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
     queryKey: ["payment-category"],
     queryFn: getPaymentCategoryName,
   });
+  // Fetch Grade Color Schema Data
+  const { data: gradeColorSchemaData, isFetching: isGradeColorDataFetching } =
+    useQuery({
+      queryKey: ["grade-color-schema"],
+      queryFn: getGradeColorData,
+    });
+
   // Delete Year
   const {
     mutate: deleteAcademicYearMutation,
@@ -501,6 +514,23 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                 </Box>
               }
               {...a11yProps(5)}
+            />
+            <Tab
+              label={
+                <Box
+                  sx={{
+                    color: "var(--pallet-blue)",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <ClassIcon fontSize="small" />
+                  <Typography variant="body2" sx={{ ml: "0.3rem" }}>
+                    Grade Color Schema
+                  </Typography>
+                </Box>
+              }
+              {...a11yProps(6)}
             />
           </Tabs>
         </AppBar>
@@ -1171,9 +1201,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                         }}
                       >
                         <TableCell align="left">{row.id}</TableCell>
-                        <TableCell align="left">
-                          {row.categoryName}
-                        </TableCell>
+                        <TableCell align="left">{row.categoryName}</TableCell>
                         <TableCell align="center">
                           {row?.createdByData?.nameWithInitials ?? "-"}
                         </TableCell>
@@ -1204,6 +1232,112 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                       <TableCell colSpan={11} align="center">
                         <Typography variant="body2">
                           No Payment Categories found
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Stack>
+        </TabPanel>
+        <TabPanel value={activeTab} index={6} dir={theme.direction}>
+          <Stack>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                flexDirection: isMobile ? "column" : "row",
+                gap: 2,
+                marginBottom: theme.spacing(2),
+              }}
+            >
+              <CustomButton
+                variant="contained"
+                sx={{ backgroundColor: "var(--pallet-blue)" }}
+                size="medium"
+                startIcon={<AddIcon />}
+                onClick={() => {
+                  setEditGradeColorData(null);
+                  setOpenGradeColorDialog(true);
+                }}
+              >
+                Add New Grade Color
+              </CustomButton>
+            </Box>
+            <TableContainer
+              component={Paper}
+              elevation={2}
+              sx={{ overflowX: "auto", maxWidth: isMobile ? "88vw" : "100%" }}
+            >
+              {isGradeColorDataFetching && (
+                <LinearProgress sx={{ width: "100%" }} />
+              )}
+              <Table aria-label="grade color schema table">
+                <TableHead
+                  sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
+                >
+                  <TableRow>
+                    <TableCell align="left">Grade</TableCell>
+                    <TableCell align="left">Marking range</TableCell>
+                    <TableCell align="left">Color</TableCell>
+                    <TableCell align="center">Created By</TableCell>
+                    <TableCell align="center"></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {gradeColorSchemaData?.length > 0 ? (
+                    gradeColorSchemaData?.map((row: any) => (
+                      <TableRow
+                        key={`${row.id}`}
+                        sx={{
+                          "&:last-child td, &:last-child th": { border: 0 },
+                          cursor: "pointer",
+                        }}
+                      >
+                        <TableCell align="left">{`Grade ${row.gradeName}`}</TableCell>
+                        <TableCell align="left">
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
+                          >
+                            <Typography variant="body2">
+                              {row.marksRange}
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                        <TableCell align="left">
+                          <Box
+                            sx={{
+                              width: 24,
+                              height: 24,
+                              backgroundColor: row.color,
+                              borderRadius: "4px",
+                              border: "1px solid #ccc",
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell align="center">
+                          <IconButton
+                            onClick={() => {
+                              setEditGradeColorData(row);
+                              setOpenGradeColorDialog(true);
+                            }}
+                          >
+                            <EditIcon color="primary" />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={11} align="center">
+                        <Typography variant="body2">
+                          No Grade Color Schema found
                         </Typography>
                       </TableCell>
                     </TableRow>
@@ -1257,6 +1391,13 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
           defaultValues={editPaymentCategoryData}
         />
       )}
+      {openGradeColorDialog && (
+        <EditGradeColorDialog
+          open={openGradeColorDialog}
+          setOpen={setOpenGradeColorDialog}
+          defaultValues={editGradeColorData}
+         />
+       )}
 
       {openDeleteAcademicYearDialog && (
         <DeleteConfirmationModal
