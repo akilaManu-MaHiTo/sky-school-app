@@ -33,6 +33,7 @@ export const SubjectSchema = z.object({
   id: z.number(),
   subjectName: z.string(),
   colorCode: z.string(),
+  gradeCategory: z.string(),
   subjectCode: z.string(),
   isBasketSubject: z.boolean(),
   basketGroup: z.string().optional(),

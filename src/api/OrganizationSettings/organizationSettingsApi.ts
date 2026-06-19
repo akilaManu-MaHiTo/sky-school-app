@@ -109,6 +109,10 @@ export async function getAllSubjectData() {
   const res = await axios.get(`/api/all-subjects`);
   return res.data;
 }
+export async function getSubjectDataByGrade(grade: String) {
+  const res = await axios.get(`/api/subject-by-category/${grade}`);
+  return res.data;
+}
 export async function getGroup1SubjectData() {
   const res = await axios.get(`/api/group1-subjects`);
   return res.data;

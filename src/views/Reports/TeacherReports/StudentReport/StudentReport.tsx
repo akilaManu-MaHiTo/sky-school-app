@@ -284,7 +284,7 @@ export default function GradeReport() {
                       }}
                       size="small"
                       options={myChildrenData ?? []}
-                      getOptionLabel={(option) => option.nameWithInitials}
+                      getOptionLabel={(option) => option.nameWithInitials + option.admissionNumber}
                       sx={{ flex: 1 }}
                       renderInput={(params) => (
                         <TextField

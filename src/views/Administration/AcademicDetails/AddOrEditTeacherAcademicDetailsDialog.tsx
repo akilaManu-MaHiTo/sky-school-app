@@ -30,6 +30,7 @@ import {
 import {
   getAllSubjectData,
   getGradesData,
+  getSubjectDataByGrade,
   getYearsData,
 } from "../../../api/OrganizationSettings/organizationSettingsApi";
 import {
@@ -68,8 +69,9 @@ const AddOrEditAcademicDetailsDialog = ({
     queryFn: getGradesData,
   });
   const { data: subjectData } = useQuery({
-    queryKey: ["subject-data"],
-    queryFn: getAllSubjectData,
+    queryKey: ["subject-data", selectedGrade?.grade],
+    queryFn: () => getSubjectDataByGrade(selectedGrade?.grade || ""),
+    enabled: !!selectedGrade?.grade,
   });
 
   const { data: classData } = useQuery({
@@ -104,8 +106,10 @@ const AddOrEditAcademicDetailsDialog = ({
     }
 
     if (defaultValues) {
-      const normalizedGrade = defaultValues?.grades ?? defaultValues?.grade ?? null;
-      const rawSubject = defaultValues?.subjects ?? defaultValues?.subject ?? null;
+      const normalizedGrade =
+        defaultValues?.grades ?? defaultValues?.grade ?? null;
+      const rawSubject =
+        defaultValues?.subjects ?? defaultValues?.subject ?? null;
       const normalizedSubject = rawSubject
         ? {
             ...rawSubject,
@@ -113,7 +117,8 @@ const AddOrEditAcademicDetailsDialog = ({
               rawSubject.subjectMedium ?? defaultValues?.academicMedium ?? "",
           }
         : null;
-      const normalizedClass = defaultValues?.classes ?? defaultValues?.class ?? null;
+      const normalizedClass =
+        defaultValues?.classes ?? defaultValues?.class ?? null;
 
       reset({
         ...defaultValues,
@@ -247,36 +252,41 @@ const AddOrEditAcademicDetailsDialog = ({
             )}
           />
 
-          <Controller
-            name="subjects"
-            control={control}
-            rules={{ required: true }}
-            render={({ field }) => (
-              <Autocomplete
-                {...field}
-                options={subjectData ?? []}
-                getOptionLabel={(option) =>
-                  option.subjectName + ` - ` + option.subjectMedium + ` Medium`
-                }
-                isOptionEqualToValue={(option, value) =>
-                  option?.id === value?.id
-                }
-                onChange={(event, newValue) => field.onChange(newValue)}
-                value={field.value || null}
-                size="small"
-                sx={{ flex: 1, margin: "0.5rem" }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    required
-                    error={!!errors.subjects}
-                    helperText={errors.subjects && "Required"}
-                    label="Subject"
-                  />
-                )}
-              />
-            )}
-          />
+          {selectedGrade && (
+            <Controller
+              name="subjects"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Autocomplete
+                  {...field}
+                  options={subjectData ?? []}
+                  getOptionLabel={(option) =>
+                    option.subjectName +
+                    ` - ` +
+                    option.subjectMedium +
+                    ` Medium`
+                  }
+                  isOptionEqualToValue={(option, value) =>
+                    option?.id === value?.id
+                  }
+                  onChange={(event, newValue) => field.onChange(newValue)}
+                  value={field.value || null}
+                  size="small"
+                  sx={{ flex: 1, margin: "0.5rem" }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      required
+                      error={!!errors.subjects}
+                      helperText={errors.subjects && "Required"}
+                      label="Subject"
+                    />
+                  )}
+                />
+              )}
+            />
+          )}
 
           <Controller
             name="classes"

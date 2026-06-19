@@ -949,18 +949,50 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                                   ` - ${subject.subjectMedium} Medium`}
                               </Typography>
 
-                              <Typography
-                                variant="body2"
-                                sx={{
-                                  color: "text.secondary",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 0.5,
-                                }}
+                              <Box
+                                flexDirection="row"
+                                display="flex"
+                                alignItems="center"
+                                gap={0.5}
+                                sx={{ mb: 0.5 }}
                               >
-                                <SubjectIcon fontSize="small" />
-                                {subject.subjectCode}
-                              </Typography>
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    color: "text.secondary",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 0.5,
+                                  }}
+                                >
+                                  <SubjectIcon fontSize="small" />
+                                  {subject.subjectCode}
+                                </Typography>
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    color: "text.secondary",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 0.5,
+                                  }}
+                                >
+                                  |
+                                </Typography>
+
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    color: "text.secondary",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 0.5,
+                                  }}
+                                >
+                                  {subject.gradeCategory}
+                                </Typography>
+                              </Box>
+
                               <Typography
                                 variant="caption"
                                 sx={{
@@ -1252,8 +1284,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                 gap: 2,
                 marginBottom: theme.spacing(2),
               }}
-            >
-            </Box>
+            ></Box>
             <TableContainer
               component={Paper}
               elevation={2}
@@ -1383,8 +1414,8 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
           open={openGradeColorDialog}
           setOpen={setOpenGradeColorDialog}
           defaultValues={editGradeColorData}
-         />
-       )}
+        />
+      )}
 
       {openDeleteAcademicYearDialog && (
         <DeleteConfirmationModal
