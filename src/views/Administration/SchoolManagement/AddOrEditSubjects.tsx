@@ -214,7 +214,7 @@ export const AddOrEditSubjects = ({
             name="gradeCategory"
             control={control}
             defaultValue={defaultValues?.gradeCategory ?? ""}
-            {...register("gradeCategory", { required: true })}
+            {...register("gradeCategory")}
             render={({ field }) => (
               <Autocomplete
                 {...field}

@@ -18,6 +18,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import theme from "../../../../theme";
 import PageTitle from "../../../../components/PageTitle";
 import Breadcrumb from "../../../../components/BreadCrumb";
@@ -72,6 +73,8 @@ import ApexStackedBarChart from "./ApexStackedBarChart";
 import ApexStackedBarChartMarkGrades from "./ApexStackedBarChartMarkGrades";
 import ClassReportTable from "./ClassReportTable";
 import AllClassReportTable from "./AllClassReportTable";
+import useCurrentOrganization from "../../../../hooks/useCurrentOrganization";
+import { generateGradeMarksPdf } from "../../../../reportsUtils/GradeMarksPdf.ts";
 
 const breadcrumbItems = [
   { title: "Home", href: "/home" },
@@ -82,6 +85,7 @@ const breadcrumbItems = [
 
 function RagDashboard() {
   const { isMobile, isTablet, isSmallMonitor } = useIsMobile();
+  const { organization } = useCurrentOrganization();
   const {
     register,
     setValue,
@@ -98,6 +102,7 @@ function RagDashboard() {
   const selectedClass = watch("class");
   const selectedMonthlyExam = watch("monthlyExam");
   const selectedMarksGrade = watch("marksGrades");
+  const organizationName = organization?.organizationName;
 
   const disableFetch = selectedTerm === "All";
 
@@ -562,15 +567,110 @@ function RagDashboard() {
     };
   }, [classReportBarChartMarkGradeData]);
 
-  const showGroupColumns = useMemo(() => {
+  const classReportGroupNames = useMemo(() => {
     const gradeValue = selectedGrade?.grade;
-    return (
-      gradeValue === 10 ||
-      gradeValue === 11 ||
-      gradeValue === "10" ||
-      gradeValue === "11"
-    );
+    const normalizedGrade =
+      typeof gradeValue === "string" ? Number(gradeValue) : gradeValue;
+
+    if (normalizedGrade === 6 || normalizedGrade === 7 || normalizedGrade === 8 || normalizedGrade === 9) {
+      return ["Group 2"];
+    }
+
+    if (normalizedGrade === 10 || normalizedGrade === 11) {
+      return ["Group 1", "Group 2", "Group 3"];
+    }
+
+    return [];
   }, [selectedGrade]);
+
+  const gradeMarksPdfSections = useMemo(() => {
+    const sectionTitle = disableFetch
+      ? "All Terms Subject Mark Grades"
+      : "Subject Mark Grades";
+
+    if (!disableFetch) {
+      return singleTermMarkGradesRows.length
+        ? [
+            {
+              title: sectionTitle,
+              rows: singleTermMarkGradesRows,
+            },
+          ]
+        : [];
+    }
+
+    const container: any =
+      (classAllMarkGradesTableData as any)?.data ??
+      classAllMarkGradesTableData ??
+      {};
+
+    const terms = Object.keys(container || {});
+    const termLabelMap: Record<string, string> = {
+      term1: "Term 1",
+      term2: "Term 2",
+      term3: "Term 3",
+    };
+
+    return terms
+      .map((termKey) => {
+        const termRaw = container[termKey];
+        const termArr: any[] = Array.isArray(termRaw)
+          ? termRaw
+          : Array.isArray(Object.values(termRaw || {}))
+            ? Object.values(termRaw || {})
+            : [];
+
+        if (!termArr.length) {
+          return null;
+        }
+
+        return {
+          title: `${sectionTitle} - ${termLabelMap[termKey] || termKey}`,
+          rows: termArr,
+        };
+      })
+      .filter(Boolean) as { title: string; rows: any[] }[];
+  }, [
+    disableFetch,
+    singleTermMarkGradesRows,
+    classAllMarkGradesTableData,
+  ]);
+
+  const handleExportGradeMarksPdf = () => {
+    if (!gradeMarksPdfSections.length) return;
+
+    const yearLabel =
+      typeof year === "string"
+        ? year
+        : (year as any)?.academicYear ??
+          (year as any)?.year ??
+          (year != null ? String(year) : undefined);
+
+    try {
+      generateGradeMarksPdf({
+        headerData: {
+          title: disableFetch
+            ? "All Terms Subject Mark Grades"
+            : "Subject Mark Grades",
+          organizationName,
+          gradeLabel:
+            selectedGrade?.grade != null ? String(selectedGrade.grade) : undefined,
+          classLabel:
+            selectedClass?.className != null
+              ? String(selectedClass.className)
+              : undefined,
+          yearLabel,
+          termLabel:
+            selectedTerm != null ? String(selectedTerm) : undefined,
+        },
+        columns: markGradesTableGradeColumns,
+        sections: gradeMarksPdfSections,
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to generate grade marks PDF", error);
+    }
+  };
 
   console.log("hi", selectedGrade);
 
@@ -795,17 +895,36 @@ function RagDashboard() {
           backgroundColor: "#fff",
         }}
       >
-        <Typography
-          variant="h6"
+        <Box
           sx={{
-            textAlign: "left",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
             mb: 2,
+            flexWrap: "wrap",
           }}
         >
-          {disableFetch
-            ? "All Terms Subject Mark Grades"
-            : "Subject Mark Grades"}
-        </Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              textAlign: "left",
+            }}
+          >
+            {disableFetch
+              ? "All Terms Subject Mark Grades"
+              : "Subject Mark Grades"}
+          </Typography>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<PictureAsPdfIcon fontSize="small" />}
+            onClick={handleExportGradeMarksPdf}
+            disabled={!gradeMarksPdfSections.length}
+          >
+            Export PDF
+          </Button>
+        </Box>
 
         <TableContainer
           component={Paper}
@@ -1152,7 +1271,7 @@ function RagDashboard() {
               isLoading={isClassAllReportCardFetching}
               isMobile={isMobile}
               isTablet={isTablet}
-              showGroupColumns={showGroupColumns}
+              groupNames={classReportGroupNames}
               year={year}
             />
           ) : (
@@ -1162,7 +1281,7 @@ function RagDashboard() {
               isMobile={isMobile}
               isTablet={isTablet}
               title={classReportTitle}
-              showGroupColumns={showGroupColumns}
+              groupNames={classReportGroupNames}
               year={year}
             />
           )}

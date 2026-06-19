@@ -26,7 +26,7 @@ interface AllClassReportTableProps {
   isLoading: boolean;
   isMobile: boolean;
   isTablet?: boolean;
-  showGroupColumns?: boolean;
+  groupNames?: string[];
   year?: string;
 }
 
@@ -35,7 +35,7 @@ function AllClassReportTable({
   isLoading,
   isMobile,
   isTablet,
-  showGroupColumns = true,
+  groupNames,
   year,
 }: AllClassReportTableProps) {
   const { organization } = useCurrentOrganization();
@@ -362,7 +362,7 @@ function AllClassReportTable({
               isMobile={isMobile}
               isTablet={isTablet}
               title={title}
-              showGroupColumns={showGroupColumns}
+              groupNames={groupNames}
               year={year}
             />
           </Box>
