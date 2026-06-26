@@ -66,11 +66,11 @@ export const ClassCategories = [
 export const GradeCategories = [
   {
     id: "1",
-    academicMedium: "1 - 5 Class",
+    academicMedium: "Grade 1-5",
   },
-  { id: "2", academicMedium: "6 - 9 Class" },
-  { id: "3", academicMedium: "10 - 11 Class" },
-  { id: "4", academicMedium: "12 - 13 Class" },
+  { id: "2", academicMedium: "Grade 6-9" },
+  { id: "3", academicMedium: "Grade 10-11" },
+  { id: "4", academicMedium: "Grade 12-13" },
 ];
 
 export const createAcademicDetail = async (payload: AcademicDetail) => {

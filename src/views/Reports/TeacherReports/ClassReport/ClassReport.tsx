@@ -572,7 +572,12 @@ function RagDashboard() {
     const normalizedGrade =
       typeof gradeValue === "string" ? Number(gradeValue) : gradeValue;
 
-    if (normalizedGrade === 6 || normalizedGrade === 7 || normalizedGrade === 8 || normalizedGrade === 9) {
+    if (
+      normalizedGrade === 6 ||
+      normalizedGrade === 7 ||
+      normalizedGrade === 8 ||
+      normalizedGrade === 9
+    ) {
       return ["Group 2"];
     }
 
@@ -630,11 +635,7 @@ function RagDashboard() {
         };
       })
       .filter(Boolean) as { title: string; rows: any[] }[];
-  }, [
-    disableFetch,
-    singleTermMarkGradesRows,
-    classAllMarkGradesTableData,
-  ]);
+  }, [disableFetch, singleTermMarkGradesRows, classAllMarkGradesTableData]);
 
   const handleExportGradeMarksPdf = () => {
     if (!gradeMarksPdfSections.length) return;
@@ -642,9 +643,9 @@ function RagDashboard() {
     const yearLabel =
       typeof year === "string"
         ? year
-        : (year as any)?.academicYear ??
+        : ((year as any)?.academicYear ??
           (year as any)?.year ??
-          (year != null ? String(year) : undefined);
+          (year != null ? String(year) : undefined));
 
     try {
       generateGradeMarksPdf({
@@ -654,14 +655,15 @@ function RagDashboard() {
             : "Subject Mark Grades",
           organizationName,
           gradeLabel:
-            selectedGrade?.grade != null ? String(selectedGrade.grade) : undefined,
+            selectedGrade?.grade != null
+              ? String(selectedGrade.grade)
+              : undefined,
           classLabel:
             selectedClass?.className != null
               ? String(selectedClass.className)
               : undefined,
           yearLabel,
-          termLabel:
-            selectedTerm != null ? String(selectedTerm) : undefined,
+          termLabel: selectedTerm != null ? String(selectedTerm) : undefined,
         },
         columns: markGradesTableGradeColumns,
         sections: gradeMarksPdfSections,
@@ -864,6 +866,20 @@ function RagDashboard() {
               </Box>
             )}
           </Stack>
+          <Button
+            variant="contained"
+            sx={{ marginTop: "0.5rem", marginX: "0.5rem" }}
+            onClick={() => {
+              refetchClassReportCardData();
+              refetchClassReportBarChart();
+              refetchClassReportBarChartMarkGrade();
+              refetchClassAllReportBarChart();
+              refetchClassAllReportBarChartMarkGrades();
+              refetchClassAllReportCardData();
+            }}
+          >
+            refresh
+          </Button>
           <Box
             sx={{
               display: "flex",
@@ -1265,6 +1281,20 @@ function RagDashboard() {
             backgroundColor: "#fff",
           }}
         >
+          <Button
+            variant="contained"
+            sx={{ marginTop: "0.5rem", marginX: "0.5rem" }}
+            onClick={() => {
+              refetchClassReportCardData();
+              refetchClassReportBarChart();
+              refetchClassReportBarChartMarkGrade();
+              refetchClassAllReportBarChart();
+              refetchClassAllReportBarChartMarkGrades();
+              refetchClassAllReportCardData();
+            }}
+          >
+            refresh
+          </Button>
           {disableFetch ? (
             <AllClassReportTable
               reportData={classAllReportCardData}
