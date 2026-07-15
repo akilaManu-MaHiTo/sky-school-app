@@ -56,6 +56,7 @@ type TeacherWorkRecordsFilters = {
   class: AcademicClass | null;
   date: Date | null;
   category: string | null;
+  week?: string | null;
 };
 
 type MonthlyWorkGroup = {
@@ -88,14 +89,17 @@ const TeacherWorkRecords = () => {
   const selectedClass = watch("class");
   const selectedDate = watch("date");
   const selectedCategory = watch("category");
+  const selectedWeek = watch("week");
   const formattedDate =
     selectedCategory === "Monthly"
       ? "Monthly"
-      : selectedCategory === "Daily"
-        ? selectedDate
-          ? format(selectedDate, "yyyy-MM-dd")
-          : ""
-        : "";
+      : selectedCategory === "Weekly"
+        ? (selectedWeek ?? "")
+        : selectedCategory === "Daily"
+          ? selectedDate
+            ? format(selectedDate, "yyyy-MM-dd")
+            : ""
+          : "";
 
   const breadcrumbItems = [
     { title: "Home", href: "/home" },
@@ -385,7 +389,7 @@ const TeacherWorkRecords = () => {
                         field.onChange(newVal);
                       }}
                       size="small"
-                      options={["Daily", "Monthly"]}
+                      options={["Daily", "Weekly", "Monthly"]}
                       renderInput={(params) => (
                         <TextField
                           {...params}
@@ -412,6 +416,36 @@ const TeacherWorkRecords = () => {
                         onChange={(value) => field.onChange(value)}
                         label="Select Date"
                         error={errors.date ? "Required" : ""}
+                      />
+                    )}
+                  />
+                </Box>
+              )}
+              {selectedCategory == "Weekly" && (
+                <Box sx={{ flex: 1, minWidth: 220, margin: "0.5rem" }}>
+                  <Controller
+                    name="week"
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                      <Autocomplete
+                        {...field}
+                        value={field.value ?? null}
+                        onChange={(e, newVal) => {
+                          field.onChange(newVal);
+                        }}
+                        size="small"
+                        options={["Week 1", "Week 2", "Week 3", "Week 4"]}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            required
+                            error={!!errors.category}
+                            helperText={errors.category && "Required"}
+                            label="Select Category"
+                            name="category"
+                          />
+                        )}
                       />
                     )}
                   />
@@ -486,7 +520,9 @@ const TeacherWorkRecords = () => {
                     </Typography>
                   </Box>
 
-                  <Table aria-label={`teacher monthly work records ${group.date}`}>
+                  <Table
+                    aria-label={`teacher monthly work records ${group.date}`}
+                  >
                     <TableHead>
                       <TableRow>
                         <TableCell align="center">Teacher</TableCell>
@@ -505,7 +541,10 @@ const TeacherWorkRecords = () => {
                           const subject = row.subject ?? null;
 
                           return (
-                            <TableRow key={`${group.date}-${row.id ?? index}-${index}`} hover>
+                            <TableRow
+                              key={`${group.date}-${row.id ?? index}-${index}`}
+                              hover
+                            >
                               <TableCell align="center">
                                 {teacher?.nameWithInitials ??
                                   teacher?.name ??
@@ -518,7 +557,9 @@ const TeacherWorkRecords = () => {
                                   : "--"}
                               </TableCell>
                               <TableCell align="center">{row.title}</TableCell>
-                              <TableCell align="center">{row.academicWork}</TableCell>
+                              <TableCell align="center">
+                                {row.academicWork}
+                              </TableCell>
                               <TableCell align="center">
                                 {row.time
                                   ? format(
@@ -532,7 +573,9 @@ const TeacherWorkRecords = () => {
                               <TableCell align="center">
                                 <Switch
                                   size="small"
-                                  checked={Boolean(row?.isApproved ?? row?.approved)}
+                                  checked={Boolean(
+                                    row?.isApproved ?? row?.approved,
+                                  )}
                                   onChange={() => {
                                     if (!row?.id) return;
                                     approveAcademicWorkMutation({ id: row.id });

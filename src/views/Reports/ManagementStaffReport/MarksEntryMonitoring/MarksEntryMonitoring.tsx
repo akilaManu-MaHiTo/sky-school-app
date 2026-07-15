@@ -304,6 +304,7 @@ export default function MarksEntryMonitoring() {
     const academicYearLabel =
       (year as any)?.year || (typeof year === "string" ? year : "");
     const gradeLabel = (selectedGrade as any)?.grade || "";
+    const reportTitle = "Teacher Marks Entry Report";
 
     if (selectedTerm === "All") {
       const groups = buildExportGroupsForAllTerms();
@@ -311,7 +312,7 @@ export default function MarksEntryMonitoring() {
 
       exportMarksEntryMonitoringAllTermsToExcel(groups, {
         organizationName,
-        title: "Marks Entry Monitoring - All Terms",
+        title: `${reportTitle} - All Terms`,
         academicYear: academicYearLabel,
         gradeName: gradeLabel,
         status: selectedStatus || undefined,
@@ -322,7 +323,7 @@ export default function MarksEntryMonitoring() {
 
       exportMarksEntryMonitoringToExcel(rows, {
         organizationName,
-        title: `Marks Entry Monitoring - ${selectedTerm}`,
+        title: `${reportTitle} - ${selectedTerm}`,
         academicYear: academicYearLabel,
         term: selectedTerm,
         gradeName: gradeLabel,
@@ -337,6 +338,7 @@ export default function MarksEntryMonitoring() {
     const academicYearLabel =
       (year as any)?.year || (typeof year === "string" ? year : "");
     const gradeLabel = (selectedGrade as any)?.grade || "";
+    const reportTitle = "Teacher Marks Entry Report";
 
     try {
       if (selectedTerm === "All") {
@@ -345,6 +347,7 @@ export default function MarksEntryMonitoring() {
 
         generateMarksEntryMonitoringAllTermsPdf(groups, {
           organizationName,
+          title: `${reportTitle} - All Terms`,
           academicYear: academicYearLabel,
           gradeName: gradeLabel,
           status: selectedStatus || undefined,
@@ -355,6 +358,7 @@ export default function MarksEntryMonitoring() {
 
         generateMarksEntryMonitoringPdf(rows, {
           organizationName,
+          title: reportTitle,
           academicYear: academicYearLabel,
           term: selectedTerm,
           gradeName: gradeLabel,

@@ -29,8 +29,9 @@ export async function fetchTeacherAcademicWorksByAdmin(
   classId: number,
   date: string,
 ) {
+  const clientDate = formatLocalDate(new Date(date));
   const res = await axios.get(
-    `/api/teacher-academic-works-by-admin/${year}/${gradeId}/${classId}/${date}`,
+    `/api/teacher-academic-works-by-admin/${year}/${gradeId}/${classId}/${date}/${clientDate}`,
   );
   return res.data;
 }

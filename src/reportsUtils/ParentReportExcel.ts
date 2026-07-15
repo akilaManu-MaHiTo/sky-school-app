@@ -19,6 +19,7 @@ export interface ParentReportSection {
   overall?: {
     averageOfMarks?: number | string | null;
     position?: number | string | null;
+    totalMarks?: number | string | null;
   } | null;
   subjects: ParentReportSubjectRow[];
 }
@@ -129,8 +130,9 @@ export const exportParentReportToExcel = ({
           ? section.overall.averageOfMarks.toFixed(2)
           : section.overall.averageOfMarks;
       const position = section.overall.position ?? "-";
+      const totalMarks = section.overall.totalMarks ?? "-";
       metaRows.push([
-        `Overall Average: ${avg ?? "-"} | Position: ${position}`,
+        `Overall Average: ${avg ?? "-"} | Position: ${position} | Total Marks: ${totalMarks}`,
       ]);
     }
 

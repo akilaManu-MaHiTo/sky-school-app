@@ -75,6 +75,31 @@ export const exportMarksEntryMonitoringToExcel = (
     return;
   }
 
+  const metaRows: (string | number)[][] = [];
+
+  if (options?.organizationName) {
+    metaRows.push([options.organizationName]);
+  }
+
+  if (options?.title) {
+    metaRows.push([options.title]);
+  }
+
+  const filterSummary = [
+    options?.academicYear ? `Year: ${options.academicYear}` : null,
+    options?.term ? `Term: ${options.term}` : null,
+    options?.gradeName ? `Grade: ${options.gradeName}` : null,
+    options?.status ? `Status: ${options.status}` : null,
+  ].filter((value): value is string => Boolean(value));
+
+  if (filterSummary.length) {
+    metaRows.push([filterSummary.join(" | ")]);
+  }
+
+  if (metaRows.length) {
+    metaRows.push([]);
+  }
+
   const header = [
     "Year",
     "Term",
@@ -95,7 +120,7 @@ export const exportMarksEntryMonitoringToExcel = (
 
   const body = dataset.map((row) => buildRowArray(row));
 
-  const worksheetData: (string | number)[][] = [header, ...body];
+  const worksheetData: (string | number)[][] = [...metaRows, header, ...body];
   const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
   const workbook = XLSX.utils.book_new();
 
@@ -122,6 +147,30 @@ export const exportMarksEntryMonitoringAllTermsToExcel = (
     return;
   }
 
+  const metaRows: (string | number)[][] = [];
+
+  if (options?.organizationName) {
+    metaRows.push([options.organizationName]);
+  }
+
+  if (options?.title) {
+    metaRows.push([options.title]);
+  }
+
+  const filterSummary = [
+    options?.academicYear ? `Year: ${options.academicYear}` : null,
+    options?.gradeName ? `Grade: ${options.gradeName}` : null,
+    options?.status ? `Status: ${options.status}` : null,
+  ].filter((value): value is string => Boolean(value));
+
+  if (filterSummary.length) {
+    metaRows.push([filterSummary.join(" | ")]);
+  }
+
+  if (metaRows.length) {
+    metaRows.push([]);
+  }
+
   const workbook = XLSX.utils.book_new();
 
   dataset.forEach((group) => {
@@ -145,7 +194,7 @@ export const exportMarksEntryMonitoringAllTermsToExcel = (
 
     const body = group.rows.map((row) => buildRowArray(row, group.term));
 
-    const worksheetData: (string | number)[][] = [header, ...body];
+  const worksheetData: (string | number)[][] = [...metaRows, header, ...body];
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
     const sheetTitleRaw = group.term || "Term";
     const sheetTitle = String(sheetTitleRaw).slice(0, 31) || "Term";

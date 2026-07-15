@@ -331,7 +331,12 @@ export default function GradeReport() {
         grade: report.academicDetails?.grade,
         className: report.academicDetails?.className,
       },
-      overall: report.overall ?? null,
+      overall: report.overall
+        ? {
+            ...report.overall,
+            totalMarks: report.overall.totalMarks ?? null,
+          }
+        : null,
       subjects: (report.subjects ?? []).map((s: any) => ({
         subjectName: s.subjectName,
         studentMark: s.studentMark,
@@ -364,7 +369,12 @@ export default function GradeReport() {
         grade: report.academicDetails?.grade,
         className: report.academicDetails?.className,
       },
-      overall: report.overall ?? null,
+      overall: report.overall
+        ? {
+            ...report.overall,
+            totalMarks: report.overall.totalMarks ?? null,
+          }
+        : null,
       subjects: (report.subjects ?? []).map((s: any) => ({
         subjectName: s.subjectName,
         studentMark: s.studentMark,

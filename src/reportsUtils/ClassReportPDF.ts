@@ -45,6 +45,7 @@ export const generateClassReportPdf = ({
     "#",
     "Admission Number",
     "Student",
+    "Total Marks",
     "Average",
     "Position",
     ...subjects.map((s) => s.subjectName),
@@ -55,6 +56,7 @@ export const generateClassReportPdf = ({
       (index + 1).toString(),
       formatCellValue(row.admissionNumber),
       formatCellValue(row.nameWithInitials ?? row.userName),
+      formatCellValue(row.totalMarks),
       formatCellValue(
         typeof row.averageOfMarks === "number"
           ? row.averageOfMarks.toFixed(2)

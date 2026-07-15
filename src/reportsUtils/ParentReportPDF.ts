@@ -22,6 +22,7 @@ export interface ParentReportSection {
   overall?: {
     averageOfMarks?: number | string | null;
     position?: number | string | null;
+    totalMarks?: number | string | null;
   } | null;
   subjects: ParentReportSubjectRow[];
 }
@@ -100,6 +101,7 @@ export const generateParentReportPdf = ({
         ? section.overall?.averageOfMarks.toFixed(2)
         : section.overall?.averageOfMarks ?? "-";
     const overallPosition = section.overall?.position ?? "-";
+    const overallTotalMarks = section.overall?.totalMarks ?? "-";
 
     const headRow: string[] = [
       "Subject",
@@ -172,6 +174,7 @@ export const generateParentReportPdf = ({
         rightLines.push(`Exam: ${examLabel}`);
         rightLines.push(`Overall Average: ${overallAverage}`);
         rightLines.push(`Position: ${overallPosition}`);
+        rightLines.push(`Total Marks: ${overallTotalMarks}`);
 
         leftLines.forEach((line, index) => {
           doc.text(line, 15, 56 + index * 5);

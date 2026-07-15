@@ -33,7 +33,7 @@ export interface MarksEntryMonitoringPdfOptions extends PdfHeaderData {
   status?: string;
 }
 
-const REPORT_TITLE = "Marks Entry Monitoring";
+const REPORT_TITLE = "Teacher Marks Entry Report";
 const TABLE_MARGIN_TOP = 72;
 const TABLE_MARGIN_BOTTOM = 25;
 
