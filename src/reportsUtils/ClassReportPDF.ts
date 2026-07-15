@@ -2,7 +2,11 @@ import jsPDF from "jspdf";
 import autoTable, { RowInput } from "jspdf-autotable";
 import { drawPdfHeader, PdfHeaderData } from "./OrganizationHeaderPDF";
 import { drawPdfFooter } from "./OrganizationFooter";
-import { ClassReportRow, ClassReportSubject } from "./ClassReportExcel";
+import {
+  buildClassReportTitle,
+  ClassReportRow,
+  ClassReportSubject,
+} from "./ClassReportExcel";
 
 export interface ClassReportPdfOptions extends PdfHeaderData {
   title?: string;
@@ -39,7 +43,7 @@ export const generateClassReportPdf = ({
 
   const doc = new jsPDF("l", "mm", "a4"); // landscape for wide tables
 
-  const title = headerData?.title || "Class Overall Report";
+  const title = buildClassReportTitle(headerData?.title, headerData) || "Overall Report";
 
   const headRow: string[] = [
     "#",

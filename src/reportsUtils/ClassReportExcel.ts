@@ -43,6 +43,31 @@ const formatCellValue = (value: any): string | number => {
   return value;
 };
 
+export const buildClassReportTitle = (
+  title?: string,
+  options?: ClassReportExcelOptions,
+) => {
+  const parts: string[] = [];
+  const baseTitle = (title || options?.title || "Overall Report").replace(
+    /^class\s+/i,
+    "",
+  );
+
+  if (options?.gradeLabel) {
+    parts.push(`Grade ${options.gradeLabel}`);
+  }
+
+  if (options?.classLabel) {
+    parts.push(`${options.classLabel} Class`);
+  }
+
+  parts.push(
+    options?.termLabel ? `${baseTitle} - Term ${options.termLabel}` : baseTitle,
+  );
+
+  return parts.join(" | ");
+};
+
 export const exportClassReportToExcel = ({
   title,
   subjects,
@@ -56,12 +81,9 @@ export const exportClassReportToExcel = ({
     return;
   }
 
-  const metaTitle = options?.title || title;
+  const metaTitle = buildClassReportTitle(title, options);
   const metaOrgName = options?.organizationName;
-  const metaGrade = options?.gradeLabel;
-  const metaClass = options?.classLabel;
   const metaYear = options?.yearLabel;
-  const metaTerm = options?.termLabel;
 
   const header = [
     "Admission Number",

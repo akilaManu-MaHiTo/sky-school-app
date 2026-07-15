@@ -50,6 +50,13 @@ const formatCellValue = (value: any): string => {
   return String(value);
 };
 
+const formatPercentValue = (value: number | string | null | undefined): string => {
+  if (value === null || value === undefined || value === "") {
+    return "-";
+  }
+  return `${typeof value === "number" ? value.toFixed(2) : String(value)}%`;
+};
+
 const sanitizeText = (value?: string | number | null) => {
   if (value === null || value === undefined) {
     return undefined;
@@ -97,9 +104,7 @@ export const generateParentReportPdf = ({
       : "N/A";
 
     const overallAverage =
-      typeof section.overall?.averageOfMarks === "number"
-        ? section.overall?.averageOfMarks.toFixed(2)
-        : section.overall?.averageOfMarks ?? "-";
+      formatPercentValue(section.overall?.averageOfMarks);
     const overallPosition = section.overall?.position ?? "-";
     const overallTotalMarks = section.overall?.totalMarks ?? "-";
 
@@ -116,11 +121,7 @@ export const generateParentReportPdf = ({
       formatCellValue(subject.subjectName),
       formatCellValue(subject.studentMark),
       formatCellValue(subject.studentGrade),
-      formatCellValue(
-        typeof subject.classAverageMark === "number"
-          ? subject.classAverageMark.toFixed(2)
-          : subject.classAverageMark,
-      ),
+      formatPercentValue(subject.classAverageMark),
       formatCellValue(subject.highestMark),
       formatCellValue(subject.highestGrade),
     ]);

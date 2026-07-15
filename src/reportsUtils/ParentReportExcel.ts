@@ -48,6 +48,13 @@ const formatCellValue = (value: any): string | number => {
   return String(value);
 };
 
+const formatPercentValue = (value: number | string | null | undefined): string => {
+  if (value === null || value === undefined || value === "") {
+    return "-";
+  }
+  return `${typeof value === "number" ? value.toFixed(2) : String(value)}%`;
+};
+
 export const exportParentReportToExcel = ({
   sections,
   options,
@@ -74,11 +81,7 @@ export const exportParentReportToExcel = ({
       formatCellValue(subject.subjectName),
       formatCellValue(subject.studentMark),
       formatCellValue(subject.studentGrade),
-      formatCellValue(
-        typeof subject.classAverageMark === "number"
-          ? subject.classAverageMark.toFixed(2)
-          : subject.classAverageMark,
-      ),
+      formatPercentValue(subject.classAverageMark),
       formatCellValue(subject.highestMark),
       formatCellValue(subject.highestGrade),
     ]);
@@ -125,14 +128,10 @@ export const exportParentReportToExcel = ({
     metaRows.push([examTitle]);
 
     if (section.overall) {
-      const avg =
-        typeof section.overall.averageOfMarks === "number"
-          ? section.overall.averageOfMarks.toFixed(2)
-          : section.overall.averageOfMarks;
       const position = section.overall.position ?? "-";
       const totalMarks = section.overall.totalMarks ?? "-";
       metaRows.push([
-        `Overall Average: ${avg ?? "-"} | Position: ${position} | Total Marks: ${totalMarks}`,
+        `Overall Average: ${formatPercentValue(section.overall.averageOfMarks)} | Position: ${position} | Total Marks: ${totalMarks}`,
       ]);
     }
 
