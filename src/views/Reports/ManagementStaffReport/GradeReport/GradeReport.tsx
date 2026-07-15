@@ -45,6 +45,8 @@ import useCurrentOrganization from "../../../../hooks/useCurrentOrganization";
 import ApexStackedBarChart from "./ApexStackedBarChart";
 import ApexStackedBarChartCounts from "./ApexStackedBarChartCounts";
 import { ResponsiveContainer } from "recharts";
+import { exportGradeReportToExcel } from "../../../../reportsUtils/GradeReportExcel";
+import { generateGradeReportPdf } from "../../../../reportsUtils/GradeReportPDF";
 
 const breadcrumbItems = [
   { title: "Home", href: "/home" },
@@ -250,6 +252,71 @@ export default function GradeReport() {
     return { subjectNames, rows };
   }, [gradeReportData]);
 
+  const yearLabel = year?.year;
+  const gradeLabel = selectedGrade?.grade ? `Grade ${selectedGrade.grade}` : "";
+  const termLabel = selectedTerm ?? "";
+  const marksGradeLabel = selectedMarksGrade ?? "";
+
+  const reportTitleParts = ["Grade Report", gradeLabel, termLabel, yearLabel]
+    .filter(Boolean)
+    .join(" - ");
+
+  const handleExportExcel = () => {
+    if (!tableConfig.rows.length) {
+      return;
+    }
+
+    const countSeries = (markChartConfig.series || []).map((series: any) => ({
+      name: series.name,
+      data: Array.isArray(series.data)
+        ? series.data.map((value: any) => Number(value) || 0)
+        : [],
+    }));
+
+    exportGradeReportToExcel({
+      subjectNames: tableConfig.subjectNames,
+      averageRows: tableConfig.rows,
+      countCategories: markChartConfig.categories,
+      countSeries,
+      options: {
+        title: reportTitleParts || "Grade Report",
+        organizationName,
+        yearLabel,
+        gradeLabel,
+        termLabel,
+        marksGradeLabel,
+      },
+    });
+  };
+
+  const handleExportPdf = () => {
+    if (!tableConfig.rows.length) {
+      return;
+    }
+
+    const countSeries = (markChartConfig.series || []).map((series: any) => ({
+      name: series.name,
+      data: Array.isArray(series.data)
+        ? series.data.map((value: any) => Number(value) || 0)
+        : [],
+    }));
+
+    generateGradeReportPdf({
+      subjectNames: tableConfig.subjectNames,
+      averageRows: tableConfig.rows,
+      countCategories: markChartConfig.categories,
+      countSeries,
+      options: {
+        title: reportTitleParts || "Grade Report",
+        organizationName,
+        yearLabel,
+        gradeLabel,
+        termLabel,
+        marksGradeLabel,
+      },
+    });
+  };
+
   return (
     <Stack>
       <Box
@@ -412,6 +479,34 @@ export default function GradeReport() {
           </Box>
         </AccordionDetails>
       </Accordion>
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-end",
+          marginTop: "1rem",
+          gap: 1,
+        }}
+      >
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<DownloadIcon fontSize="small" />}
+          onClick={handleExportExcel}
+          disabled={isGradeReportDataFetching || !tableConfig.rows.length}
+        >
+          Export Excel
+        </Button>
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<PictureAsPdfIcon fontSize="small" />}
+          onClick={handleExportPdf}
+          disabled={isGradeReportDataFetching || !tableConfig.rows.length}
+        >
+          Export PDF
+        </Button>
+      </Box>
 
       <Box
         sx={{
