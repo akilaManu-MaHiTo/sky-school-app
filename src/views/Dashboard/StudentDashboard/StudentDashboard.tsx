@@ -256,7 +256,10 @@ export default function GradeReport() {
     const avg = selectedTermStats?.studentAverage;
     const avgTrend = selectedTermStats?.trend?.studentAverage;
     return {
-      value: avg == null || avg === "" ? "-" : String(avg),
+      value:
+        avg == null || avg === "" || Number.isNaN(Number(avg))
+          ? null
+          : Number(avg),
       trend: mapTrendDirection(avgTrend?.direction),
       trendValue: avgTrend?.delta == null ? undefined : String(avgTrend?.delta),
       fromTerm: selectedTermStats?.trend?.fromTerm as string | undefined,
@@ -603,7 +606,11 @@ export default function GradeReport() {
                     : undefined
               }
               titleIcon={<BarChartIcon fontSize="large" />}
-              value={studentAverageCard.value + "%"}
+                value={
+                  studentAverageCard.value == null
+                    ? "-"
+                    : `${studentAverageCard.value.toFixed(2)}%`
+                }
               trend={studentAverageCard.trend as any}
               trendValue={studentAverageCard.trendValue}
             />
@@ -652,7 +659,7 @@ export default function GradeReport() {
                     ? undefined
                     : String(subject.trendFromPreviousTerm?.delta)
                 }
-                subDescription={`Class Avg: ${subject.classAverageMark}% (${subject.differenceFromClass >= 0 ? "+" : ""}${subject.differenceFromClass})`}
+                subDescription={`Class Average: ${subject.classAverageMark.toFixed(2)}% (${subject.differenceFromClass.toFixed(2) >= 0 ? "+" : ""}${subject.differenceFromClass.toFixed(2)})`}
               />
             </Box>
           ))}
@@ -700,7 +707,7 @@ export default function GradeReport() {
                     ? undefined
                     : String(subject.trendFromPreviousTerm?.delta)
                 }
-                subDescription={`Class Avg: ${subject.classAverageMark}% (${subject.differenceFromClass >= 0 ? "+" : ""}${subject.differenceFromClass})`}
+                subDescription={`Class Average: ${subject.classAverageMark.toFixed(2)}% (${subject.differenceFromClass.toFixed(2) >= 0 ? "+" : ""}${subject.differenceFromClass.toFixed(2)})`}
               />
             </Box>
           ))}
@@ -748,7 +755,7 @@ export default function GradeReport() {
                     title={`Student Class Average`}
                     caption={yearLabel ? `${yearLabel}` : undefined}
                     titleIcon={<BarChartIcon fontSize="large" />}
-                    value={t.studentAverage + "%"}
+                    value={t.studentAverage.toFixed(2) + "%"}
                     trend={mapTrendDirection(avgTrend?.direction) as any}
                     trendValue={
                       avgTrend?.delta == null
@@ -798,7 +805,7 @@ export default function GradeReport() {
                       ? undefined
                       : String(subject.trendFromPreviousTerm?.delta)
                   }
-                  subDescription={`${subject.term} | Class Avg: ${subject.classAverageMark}% (${subject.differenceFromClass >= 0 ? "+" : ""}${subject.differenceFromClass})`}
+                  subDescription={`${subject.term} | Class Average: ${subject.classAverageMark.toFixed(2)}% (${subject.differenceFromClass.toFixed(2) >= 0 ? "+" : ""}${subject.differenceFromClass.toFixed(2)})`}
                 />
               </Box>
             ))}
@@ -875,8 +882,9 @@ export default function GradeReport() {
                   </Typography>
                   {report.overall && (
                     <Typography variant="body2" sx={{ mb: 1 }}>
-                      Overall Average: {report.overall.averageOfMarks} |
-                      Position: {report.overall.position}
+                      Overall Average: {report.overall.averageOfMarks.toFixed(2) + "%"} |
+                      Position: {report.overall.position} |
+                      Total Marks: {report.overall.totalMarks}
                     </Typography>
                   )}
                   <TableContainer>
@@ -909,7 +917,7 @@ export default function GradeReport() {
                                 {subject.studentGrade}
                               </TableCell>
                               <TableCell align="right">
-                                {subject.classAverageMark.toFixed(2)}
+                                {subject.classAverageMark.toFixed(2) + "%"}
                               </TableCell>
                               <TableCell align="right">
                                 {subject.highestMark}

@@ -55,6 +55,12 @@ type TeacherWorkRecordsFilters = {
   grade: AcademicGrade | null;
   class: AcademicClass | null;
   date: Date | null;
+  category: string | null;
+};
+
+type MonthlyWorkGroup = {
+  date: string;
+  works: Array<Record<string, any>>;
 };
 
 const TeacherWorkRecords = () => {
@@ -73,6 +79,7 @@ const TeacherWorkRecords = () => {
       grade: null,
       class: null,
       date: null,
+      category: null,
     },
   });
 
@@ -80,8 +87,15 @@ const TeacherWorkRecords = () => {
   const selectedGrade = watch("grade");
   const selectedClass = watch("class");
   const selectedDate = watch("date");
-
-  const formattedDate = selectedDate ? format(selectedDate, "yyyy-MM-dd") : "";
+  const selectedCategory = watch("category");
+  const formattedDate =
+    selectedCategory === "Monthly"
+      ? "Monthly"
+      : selectedCategory === "Daily"
+        ? selectedDate
+          ? format(selectedDate, "yyyy-MM-dd")
+          : ""
+        : "";
 
   const breadcrumbItems = [
     { title: "Home", href: "/home" },
@@ -139,10 +153,7 @@ const TeacherWorkRecords = () => {
           formattedDate,
         ),
       enabled:
-        !!selectedYear?.year &&
-        !!selectedGrade?.id &&
-        !!selectedClass?.id &&
-        !!formattedDate,
+        !!selectedYear?.year && !!selectedGrade?.id && !!selectedClass?.id,
     },
   );
 
@@ -182,6 +193,15 @@ const TeacherWorkRecords = () => {
     : Array.isArray(academicWorks)
       ? academicWorks
       : [];
+  const monthlyWorkGroups: MonthlyWorkGroup[] = Array.isArray(academicWorks)
+    ? academicWorks.filter(
+        (group): group is MonthlyWorkGroup =>
+          !!group &&
+          typeof group === "object" &&
+          "date" in group &&
+          "works" in group,
+      )
+    : [];
 
   const handleMoveDate = (direction: "prev" | "next") => {
     if (!selectedDate) return;
@@ -344,21 +364,60 @@ const TeacherWorkRecords = () => {
                 />
               </Box>
             </Stack>
-            <Box sx={{ flex: 1, minWidth: 220, margin: "0.5rem" }}>
-              <Controller
-                name="date"
-                control={control}
-                rules={{ required: true }}
-                render={({ field }) => (
-                  <DatePickerComponent
-                    value={field.value}
-                    onChange={(value) => field.onChange(value)}
-                    label="Select Date"
-                    error={errors.date ? "Required" : ""}
+            <Stack
+              sx={{
+                display: "flex",
+                justifyContent: "flex-start",
+                flexWrap: "wrap",
+                flexDirection: isMobile || isTablet ? "column" : "row",
+              }}
+            >
+              <Box sx={{ flex: 1, minWidth: 220, margin: "0.5rem" }}>
+                <Controller
+                  name="category"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <Autocomplete
+                      {...field}
+                      value={field.value ?? null}
+                      onChange={(e, newVal) => {
+                        field.onChange(newVal);
+                      }}
+                      size="small"
+                      options={["Daily", "Monthly"]}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          required
+                          error={!!errors.category}
+                          helperText={errors.category && "Required"}
+                          label="Select Category"
+                          name="category"
+                        />
+                      )}
+                    />
+                  )}
+                />
+              </Box>
+              {selectedCategory == "Daily" && (
+                <Box sx={{ flex: 1, minWidth: 220, margin: "0.5rem" }}>
+                  <Controller
+                    name="date"
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                      <DatePickerComponent
+                        value={field.value}
+                        onChange={(value) => field.onChange(value)}
+                        label="Select Date"
+                        error={errors.date ? "Required" : ""}
+                      />
+                    )}
                   />
-                )}
-              />
-            </Box>
+                </Box>
+              )}
+            </Stack>
           </Stack>
           <Box
             sx={{
@@ -370,7 +429,13 @@ const TeacherWorkRecords = () => {
           >
             <Button
               onClick={() => {
-                reset({ year: null, grade: null, class: null, date: null });
+                reset({
+                  year: null,
+                  grade: null,
+                  class: null,
+                  date: null,
+                  category: null,
+                });
               }}
               sx={{ color: "var(--pallet-blue)", marginRight: "0.5rem" }}
             >
@@ -385,7 +450,140 @@ const TeacherWorkRecords = () => {
         </Alert>
       )}
 
-      {showTable && (
+      {selectedCategory === "Monthly" && (
+        <TableContainer
+          component={Paper}
+          sx={{
+            overflowX: "auto",
+            maxWidth: isMobile ? "65vw" : "100%",
+            marginTop: theme.spacing(2),
+            p: 2,
+          }}
+        >
+          {isLoading && <LinearProgress sx={{ width: "100%" }} />}
+          <Stack spacing={2} sx={{ width: "100%" }}>
+            {monthlyWorkGroups.length > 0 ? (
+              monthlyWorkGroups.map((group) => (
+                <Paper
+                  key={group.date}
+                  elevation={0}
+                  sx={{
+                    border: "1px solid var(--pallet-lighter-grey)",
+                    borderRadius: 2,
+                    overflow: "hidden",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      px: 2,
+                      py: 1,
+                      backgroundColor: "var(--pallet-lighter-blue)",
+                      borderBottom: "1px solid var(--pallet-lighter-grey)",
+                    }}
+                  >
+                    <Typography variant="subtitle2" fontWeight={600}>
+                      {format(new Date(group.date), "MMMM dd, yyyy")}
+                    </Typography>
+                  </Box>
+
+                  <Table aria-label={`teacher monthly work records ${group.date}`}>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell align="center">Teacher</TableCell>
+                        <TableCell align="center">Subject</TableCell>
+                        <TableCell align="center">Title</TableCell>
+                        <TableCell align="center">Academic Work</TableCell>
+                        <TableCell align="center">Time</TableCell>
+                        <TableCell align="center">Approve</TableCell>
+                        <TableCell align="center">Status</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {group.works.length > 0 ? (
+                        group.works.map((row, index) => {
+                          const teacher = row.teacher ?? null;
+                          const subject = row.subject ?? null;
+
+                          return (
+                            <TableRow key={`${group.date}-${row.id ?? index}-${index}`} hover>
+                              <TableCell align="center">
+                                {teacher?.nameWithInitials ??
+                                  teacher?.name ??
+                                  teacher?.userName ??
+                                  "--"}
+                              </TableCell>
+                              <TableCell align="center">
+                                {subject
+                                  ? `${subject.subjectName} - ${subject.subjectMedium} Medium`
+                                  : "--"}
+                              </TableCell>
+                              <TableCell align="center">{row.title}</TableCell>
+                              <TableCell align="center">{row.academicWork}</TableCell>
+                              <TableCell align="center">
+                                {row.time
+                                  ? format(
+                                      typeof row.time === "string"
+                                        ? new Date(row.time)
+                                        : row.time,
+                                      "hh:mm a",
+                                    )
+                                  : "--"}
+                              </TableCell>
+                              <TableCell align="center">
+                                <Switch
+                                  size="small"
+                                  checked={Boolean(row?.isApproved ?? row?.approved)}
+                                  onChange={() => {
+                                    if (!row?.id) return;
+                                    approveAcademicWorkMutation({ id: row.id });
+                                  }}
+                                  disabled={isAcademicWorkApproving || !row?.id}
+                                />
+                              </TableCell>
+                              <TableCell align="center">
+                                <Chip
+                                  size="small"
+                                  variant="outlined"
+                                  color={
+                                    row?.isApproved || row?.approved
+                                      ? "success"
+                                      : "warning"
+                                  }
+                                  label={
+                                    row?.isApproved || row?.approved
+                                      ? "Approved"
+                                      : "Pending"
+                                  }
+                                />
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={7} align="center">
+                            <Typography variant="body2">
+                              No teacher work records found for this date
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </Paper>
+              ))
+            ) : (
+              <Box sx={{ py: 2, textAlign: "center" }}>
+                <Typography variant="body2">
+                  {isLoading ? "" : "No teacher work records found"}
+                </Typography>
+              </Box>
+            )}
+          </Stack>
+        </TableContainer>
+      )}
+
+      {showTable && selectedCategory == "Daily" && (
         <TableContainer
           component={Paper}
           sx={{

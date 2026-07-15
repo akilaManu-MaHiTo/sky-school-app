@@ -63,6 +63,16 @@ export const ClassCategories = [
   { id: "3", academicMedium: "12 - 13 Class" },
 ];
 
+export const GradeCategories = [
+  {
+    id: "1",
+    academicMedium: "Grade 1-5",
+  },
+  { id: "2", academicMedium: "Grade 6-9" },
+  { id: "3", academicMedium: "Grade 10-11" },
+  { id: "4", academicMedium: "Grade 12-13" },
+];
+
 export const createAcademicDetail = async (payload: AcademicDetail) => {
   console.log("payload", payload);
   const submitData = {

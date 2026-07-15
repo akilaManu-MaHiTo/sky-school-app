@@ -117,7 +117,7 @@ export default function GradeReport() {
 
   const groupedReports = useMemo(
     () => myChildrenReport ?? [],
-    [myChildrenReport]
+    [myChildrenReport],
   );
 
   const reportStudent = groupedReports[0]?.student;
@@ -284,7 +284,9 @@ export default function GradeReport() {
                       }}
                       size="small"
                       options={myChildrenData ?? []}
-                      getOptionLabel={(option) => option.nameWithInitials}
+                      getOptionLabel={(option) =>
+                        `${option.nameWithInitials} - ${option.employeeNumber}`
+                      }
                       sx={{ flex: 1 }}
                       renderInput={(params) => (
                         <TextField
@@ -294,6 +296,17 @@ export default function GradeReport() {
                           helperText={errors.myChild && "Required"}
                           label="Select Student"
                           name="myChild"
+                          InputProps={{
+                            ...params.InputProps,
+                            endAdornment: (
+                              <>
+                                {isMyChildrenDataFetching ? (
+                                  <CircularProgress color="success" size={20} />
+                                ) : null}
+                                {params.InputProps.endAdornment}
+                              </>
+                            ),
+                          }}
                         />
                       )}
                     />
@@ -460,8 +473,9 @@ export default function GradeReport() {
                   </Typography>
                   {report.overall && (
                     <Typography variant="body2" sx={{ mb: 1 }}>
-                      Overall Average: {report.overall.averageOfMarks} |
-                      Position: {report.overall.position}
+                      Overall Average: {report.overall.averageOfMarks.toFixed(2) + "%"} |
+                      Position: {report.overall.position} |
+                      Total Marks: {report.overall.totalMarks}
                     </Typography>
                   )}
                   <TableContainer>
@@ -471,7 +485,9 @@ export default function GradeReport() {
                           <TableCell>Subject</TableCell>
                           <TableCell align="right">Student Mark</TableCell>
                           <TableCell align="right">Grade</TableCell>
-                          <TableCell align="right">Overall Class Average</TableCell>
+                          <TableCell align="right">
+                            Overall Class Average
+                          </TableCell>
                           <TableCell align="right">
                             Highest Class Mark
                           </TableCell>
@@ -492,7 +508,7 @@ export default function GradeReport() {
                                 {subject.studentGrade}
                               </TableCell>
                               <TableCell align="right">
-                                {subject.classAverageMark.toFixed(2)}
+                                {subject.classAverageMark.toFixed(2) + "%"}
                               </TableCell>
                               <TableCell align="right">
                                 {subject.highestMark}
@@ -501,7 +517,7 @@ export default function GradeReport() {
                                 {subject.highestGrade}
                               </TableCell>
                             </TableRow>
-                          )
+                          ),
                         )}
                       </TableBody>
                     </Table>

@@ -36,6 +36,8 @@ import SwitchButton from "../../../components/SwitchButton";
 import {
   AcademicMedium,
   BasketGroup,
+  ClassCategories,
+  GradeCategories,
 } from "../../../api/OrganizationSettings/academicDetailsApi";
 import {
   Slider,
@@ -208,6 +210,31 @@ export const AddOrEditSubjects = ({
               sx={{ margin: "0.5rem", flex: 1 }}
             />
           </Box>
+          <Controller
+            name="gradeCategory"
+            control={control}
+            defaultValue={defaultValues?.gradeCategory ?? ""}
+            {...register("gradeCategory")}
+            render={({ field }) => (
+              <Autocomplete
+                {...field}
+                onChange={(event, newValue) => field.onChange(newValue)}
+                size="small"
+                options={GradeCategories.map((medium) => medium.academicMedium)}
+                sx={{ flex: 1, margin: "0.5rem" }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    required
+                    error={!!errors.gradeCategory}
+                    helperText={errors.gradeCategory && "Required"}
+                    label="Grade Category"
+                    name="gradeCategory"
+                  />
+                )}
+              />
+            )}
+          />
           <Box
             border={`1px solid ${grey[400]}`}
             borderRadius={"4px"}

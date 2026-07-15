@@ -3,6 +3,7 @@ import {
   Alert,
   Box,
   Button,
+  Chip,
   IconButton,
   LinearProgress,
   Menu,
@@ -29,7 +30,7 @@ interface ClassReportTableProps {
   isMobile: boolean;
   isTablet?: boolean;
   title: string;
-  showGroupColumns?: boolean;
+  groupNames?: string[];
   year?: string;
 }
 
@@ -41,28 +42,30 @@ function ClassReportTable({
   isMobile,
   title,
   isTablet,
-  showGroupColumns = true,
+  groupNames,
   year,
 }: ClassReportTableProps) {
   const [groupFilter, setGroupFilter] = useState<Record<string, string | null>>(
-    {}
+    {},
   );
   const [groupMenuAnchor, setGroupMenuAnchor] = useState<null | HTMLElement>(
-    null
+    null,
   );
   const [activeGroupForMenu, setActiveGroupForMenu] = useState<string | null>(
-    null
+    null,
   );
 
   const { organization } = useCurrentOrganization();
   const organizationName = organization?.organizationName;
 
   const classReportTableData = useMemo(() => {
+    const visibleGroupNames = groupNames ?? [];
+
     if (!reportData || !reportData.data) {
       return {
         subjects: [] as any[],
         exportSubjects: [] as any[],
-        groupNames: showGroupColumns ? GROUP_NAMES : [],
+        groupNames: visibleGroupNames,
         rows: [] as any[],
         basketSubjectsByGroup: {} as Record<string, any[]>,
       };
@@ -71,7 +74,7 @@ function ClassReportTable({
     const allSubjects = reportData.data.subjects ?? [];
 
     const subjects = allSubjects.filter(
-      (subject: any) => !subject.isBasketSubject
+      (subject: any) => !subject.isBasketSubject,
     );
 
     const basketSubjectsByGroup: Record<string, any[]> = {
@@ -93,24 +96,46 @@ function ClassReportTable({
       const marksRecord = (student.marks?.[0] ?? {}) as any;
 
       const subjectMarks: Record<string, number | null> = {};
+      const subjectMarkColors: Record<string, string | null> = {};
       allSubjects.forEach((subject: any) => {
         const key = subject.subjectName;
         const subjectEntry = marksRecord[key];
         subjectMarks[key] =
           subjectEntry && typeof subjectEntry.marks === "number"
             ? subjectEntry.marks
-            : subjectEntry?.marks ?? null;
+            : (subjectEntry?.marks ?? null);
+        subjectMarkColors[key] =
+          subjectEntry?.gradingColor ??
+          subjectEntry?.markingGradeColor ??
+          subject.colorCode ??
+          subject.subjectColorCode ??
+          null;
       });
 
       const groupMarks: Record<string, number | null> = {};
+      const groupMarkColors: Record<string, string | null> = {};
       const groupSubjects: Record<string, string | null> = {};
       GROUP_NAMES.forEach((groupName: string) => {
         const groupEntry = marksRecord[groupName];
         groupMarks[groupName] =
           groupEntry && typeof groupEntry.marks === "number"
             ? groupEntry.marks
-            : groupEntry?.marks ?? null;
-        groupSubjects[groupName] = groupEntry?.subject ?? null;
+            : (groupEntry?.marks ?? null);
+        const matchedGroupSubject = groupEntry?.subject ?? null;
+        groupSubjects[groupName] = matchedGroupSubject;
+
+        const basketSubject =
+          basketSubjectsByGroup[groupName]?.find(
+            (subject: any) => subject.subjectName === matchedGroupSubject,
+          ) ?? null;
+
+        groupMarkColors[groupName] =
+          groupEntry?.gradingColor ??
+          groupEntry?.markingGradeColor ??
+          groupEntry?.colorCode ??
+          basketSubject?.colorCode ??
+          basketSubject?.subjectColorCode ??
+          null;
       });
 
       return {
@@ -119,10 +144,13 @@ function ClassReportTable({
         userName: student.userName,
         nameWithInitials: student.nameWithInitials,
         email: student.email,
+        totalMarks: student.totalMarks,
         averageOfMarks: student.averageOfMarks,
         position: student.position,
         subjectMarks,
+        subjectMarkColors,
         groupMarks,
+        groupMarkColors,
         groupSubjects,
       };
     });
@@ -130,11 +158,11 @@ function ClassReportTable({
     return {
       subjects,
       exportSubjects: allSubjects,
-      groupNames: showGroupColumns ? GROUP_NAMES : [],
+      groupNames: visibleGroupNames,
       rows,
       basketSubjectsByGroup,
     };
-  }, [reportData, showGroupColumns]);
+  }, [groupNames, reportData]);
 
   const filteredRows = useMemo(() => {
     const rows = classReportTableData.rows ?? [];
@@ -161,15 +189,15 @@ function ClassReportTable({
     const yearLabel =
       typeof year === "string"
         ? year
-        : (year as any)?.academicYear ??
+        : ((year as any)?.academicYear ??
           (year as any)?.year ??
-          (year != null ? String(year) : undefined);
+          (year != null ? String(year) : undefined));
     const termLabel = meta.term ?? undefined;
 
     exportClassReportToExcel({
       title,
       subjects: classReportTableData.exportSubjects,
-      groupNames: showGroupColumns ? classReportTableData.groupNames : [],
+      groupNames: classReportTableData.groupNames,
       rows: filteredRows,
       options: {
         title,
@@ -202,7 +230,7 @@ function ClassReportTable({
           termLabel,
         },
         subjects: classReportTableData.exportSubjects,
-        groupNames: showGroupColumns ? classReportTableData.groupNames : [],
+        groupNames: classReportTableData.groupNames,
         rows: filteredRows,
       } as any);
     } catch (err) {
@@ -270,6 +298,7 @@ function ClassReportTable({
               <TableCell>Student Name</TableCell>
               <TableCell align="right">Average</TableCell>
               <TableCell align="right">Rank</TableCell>
+              <TableCell>Total Marks</TableCell>
               {classReportTableData.subjects.map((subject: any) => (
                 <TableCell key={subject.id} align="right">
                   {subject.subjectName}
@@ -339,17 +368,41 @@ function ClassReportTable({
                   <TableCell component="th" scope="row">
                     {row.nameWithInitials}
                   </TableCell>
+
                   <TableCell align="right">
                     {typeof row.averageOfMarks === "number"
                       ? row.averageOfMarks.toFixed(2) + "%"
                       : row.averageOfMarks + "%"}
                   </TableCell>
                   <TableCell align="right">{row.position ?? "--"}</TableCell>
+                  <TableCell component="th" scope="row">
+                    {row.totalMarks ?? "--"}
+                  </TableCell>
                   {classReportTableData.subjects.map((subject: any) => {
                     const value = row.subjectMarks[subject.subjectName] ?? null;
                     return (
                       <TableCell key={`${row.id}-${subject.id}`} align="right">
-                        {value ?? "--"}
+                        <Chip
+                          sx={(theme) => {
+                            const backgroundColor =
+                              row.subjectMarkColors?.[subject.subjectName] ||
+                              theme.palette.action.hover;
+
+                            let color = theme.palette.text.primary;
+                            try {
+                              color =
+                                theme.palette.getContrastText(backgroundColor);
+                            } catch {
+                              color = theme.palette.text.primary;
+                            }
+
+                            return {
+                              backgroundColor,
+                              color,
+                            };
+                          }}
+                          label={value ?? "--"}
+                        />
                       </TableCell>
                     );
                   })}
@@ -357,7 +410,27 @@ function ClassReportTable({
                     const value = row.groupMarks[groupName] ?? null;
                     return (
                       <TableCell key={`${row.id}-${groupName}`} align="right">
-                        {value ?? "--"}
+                        <Chip
+                          sx={(theme) => {
+                            const backgroundColor =
+                              row.groupMarkColors?.[groupName] ||
+                              theme.palette.action.hover;
+
+                            let color = theme.palette.text.primary;
+                            try {
+                              color =
+                                theme.palette.getContrastText(backgroundColor);
+                            } catch {
+                              color = theme.palette.text.primary;
+                            }
+
+                            return {
+                              backgroundColor,
+                              color,
+                            };
+                          }}
+                          label={value ?? "--"}
+                        />
                       </TableCell>
                     );
                   })}

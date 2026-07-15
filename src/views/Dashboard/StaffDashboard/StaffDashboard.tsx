@@ -386,16 +386,7 @@ export default function StaffDashboard() {
                                 >
                                   {subject.subjectName}
                                 </Typography>
-                                <Chip
-                                  label={subject.subjectCode}
-                                  size="small"
-                                  sx={{
-                                    height: 20,
-                                    fontSize: "0.7rem",
-                                    backgroundColor: subject.colorCode,
-                                    color: "#fff",
-                                  }}
-                                />
+                                
                                 <Typography
                                   variant="caption"
                                   sx={{

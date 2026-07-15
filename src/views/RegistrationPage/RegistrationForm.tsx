@@ -34,8 +34,9 @@ import useIsMobile from "../../customHooks/useIsMobile";
 function RegistrationForm() {
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up(990));
-  const { isMobile, isTablet,isSmallMonitor } = useIsMobile();
+  const { isMobile, isTablet, isSmallMonitor } = useIsMobile();
   const [selectedRole, setSelectedRole] = useState("");
+  const [clickCount, setClickCount] = useState(0);
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -91,6 +92,11 @@ function RegistrationForm() {
     registrationMutation(data);
   };
 
+  if (clickCount === 0 || clickCount === 1) {
+  } else {
+    window.location.reload();
+  }
+
   return (
     <Stack
       spacing={2}
@@ -141,7 +147,10 @@ function RegistrationForm() {
                 <RoleButton
                   value={EmployeeType.TEACHER}
                   selected={selectedRole === EmployeeType.TEACHER}
-                  onClick={setSelectedRole}
+                  onClick={() => {
+                    setSelectedRole(EmployeeType.TEACHER);
+                    setClickCount((prevCount) => prevCount + 1);
+                  }}
                   key={EmployeeType.TEACHER}
                 >
                   <AdminPanelSettingsIcon />
@@ -152,7 +161,10 @@ function RegistrationForm() {
                 <RoleButton
                   value={EmployeeType.STUDENT}
                   selected={selectedRole === EmployeeType.STUDENT}
-                  onClick={setSelectedRole}
+                  onClick={() => {
+                    setSelectedRole(EmployeeType.STUDENT);
+                    setClickCount((prevCount) => prevCount + 1);
+                  }}
                   key={EmployeeType.STUDENT}
                 >
                   <SchoolIcon />
@@ -163,7 +175,10 @@ function RegistrationForm() {
                 <RoleButton
                   value={EmployeeType.PARENT}
                   selected={selectedRole === EmployeeType.PARENT}
-                  onClick={setSelectedRole}
+                  onClick={() => {
+                    setSelectedRole(EmployeeType.PARENT);
+                    setClickCount((prevCount) => prevCount + 1);
+                  }}
                   key={EmployeeType.PARENT}
                 >
                   <GroupIcon />

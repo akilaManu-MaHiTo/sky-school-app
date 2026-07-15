@@ -54,7 +54,7 @@ const ApexStackedBarChartCounts: React.FC<Props> = ({
     },
 
     yaxis: {
-      show: true,
+      show: false,
     },
 
     xaxis: {
@@ -100,13 +100,39 @@ const ApexStackedBarChartCounts: React.FC<Props> = ({
     tooltip: {
       shared: true,
       intersect: false,
-      y: {
-        formatter: (val) => `${val}`, // raw count, no "%"
+      custom: ({ series, dataPointIndex, w }) => {
+        const rows = series
+          .map((serieValues, seriesIndex) => {
+            const rawValue = serieValues?.[dataPointIndex];
+            const value = Number(rawValue);
+
+            if (rawValue == null || Number.isNaN(value) || value === 0) {
+              return "";
+            }
+
+            const seriesName = w.config?.series?.[seriesIndex]?.name ?? "";
+
+            return `
+              <div class="apexcharts-tooltip-series-group apexcharts-active" style="display:flex;">
+                <span class="apexcharts-tooltip-marker" style="background-color:${w.globals.colors[seriesIndex]};"></span>
+                <div class="apexcharts-tooltip-text">
+                  <div class="apexcharts-tooltip-y-group">
+                    <span class="apexcharts-tooltip-text-y-label">${seriesName}: </span>
+                    <span class="apexcharts-tooltip-text-y-value">${Math.round(value)}</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          })
+          .filter(Boolean)
+          .join("");
+
+        return `<div class="apexcharts-tooltip-title"></div>${rows}`;
       },
     },
   };
 
-  return <Chart options={options} series={series} type="bar" height={380} />;
+  return <Chart options={options} series={series} type="bar" height={480} />;
 };
 
 export default ApexStackedBarChartCounts;

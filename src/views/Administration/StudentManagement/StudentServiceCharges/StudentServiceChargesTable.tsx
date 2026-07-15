@@ -201,7 +201,9 @@ const StudentServiceChargesTable = () => {
                       }}
                       size="small"
                       options={students ?? []}
-                      getOptionLabel={(option) => option.nameWithInitials || ""}
+                      getOptionLabel={(option) =>
+                        `${option.nameWithInitials} - ${option.employeeNumber}`
+                      }
                       sx={{ flex: 1 }}
                       renderInput={(params) => (
                         <TextField

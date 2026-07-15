@@ -74,6 +74,9 @@ const TeacherClassReport = React.lazy(
 const TeacherStudentReport = React.lazy(
   () => import("./views/Reports/TeacherReports/StudentReport/StudentReport"),
 );
+const MyAcademicReport = React.lazy(
+  () => import("./views/Reports/TeacherReports/AcademicReport/MyAcademicReport"),
+);
 // Reports > Management Staff Reports > Grade Report
 const ManagementGradeReport = React.lazy(
   () => import("./views/Reports/ManagementStaffReport/GradeReport/GradeReport"),
@@ -312,6 +315,17 @@ const AppRoutes = () => {
             TeacherStudentReport,
             !userPermissionObject?.[
               PermissionKeys.TEACHER_STUDENT_REPORTS_VIEW
+            ],
+          )}
+        />
+        {/* Reports > Teacher Reports > Academic Report */}
+        <Route
+          path="/reports/teacher-academic-report"
+          element={withLayout(
+            MainLayout,
+            MyAcademicReport,
+            !userPermissionObject?.[
+              PermissionKeys.TEACHER_ACADEMIC_REPORTS_VIEW
             ],
           )}
         />

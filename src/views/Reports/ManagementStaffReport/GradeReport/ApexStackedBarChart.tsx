@@ -41,6 +41,7 @@ const ApexStackedBarChart: React.FC<Props> = ({ series, categories, isMobile }) 
       bar: {
         horizontal: false,
         borderRadius: 4,
+        columnWidth: "80%",
         dataLabels: {
           position: "center",
           total: {
@@ -59,7 +60,7 @@ const ApexStackedBarChart: React.FC<Props> = ({ series, categories, isMobile }) 
     },
 
     yaxis: {
-      show: true,
+      show: false,
     },
 
     xaxis: {
@@ -79,9 +80,10 @@ const ApexStackedBarChart: React.FC<Props> = ({ series, categories, isMobile }) 
         if (val == null) return "";
         const num = Number(val);
         if (Number.isNaN(num)) return "";
+        if (num === 0) return "";
 
         if (isMobile) {
-          return `${Math.round(num)}%`;
+          return `${num.toFixed(2)}%`;
         }
 
         const o: any = opts || {};
@@ -97,20 +99,46 @@ const ApexStackedBarChart: React.FC<Props> = ({ series, categories, isMobile }) 
           shortSubject = `${words.slice(0, 2).join(" ")} ...`;
         }
 
-        return `${shortSubject} ${Math.round(num)}%`;
+        return `${shortSubject} ${num.toFixed(2)}%`;
       },
     },
 
     tooltip: {
       shared: true,
       intersect: false,
-      y: {
-        formatter: (val) => `${val}%`,
+      custom: ({ series, dataPointIndex, w }) => {
+        const rows = series
+          .map((serieValues, seriesIndex) => {
+            const rawValue = serieValues?.[dataPointIndex];
+            const value = Number(rawValue);
+
+            if (rawValue == null || Number.isNaN(value) || value === 0) {
+              return "";
+            }
+
+            const seriesName = w.config?.series?.[seriesIndex]?.name ?? "";
+
+            return `
+              <div class="apexcharts-tooltip-series-group apexcharts-active" style="display:flex;">
+                <span class="apexcharts-tooltip-marker" style="background-color:${w.globals.colors[seriesIndex]};"></span>
+                <div class="apexcharts-tooltip-text">
+                  <div class="apexcharts-tooltip-y-group">
+                    <span class="apexcharts-tooltip-text-y-label">${seriesName}: </span>
+                    <span class="apexcharts-tooltip-text-y-value">${value.toFixed(2)}%</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          })
+          .filter(Boolean)
+          .join("");
+
+        return `<div class="apexcharts-tooltip-title"></div>${rows}`;
       },
     },
   };
 
-  return <Chart options={options} series={series} type="bar" height={380} />;
+  return <Chart options={options} series={series} type="bar" height={700} />;
 };
 
 export default ApexStackedBarChart;

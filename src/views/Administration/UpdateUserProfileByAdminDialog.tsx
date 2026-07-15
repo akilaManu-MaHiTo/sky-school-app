@@ -99,6 +99,8 @@ export default function UpdateUserProfile({
       birthDate: data.birthDate!,
       address: data.address,
       employeeType: data.employeeType!,
+      password: data.password,
+      userName: data.userName,
     });
   };
   return (
@@ -153,6 +155,40 @@ export default function UpdateUserProfile({
                 sx={{ flex: 1, margin: "0.5rem", width: "full" }}
                 {...register("employeeNumber")}
               />
+
+              <TextField
+                id="userName"
+                type="text"
+                label="User Name"
+                error={!!errors.userName}
+                helperText={
+                  errors.userName ? "Only letters and spaces are allowed" : ""
+                }
+                size="small"
+                sx={{ flex: 1, margin: "0.5rem", width: "full" }}
+                {...register("userName")}
+              />
+
+              <TextField
+                id="password"
+                type="password"
+                label="Password"
+                size="small"
+                sx={{ flex: 1, margin: "0.5rem", width: "full" }}
+                {...register("password", {
+                  minLength: {
+                    value: 8,
+                    message: "Password must be at least 8 characters long",
+                  },
+                  pattern: {
+                    value: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]+$/,
+                    message:
+                      "Password must contain at least one letter and one number",
+                  },
+                })}
+                helperText={errors.password ? errors.password.message : ""}
+              />
+
               <Controller
                 control={control}
                 name="employeeType"

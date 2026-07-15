@@ -263,7 +263,11 @@ const AddOrEditAcademicDetailsByAdminDialog = ({
                 {...field}
                 options={subjectData ?? []}
                 getOptionLabel={(option) =>
-                  option.subjectName + ` - ` + option.subjectMedium + ` Medium`
+                  option.subjectName +
+                  `(${option.gradeCategory})` +
+                  ` - ` +
+                  option.subjectMedium +
+                  ` Medium`
                 }
                 isOptionEqualToValue={(option, value) =>
                   option?.id === value?.id

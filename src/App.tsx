@@ -15,7 +15,7 @@ function App() {
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <BrowserRouter>
+          <BrowserRouter basename="/bmv">
             <SnackbarProvider maxSnack={3} autoHideDuration={2500}>
               <OrganizationHeadSetter />
               <AppRoutes />

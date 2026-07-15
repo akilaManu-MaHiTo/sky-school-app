@@ -1,6 +1,7 @@
 import axios from "axios";
 import { z } from "zod";
 import { StorageFileSchema } from "../../utils/StorageFiles.util";
+import { GradeColor } from "./academicGradeApi";
 
 export const ColorPalletSchema = z.object({
   palletId: z.number(),
@@ -87,6 +88,14 @@ export async function getGradesData() {
   const res = await axios.get(`/api/grade`);
   return res.data;
 }
+export async function getGradeColorData() {
+  const res = await axios.get(`/api/grade-color-schema`);
+  return res.data;
+}
+export async function updateGradeColorSchema(data: GradeColor) {
+  const res = await axios.post(`/api/grade-color-schema/${data.id}`, data);
+  return res.data;
+}
 export async function getYearsData() {
   const res = await axios.get(`/api/year`);
   return res.data;
@@ -98,6 +107,10 @@ export async function getSubjectData({ query }: { query: string }) {
 
 export async function getAllSubjectData() {
   const res = await axios.get(`/api/all-subjects`);
+  return res.data;
+}
+export async function getSubjectDataByGrade(grade: String) {
+  const res = await axios.get(`/api/subject-by-category/${grade}`);
   return res.data;
 }
 export async function getGroup1SubjectData() {

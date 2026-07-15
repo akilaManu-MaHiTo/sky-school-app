@@ -86,6 +86,7 @@ export const userSchema = z.object({
 
   nationalId: z.string().optional(),
   dateOfRegister: z.date().optional(),
+  password: z.string().optional(),
 });
 
 export type User = z.infer<typeof userSchema>;
@@ -322,6 +323,8 @@ export async function updateUserProfileDetailsByAdmin({
   email,
   nameWithInitials,
   employeeType,
+  password,
+  userName,
 }: {
   id: number;
   employeeNumber: string;
@@ -333,6 +336,8 @@ export async function updateUserProfileDetailsByAdmin({
   email: string;
   nameWithInitials: string;
   employeeType: string;
+  password: string;
+  userName: string;
 }) {
   const data = {
     name,
@@ -344,6 +349,8 @@ export async function updateUserProfileDetailsByAdmin({
     email,
     nameWithInitials,
     employeeType,
+    password,
+    userName,
   };
 
   const res = await axios.post(`/api/user/${id}/profile-update-by-admin`, data);
@@ -408,7 +415,9 @@ export async function fetchStudentData() {
 }
 
 export async function fetchOldStudentUniversityData(studentId: number) {
-  const res = await axios.get(`/api/old-students-universities/${studentId}/byStudent`);
+  const res = await axios.get(
+    `/api/old-students-universities/${studentId}/byStudent`,
+  );
   return res.data;
 }
 
@@ -416,5 +425,10 @@ export async function fetchOldStudentOccupationData(studentId: number) {
   const res = await axios.get(
     `/api/old-students-occupations/${studentId}/byStudent`,
   );
+  return res.data;
+}
+
+export async function deleteStudent(id: string | number) {
+  const res = await axios.delete(`/api/users/${id}/delete`);
   return res.data;
 }

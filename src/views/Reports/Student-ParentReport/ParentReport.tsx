@@ -459,8 +459,9 @@ export default function GradeReport() {
                   </Typography>
                   {report.overall && (
                     <Typography variant="body2" sx={{ mb: 1 }}>
-                      Overall Average: {report.overall.averageOfMarks} |
-                      Position: {report.overall.position}
+                      Overall Average: {report.overall.averageOfMarks.toFixed(2) + "%"} |
+                      Position: {report.overall.position} | 
+                      Total Marks: {report.overall.totalMarks}
                     </Typography>
                   )}
                   <TableContainer>
@@ -487,7 +488,7 @@ export default function GradeReport() {
                                 {subject.studentGrade}
                               </TableCell>
                               <TableCell align="right">
-                                {subject.classAverageMark.toFixed(2)}
+                                {subject.classAverageMark.toFixed(2) + "%"}
                               </TableCell>
                               <TableCell align="right">
                                 {subject.highestMark}
