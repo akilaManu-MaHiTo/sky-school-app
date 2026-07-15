@@ -47,8 +47,12 @@ import {
 } from "../../../api/teacherAcademicWorksApi";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
+import DownloadIcon from "@mui/icons-material/Download";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import queryClient from "../../../state/queryClient";
 import { useSnackbar } from "notistack";
+import { exportTeacherWorkRecordsToExcel } from "../../../reportsUtils/TeacherWorkRecordsExcel";
+import { generateTeacherWorkRecordsPdf } from "../../../reportsUtils/TeacherWorkRecordsPDF";
 
 type TeacherWorkRecordsFilters = {
   year: AcademicYear | null;
@@ -62,6 +66,16 @@ type TeacherWorkRecordsFilters = {
 type MonthlyWorkGroup = {
   date: string;
   works: Array<Record<string, any>>;
+};
+
+type TeacherWorkExportRow = {
+  workDate: string | Date | null;
+  teacherName: string;
+  subjectName: string;
+  title: string;
+  academicWork: string;
+  time: string | Date | null;
+  status: string;
 };
 
 const TeacherWorkRecords = () => {
@@ -208,6 +222,66 @@ const TeacherWorkRecords = () => {
       )
     : [];
 
+  const exportRows = useMemo<TeacherWorkExportRow[]>(() => {
+    const mapRow = (row: Record<string, any>, workDate: string | Date | null) => {
+      const teacher = row.teacher ?? null;
+      const subject = row.subject ?? null;
+
+      return {
+        workDate,
+        teacherName:
+          teacher?.nameWithInitials ?? teacher?.name ?? teacher?.userName ?? "--",
+        subjectName: subject
+          ? `${subject.subjectName} - ${subject.subjectMedium} Medium`
+          : "--",
+        title: row.title ?? "--",
+        academicWork: row.academicWork ?? "--",
+        time: row.time ?? null,
+        status: row?.isApproved || row?.approved ? "Approved" : "Pending",
+      };
+    };
+
+    if (selectedCategory === "Daily") {
+      return workRows.map((row) => mapRow(row, row.date ?? selectedDate ?? null));
+    }
+
+    if (selectedCategory === "Weekly" || selectedCategory === "Monthly") {
+      return groupedWorkRecords.flatMap((group) =>
+        group.works.map((row) => mapRow(row, group.date)),
+      );
+    }
+
+    return [];
+  }, [groupedWorkRecords, selectedCategory, selectedDate, workRows]);
+
+  const exportTitle = useMemo(() => {
+    const parts = ["Teacher Work Records"];
+
+    if (selectedYear?.year) parts.push(`Year ${selectedYear.year}`);
+    if (selectedGrade?.grade) parts.push(`Grade ${selectedGrade.grade}`);
+    if (selectedClass?.className) parts.push(`Class ${selectedClass.className}`);
+    if (selectedCategory) parts.push(selectedCategory);
+    if (selectedCategory === "Daily" && selectedDate) {
+      parts.push(format(selectedDate, "yyyy-MM-dd"));
+    }
+    if (selectedCategory === "Weekly" && selectedWeek) {
+      parts.push(selectedWeek);
+    }
+
+    return parts.join(" - ");
+  }, [
+    selectedCategory,
+    selectedClass?.className,
+    selectedDate,
+    selectedGrade?.grade,
+    selectedWeek,
+    selectedYear?.year,
+  ]);
+
+  const exportFileName = useMemo(() => {
+    return exportTitle.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+  }, [exportTitle]);
+
   const handleMoveDate = (direction: "prev" | "next") => {
     if (!selectedDate) return;
     const nextDate =
@@ -224,6 +298,47 @@ const TeacherWorkRecords = () => {
         ? addMonths(selectedDate, 1)
         : subMonths(selectedDate, 1);
     setValue("date", nextDate, { shouldDirty: true });
+  };
+
+  const handleExportExcel = () => {
+    if (!exportRows.length) return;
+
+    exportTeacherWorkRecordsToExcel(exportRows, {
+      title: exportTitle,
+      fileName: `${exportFileName}.xlsx`,
+      yearLabel: selectedYear?.year ?? undefined,
+      gradeLabel: selectedGrade?.grade ? `Grade ${selectedGrade.grade}` : undefined,
+      classLabel: selectedClass?.className ?? undefined,
+      categoryLabel: selectedCategory ?? undefined,
+      periodLabel:
+        selectedCategory === "Daily" && selectedDate
+          ? format(selectedDate, "yyyy-MM-dd")
+          : selectedCategory === "Weekly"
+            ? selectedWeek ?? undefined
+            : selectedCategory === "Monthly"
+              ? "Monthly"
+              : undefined,
+    });
+  };
+
+  const handleExportPdf = () => {
+    if (!exportRows.length) return;
+
+    generateTeacherWorkRecordsPdf(exportRows, {
+      title: exportTitle,
+      yearLabel: selectedYear?.year ?? undefined,
+      gradeLabel: selectedGrade?.grade ? `Grade ${selectedGrade.grade}` : undefined,
+      classLabel: selectedClass?.className ?? undefined,
+      categoryLabel: selectedCategory ?? undefined,
+      periodLabel:
+        selectedCategory === "Daily" && selectedDate
+          ? format(selectedDate, "yyyy-MM-dd")
+          : selectedCategory === "Weekly"
+            ? selectedWeek ?? undefined
+            : selectedCategory === "Monthly"
+              ? "Monthly"
+              : undefined,
+    });
   };
 
   return (
@@ -483,6 +598,36 @@ const TeacherWorkRecords = () => {
         <Alert severity="info" sx={{ marginTop: 2 }}>
           Please select all filters to view teacher work records.
         </Alert>
+      )}
+      {showTable && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 1,
+            mt: 2,
+            flexWrap: "wrap",
+          }}
+        >
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<DownloadIcon fontSize="small" />}
+            onClick={handleExportExcel}
+            disabled={isLoading || !exportRows.length}
+          >
+            Export Excel
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<PictureAsPdfIcon fontSize="small" />}
+            onClick={handleExportPdf}
+            disabled={isLoading || !exportRows.length}
+          >
+            Export PDF
+          </Button>
+        </Box>
       )}
       {selectedCategory === "Weekly" && (
         <TableContainer
