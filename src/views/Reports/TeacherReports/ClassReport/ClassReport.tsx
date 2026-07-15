@@ -532,7 +532,7 @@ function RagDashboard() {
       return `Class Overall Report - ${selectedMonthlyExam}`;
     }
     return `Grade ${selectedGrade?.grade} ${selectedClass?.className} Class Overall Report - ${selectedTerm}`;
-  }, [selectedTerm, selectedMonthlyExam]);
+  }, [selectedTerm, selectedMonthlyExam, selectedGrade, selectedClass]);
 
   // Single-term bar chart for mark grades: X = subjects, Y = count
   const subjectCountsChart = useMemo(() => {
@@ -866,20 +866,6 @@ function RagDashboard() {
               </Box>
             )}
           </Stack>
-          <Button
-            variant="contained"
-            sx={{ marginTop: "0.5rem", marginX: "0.5rem" }}
-            onClick={() => {
-              refetchClassReportCardData();
-              refetchClassReportBarChart();
-              refetchClassReportBarChartMarkGrade();
-              refetchClassAllReportBarChart();
-              refetchClassAllReportBarChartMarkGrades();
-              refetchClassAllReportCardData();
-            }}
-          >
-            refresh
-          </Button>
           <Box
             sx={{
               display: "flex",
@@ -1281,20 +1267,6 @@ function RagDashboard() {
             backgroundColor: "#fff",
           }}
         >
-          <Button
-            variant="contained"
-            sx={{ marginTop: "0.5rem", marginX: "0.5rem" }}
-            onClick={() => {
-              refetchClassReportCardData();
-              refetchClassReportBarChart();
-              refetchClassReportBarChartMarkGrade();
-              refetchClassAllReportBarChart();
-              refetchClassAllReportBarChartMarkGrades();
-              refetchClassAllReportCardData();
-            }}
-          >
-            refresh
-          </Button>
           {disableFetch ? (
             <AllClassReportTable
               reportData={classAllReportCardData}

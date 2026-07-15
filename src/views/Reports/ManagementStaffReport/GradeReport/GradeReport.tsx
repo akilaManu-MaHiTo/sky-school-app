@@ -106,7 +106,7 @@ export default function GradeReport() {
         year,
         selectedGrade,
         selectedTerm,
-        selectedMarksGrade
+        selectedMarksGrade,
       ),
     enabled:
       !!year && !!selectedGrade && !!selectedTerm && !!selectedMarksGrade,
@@ -120,7 +120,7 @@ export default function GradeReport() {
     }
 
     const classes: string[] = gradeReportData.map(
-      (item: any) => item.className
+      (item: any) => item.className,
     );
 
     const subjectMap = new Map<
@@ -159,7 +159,7 @@ export default function GradeReport() {
           data: subj.values,
           // ApexStackedBarChart reads `color` from series to use subject colorCode
           color: subj.colorCode,
-        } as any)
+        }) as any,
     );
 
     return { series, categories: classes };
@@ -172,7 +172,7 @@ export default function GradeReport() {
     }
 
     const classes: string[] = gradeMarkReportData.map(
-      (item: any) => item.className
+      (item: any) => item.className,
     );
 
     const subjectMap = new Map<
@@ -210,7 +210,7 @@ export default function GradeReport() {
           name: subj.subjectName,
           data: subj.values,
           color: subj.colorCode,
-        } as any)
+        }) as any,
     );
 
     return { series, categories: classes };
@@ -372,7 +372,9 @@ export default function GradeReport() {
                       }}
                       size="small"
                       options={
-                        examReportTermsWithoutAll?.filter((item) => item != null) ?? []
+                        examReportTermsWithoutAll?.filter(
+                          (item) => item != null,
+                        ) ?? []
                       }
                       sx={{ flex: 1 }}
                       renderInput={(params) => (
@@ -411,8 +413,6 @@ export default function GradeReport() {
         </AccordionDetails>
       </Accordion>
 
-      
-
       <Box
         sx={{
           display: "flex",
@@ -423,9 +423,10 @@ export default function GradeReport() {
         <Box
           sx={{
             width: "100%",
-            height: "auto",
+            height: "55rem",
             marginTop: "1rem",
             flex: 1,
+            minWidth: 0,
             boxShadow: "0 0 10px rgba(0,0,0,0.1)",
             padding: "1rem",
             borderRadius: "0.3rem",
@@ -455,6 +456,14 @@ export default function GradeReport() {
             />
           </ResponsiveContainer>
         </Box>
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          gap: "1rem",
+        }}
+      >
         <Box
           sx={{
             width: "100%",
@@ -513,43 +522,92 @@ export default function GradeReport() {
             />
           </ResponsiveContainer>
         </Box>
-        
       </Box>
-      {tableConfig.rows.length > 0 && (
-        <TableContainer component={Paper} sx={{ mt: 2 }}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>Class Name</TableCell>
-                {tableConfig.subjectNames.map((name) => (
-                  <TableCell key={name} align="right">
-                    {name}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {tableConfig.rows.map((row: any) => (
-                <TableRow key={row.className} hover>
-                  <TableCell component="th" scope="row">
-                    {row.className}
-                  </TableCell>
-                  {tableConfig.subjectNames.map((name) => {
-                    const value = row[name] as number | undefined;
-                    return (
+
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          gap: "1rem",
+        }}
+      >
+        <Box
+          sx={{
+            width: "100%",
+            height: "auto",
+            marginTop: "1rem",
+            flex: 1,
+            boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+            padding: "1rem",
+            borderRadius: "0.3rem",
+            border: "1px solid var(--pallet-border-blue)",
+            backgroundColor: "#fff",
+          }}
+        >
+          <Box mb={2}>
+            <Typography
+              variant="h6"
+              sx={{
+                textAlign: "center",
+              }}
+            >
+              Grade And Subject Wise Average Marks Report
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              width: "100%",
+            }}
+          >
+            <TableContainer
+              component={Paper}
+              elevation={2}
+              sx={{
+                maxWidth: isMobile ? "75vw" : isTablet ? "88vW" : "75vW",
+              }}
+            >
+              <Table
+                aria-label="class report table"
+                sx={{ minWidth: "max-content" }}
+              >
+                <TableHead
+                  sx={{ backgroundColor: "var(--pallet-lighter-blue)" }}
+                >
+                  <TableRow>
+                    <TableCell>Class Name</TableCell>
+                    {tableConfig.subjectNames.map((name) => (
                       <TableCell key={name} align="right">
-                        {typeof value === "number"
-                          ? `${value.toFixed(1)}%`
-                          : "-"}
+                        {name}
                       </TableCell>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {tableConfig.rows.map((row: any) => (
+                    <TableRow key={row.className} hover>
+                      <TableCell component="th" scope="row">
+                        {row.className}
+                      </TableCell>
+                      {tableConfig.subjectNames.map((name) => {
+                        const value = row[name] as number | undefined;
+                        return (
+                          <TableCell key={name} align="right">
+                            {typeof value === "number" && value !== 0
+                              ? `${value.toFixed(1)}%`
+                              : "-"}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+        </Box>
+      </Box>
     </Stack>
   );
 }

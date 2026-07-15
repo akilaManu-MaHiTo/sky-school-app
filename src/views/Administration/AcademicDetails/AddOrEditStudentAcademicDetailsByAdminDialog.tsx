@@ -45,7 +45,7 @@ const AddOrEditStudentAcademicDetailsByAdminDialog = ({
   open,
   setOpen,
   defaultValues,
-  studentId
+  studentId,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -134,27 +134,27 @@ const AddOrEditStudentAcademicDetailsByAdminDialog = ({
     if (defaultValues) {
       const matchedGrade =
         gradeData?.find(
-          (grade: any) => grade?.id === defaultValues?.grade?.id
+          (grade: any) => grade?.id === defaultValues?.grade?.id,
         ) ??
         defaultValues?.grade ??
         null;
 
       const matchedSubject =
         subjectData?.find(
-          (subject: any) => subject?.id === defaultValues?.subject?.id
+          (subject: any) => subject?.id === defaultValues?.subject?.id,
         ) ??
         defaultValues?.subject ??
         null;
 
       const matchedClass =
         classData?.find(
-          (clazz: any) => clazz?.id === defaultValues?.class?.id
+          (clazz: any) => clazz?.id === defaultValues?.class?.id,
         ) ??
         defaultValues?.class ??
         null;
 
       const matchBasketSubject = (
-        groupKey: "Group 1" | "Group 2" | "Group 3"
+        groupKey: "Group 1" | "Group 2" | "Group 3",
       ) => {
         const basketSubject = defaultValues?.basketSubjects?.[groupKey];
         if (!basketSubject) {
@@ -163,7 +163,7 @@ const AddOrEditStudentAcademicDetailsByAdminDialog = ({
 
         return (
           subjectData?.find(
-            (subject: any) => subject?.id === basketSubject?.id
+            (subject: any) => subject?.id === basketSubject?.id,
           ) ?? basketSubject
         );
       };
@@ -193,7 +193,15 @@ const AddOrEditStudentAcademicDetailsByAdminDialog = ({
       });
       setIsInitialized(true);
     }
-  }, [open, defaultValues, gradeData, subjectData, classData, reset, isInitialized]);
+  }, [
+    open,
+    defaultValues,
+    gradeData,
+    subjectData,
+    classData,
+    reset,
+    isInitialized,
+  ]);
 
   useEffect(() => {
     if (!open) {
@@ -411,7 +419,7 @@ const AddOrEditStudentAcademicDetailsByAdminDialog = ({
                   options={subjectDataGroup1 ?? []}
                   getOptionLabel={(option) =>
                     option && typeof option === "object"
-                      ? `${option.subjectName ?? ""} - ${
+                      ? `${option.subjectName ?? ""}${option.gradeCategory ? ` (${option.gradeCategory})` : ""} - ${
                           option.subjectMedium ?? ""
                         } Medium`
                       : ""
@@ -448,7 +456,7 @@ const AddOrEditStudentAcademicDetailsByAdminDialog = ({
                   options={subjectDataGroup2 ?? []}
                   getOptionLabel={(option) =>
                     option && typeof option === "object"
-                      ? `${option.subjectName ?? ""} - ${
+                      ? `${option.subjectName ?? ""}${option.gradeCategory ? ` (${option.gradeCategory})` : ""} - ${
                           option.subjectMedium ?? ""
                         } Medium`
                       : ""
@@ -485,7 +493,7 @@ const AddOrEditStudentAcademicDetailsByAdminDialog = ({
                   options={subjectDataGroup3 ?? []}
                   getOptionLabel={(option) =>
                     option && typeof option === "object"
-                      ? `${option.subjectName ?? ""} - ${
+                      ? `${option.subjectName ?? ""}${option.gradeCategory ? ` (${option.gradeCategory})` : ""} - ${
                           option.subjectMedium ?? ""
                         } Medium`
                       : ""

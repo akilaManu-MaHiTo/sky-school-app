@@ -86,6 +86,7 @@ export const userSchema = z.object({
 
   nationalId: z.string().optional(),
   dateOfRegister: z.date().optional(),
+  password: z.string().optional(),
 });
 
 export type User = z.infer<typeof userSchema>;
@@ -322,6 +323,8 @@ export async function updateUserProfileDetailsByAdmin({
   email,
   nameWithInitials,
   employeeType,
+  password,
+  userName,
 }: {
   id: number;
   employeeNumber: string;
@@ -333,6 +336,8 @@ export async function updateUserProfileDetailsByAdmin({
   email: string;
   nameWithInitials: string;
   employeeType: string;
+  password: string;
+  userName: string;
 }) {
   const data = {
     name,
@@ -344,6 +349,8 @@ export async function updateUserProfileDetailsByAdmin({
     email,
     nameWithInitials,
     employeeType,
+    password,
+    userName,
   };
 
   const res = await axios.post(`/api/user/${id}/profile-update-by-admin`, data);

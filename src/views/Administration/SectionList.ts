@@ -181,6 +181,16 @@ export const PermissionSectionsMap: PermissionSection[] = [
         },
       },
       {
+        name: "Academic Reports",
+        key: "TEACHER_ACADEMIC_REPORTS",
+        permissionsExists: {
+          VIEW: true,
+          CREATE: false,
+          EDIT: false,
+          DELETE: false,
+        },
+      },
+      {
         break: true,
         name: "Management Staff Reports",
       },
@@ -345,6 +355,8 @@ export enum PermissionKeys {
   TEACHER_ClASS_REPORTS_VIEW = "TEACHER_ClASS_REPORTS_VIEW",
   // Reports > Teacher Reports > Student Reports
   TEACHER_STUDENT_REPORTS_VIEW = "TEACHER_STUDENT_REPORTS_VIEW",
+  // Reports > Teacher Reports > Academic Reports
+  TEACHER_ACADEMIC_REPORTS_VIEW = "TEACHER_ACADEMIC_REPORTS_VIEW",
   // Reports > Management Staff Reports > Marks Entry Monitoring
   MARKS_ENTRY_MONITORING_REPORTS_VIEW = "MARKS_ENTRY_MONITORING_REPORTS_VIEW",
   // Reports > Management Staff Reports > Student Reports
@@ -435,6 +447,8 @@ export const defaultViewerPermissions: PermissionKeysObject = {
   TEACHER_ClASS_REPORTS_VIEW: true,
   // Reports > Teacher Reports > Student Reports
   TEACHER_STUDENT_REPORTS_VIEW: true,
+  // Reports > Teacher Reports > Academic Reports
+  TEACHER_ACADEMIC_REPORTS_VIEW: true,
   // Reports > Management Staff Reports > Marks Entry Monitoring
   MARKS_ENTRY_MONITORING_REPORTS_VIEW: true,
   // Reports > Management Staff Reports > Student Reports

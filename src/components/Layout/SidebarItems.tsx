@@ -11,7 +11,12 @@ import AddTaskIcon from "@mui/icons-material/AddTask";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { PermissionKeys } from "../../views/Administration/SectionList";
 import HomeIcon from "@mui/icons-material/Home";
-
+import SettingsIcon from '@mui/icons-material/Settings';
+import DvrIcon from '@mui/icons-material/Dvr';
+import CloudSyncIcon from '@mui/icons-material/CloudSync';
+import StoreIcon from '@mui/icons-material/Store';
+import NotificationImportantIcon from '@mui/icons-material/NotificationImportant';
+import CastForEducationIcon from '@mui/icons-material/CastForEducation';
 export interface SidebarItem {
   title?: string;
   headline?: string;
@@ -114,7 +119,7 @@ export const sidebarItems: Array<SidebarItem> = [
       {
         title: "School Settings",
         href: "/admin/school-settings",
-        icon: <SchoolIcon fontSize="small" />,
+        icon: <SettingsIcon fontSize="small" />,
         accessKey: PermissionKeys.SCHOOL_SETTINGS_VIEW,
       },
     ],
@@ -133,7 +138,7 @@ export const sidebarItems: Array<SidebarItem> = [
       {
         title: "Teacher Work Records",
         href: "/admin/teacher-work-records",
-        icon: <BookmarkAddedIcon fontSize="small" />,
+        icon: <DvrIcon fontSize="small" />,
         accessKey: PermissionKeys.TEACHER_WORK_RECORDS_VIEW,
       },
     ],
@@ -152,13 +157,13 @@ export const sidebarItems: Array<SidebarItem> = [
       {
         title: "Old Student Promotion",
         href: "/admin/old-student-promotion",
-        icon: <FileUploadIcon fontSize="small" />,
+        icon: <CloudSyncIcon fontSize="small" />,
         accessKey: PermissionKeys.OLD_STUDENT_PROMOTION_VIEW,
       },
       {
         title: "Student Service Charges",
         href: "/admin/student-service-charges",
-        icon: <FileUploadIcon fontSize="small" />,
+        icon: <StoreIcon fontSize="small" />,
         accessKey: PermissionKeys.STUDENT_PROMOTION_VIEW,
       },
     ],
@@ -203,6 +208,12 @@ export const sidebarItems: Array<SidebarItem> = [
         icon: <DashboardIcon fontSize="small" />,
         accessKey: PermissionKeys.TEACHER_STUDENT_REPORTS_VIEW,
       },
+      {
+        title: "My Academic Report",
+        href: "/reports/teacher-academic-report",
+        icon: <DashboardIcon fontSize="small" />,
+        accessKey: PermissionKeys.TEACHER_ACADEMIC_REPORTS_VIEW,
+      }
     ],
   },
   {
@@ -246,13 +257,13 @@ export const sidebarItems: Array<SidebarItem> = [
   },
   {
     title: "Student Notifications",
-    icon: <AddTaskIcon fontSize="small" />,
+    icon: <NotificationImportantIcon fontSize="small" />,
     href: "/academics/student-notifications",
     accessKey: PermissionKeys.ADD_STUDENT_NOTIFICATIONS_VIEW,
   },
   {
     title: "Teacher Academic Records",
-    icon: <AddTaskIcon fontSize="small" />,
+    icon: <CastForEducationIcon fontSize="small" />,
     href: "/academics/teacher-academic-records",
     accessKey: PermissionKeys.TEACHER_ACADEMIC_RECORDS_VIEW,
   },

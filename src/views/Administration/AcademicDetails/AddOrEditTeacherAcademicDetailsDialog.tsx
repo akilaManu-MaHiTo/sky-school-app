@@ -263,6 +263,7 @@ const AddOrEditAcademicDetailsDialog = ({
                   options={subjectData ?? []}
                   getOptionLabel={(option) =>
                     option.subjectName +
+                    `(${option.gradeCategory})` +
                     ` - ` +
                     option.subjectMedium +
                     ` Medium`

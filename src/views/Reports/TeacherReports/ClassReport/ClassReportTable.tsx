@@ -298,6 +298,7 @@ function ClassReportTable({
               <TableCell>Student Name</TableCell>
               <TableCell align="right">Average</TableCell>
               <TableCell align="right">Rank</TableCell>
+              <TableCell>Total Marks</TableCell>
               {classReportTableData.subjects.map((subject: any) => (
                 <TableCell key={subject.id} align="right">
                   {subject.subjectName}
@@ -350,7 +351,6 @@ function ClassReportTable({
                   </Box>
                 </TableCell>
               ))}
-              <TableCell>Total Marks</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -368,12 +368,16 @@ function ClassReportTable({
                   <TableCell component="th" scope="row">
                     {row.nameWithInitials}
                   </TableCell>
+
                   <TableCell align="right">
                     {typeof row.averageOfMarks === "number"
                       ? row.averageOfMarks.toFixed(2) + "%"
                       : row.averageOfMarks + "%"}
                   </TableCell>
                   <TableCell align="right">{row.position ?? "--"}</TableCell>
+                  <TableCell component="th" scope="row">
+                    {row.totalMarks ?? "--"}
+                  </TableCell>
                   {classReportTableData.subjects.map((subject: any) => {
                     const value = row.subjectMarks[subject.subjectName] ?? null;
                     return (
@@ -386,7 +390,8 @@ function ClassReportTable({
 
                             let color = theme.palette.text.primary;
                             try {
-                              color = theme.palette.getContrastText(backgroundColor);
+                              color =
+                                theme.palette.getContrastText(backgroundColor);
                             } catch {
                               color = theme.palette.text.primary;
                             }
@@ -413,7 +418,8 @@ function ClassReportTable({
 
                             let color = theme.palette.text.primary;
                             try {
-                              color = theme.palette.getContrastText(backgroundColor);
+                              color =
+                                theme.palette.getContrastText(backgroundColor);
                             } catch {
                               color = theme.palette.text.primary;
                             }
@@ -428,9 +434,6 @@ function ClassReportTable({
                       </TableCell>
                     );
                   })}
-                  <TableCell component="th" scope="row">
-                    {row.totalMarks ?? "--"}
-                  </TableCell>
                 </TableRow>
               ))
             ) : (

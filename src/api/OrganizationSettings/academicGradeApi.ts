@@ -223,3 +223,8 @@ export const gradeReportMarkBarChart = async (
   );
   return res.data;
 };
+
+export const getMyWorkRecords = async (id: Number,date: String) => {
+  const res = await axios.get(`/api/teacher-academic-works/${id}/${date}`);
+  return res.data;
+}
