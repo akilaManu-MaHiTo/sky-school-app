@@ -47,6 +47,7 @@ import AddOrEditStudentAcademicDetailsByAdminDialog from "./AcademicDetails/AddO
 import AddOrEditChildrenDetailsDialog from "./AcademicDetails/AddOrEditChildrenDetailsDialog";
 import { deleteParentProfile } from "../../api/parentApi";
 import AddOrEditChildrenDetailsDialogByAdmin from "./AcademicDetails/AddOrEditChildrenDetailsDialogByAdmin";
+import StudentServiceChargesAccordion from "../../components/StudentServiceChargesAccordion";
 
 type BasketSubject = {
   id: number;
@@ -728,6 +729,9 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
           </Accordion>
         )}
 
+        {selectedUser.employeeType === EmployeeType.STUDENT && (
+          <StudentServiceChargesAccordion studentId={selectedUser.id} />
+        )}
         {selectedUser.employeeType === EmployeeType.TEACHER && (
           <Accordion
             variant="elevation"
@@ -1092,6 +1096,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                         </Accordion>
                       );
                     })}
+                    <StudentServiceChargesAccordion studentId={child.id} />
                   </AccordionDetails>
                 </Accordion>
               ))}

@@ -61,6 +61,7 @@ import {
   deleteOldStudentUniversity,
   deleteOldStudentOccupation,
 } from "../../api/oldStudentsApi";
+import StudentServiceChargesAccordion from "../../components/StudentServiceChargesAccordion";
 
 type BasketSubject = {
   id: number;
@@ -908,6 +909,9 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
             </AccordionDetails>
           </Accordion>
         )}
+        {selectedUser.employeeType === EmployeeType.STUDENT && (
+          <StudentServiceChargesAccordion studentId={selectedUser.id} />
+        )}
         {selectedUser.employeeType === EmployeeType.OLDSTUDENT && (
           <Accordion
             variant="elevation"
@@ -1622,6 +1626,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                         </Accordion>
                       );
                     })}
+                    <StudentServiceChargesAccordion studentId={child.id} />
                   </AccordionDetails>
                 </Accordion>
               ))}
