@@ -54,7 +54,7 @@ const AddOrEditStudentServiceChargesDialog = ({
     apiResponse: any;
     formData: StudentServiceChargeForm;
   } | null>(null);
-  
+
   const isEdit = Boolean(defaultValues && defaultValues.id);
 
   const { data: students, isFetching: isStudentsFetching } = useQuery({
@@ -85,8 +85,10 @@ const AddOrEditStudentServiceChargesDialog = ({
     return {
       student: defaultValues.student ?? undefined,
       chargesCategoryId: defaultValues.category ?? undefined,
-      yearForCharge: defaultValues.yearForCharge 
-        ? yearData?.find((y: any) => y.year === String(defaultValues.yearForCharge))
+      yearForCharge: defaultValues.yearForCharge
+        ? yearData?.find(
+            (y: any) => y.year === String(defaultValues.yearForCharge),
+          )
         : undefined,
       amount: Number(defaultValues.amount ?? 0),
       dateCharged: defaultValues.dateCharged
@@ -282,23 +284,25 @@ const AddOrEditStudentServiceChargesDialog = ({
             rules={{ required: true }}
             render={({ field }) => (
               <Autocomplete
-                options={students || []}
-                loading={isStudentsFetching}
+                {...field}
+                value={field.value ?? null}
+                onChange={(e, newVal) => {
+                  field.onChange(newVal);
+                }}
                 size="small"
-                value={field.value || null}
-                onChange={(_, value) => field.onChange(value)}
-                getOptionLabel={(option: any) =>
-                  option?.nameWithInitials || option?.name || ""
+                options={students ?? []}
+                getOptionLabel={(option) =>
+                  `${option.nameWithInitials} - ${option.employeeNumber}`
                 }
-                sx={{ flex: 1, margin: "0.5rem" }}
-                isOptionEqualToValue={(option, value) => option.id === value.id}
+                sx={{ flex: 1 }}
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Student"
                     required
                     error={!!errors.student}
-                    helperText={errors.student && "Student is required"}
+                    helperText={errors.student && "Required"}
+                    label="Select Student"
+                    name="student"
                   />
                 )}
               />
@@ -443,11 +447,7 @@ const AddOrEditStudentServiceChargesDialog = ({
                   </Typography>
                   <List dense disablePadding>
                     {confirmationData.apiResponse.children.map((child: any) => (
-                      <ListItem
-                        key={child.id}
-                        disableGutters
-                        sx={{ py: 0.25 }}
-                      >
+                      <ListItem key={child.id} disableGutters sx={{ py: 0.25 }}>
                         <ListItemText
                           primary={child.nameWithInitials || child.userName}
                           secondary={`Admission No: ${child.employeeNumber}`}
