@@ -219,3 +219,8 @@ export async function getMyChildAISuggestions(
   );
   return res.data;
 }
+
+export async function createDatabaseBackup() {
+  const res = await axios.post(`/api/backup-database`);
+  return res.data;
+}

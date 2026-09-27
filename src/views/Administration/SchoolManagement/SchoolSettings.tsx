@@ -1,6 +1,7 @@
 import {
   Alert,
   AppBar,
+  Button,
   Box,
   Chip,
   IconButton,
@@ -24,6 +25,7 @@ import useIsMobile from "../../../customHooks/useIsMobile";
 import theme from "../../../theme";
 import EditIcon from "@mui/icons-material/Edit";
 import {
+  createDatabaseBackup,
   getGradeColorData,
   getGradesData,
   getOrganization,
@@ -71,9 +73,35 @@ import {
   LetterSubjects,
 } from "../../../reportsUtils/SubjectsReportPDF";
 import useCurrentOrganization from "../../../hooks/useCurrentOrganization";
-import { title } from "process";
 import AddOrEditPaymentCategoryDialog from "./AddOrEditPaymetCategoryDialog";
 import { EditGradeColorDialog } from "./EditGradeColorSchema";
+import { Download } from "@mui/icons-material";
+import CategoryIcon from '@mui/icons-material/Category';
+import ColorLensIcon from '@mui/icons-material/ColorLens';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+
+const downloadSqlFile = (content: string, fileName: string) => {
+  const blob = new Blob([content], { type: "application/sql;charset=utf-8" });
+  const fileUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = fileUrl;
+  link.download = fileName;
+  link.click();
+
+  URL.revokeObjectURL(fileUrl);
+};
+
+const formatBackupFileName = () => {
+  const now = new Date();
+  const pad = (value: number) => String(value).padStart(2, "0");
+
+  return `school-backup-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(
+    now.getDate(),
+  )}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(
+    now.getSeconds(),
+  )}.sql`;
+};
 interface TabPanelProps {
   children?: React.ReactNode;
   dir?: string;
@@ -358,6 +386,41 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
       enqueueSnackbar(message, { variant: "error" });
     },
   });
+
+  // Backup Mutation
+  const {
+    mutate: createDatabaseBackupMutation,
+    isPending: isDatabaseBackupCreating,
+  } = useMutation({
+    mutationFn: async () => {
+      const response = await createDatabaseBackup();
+
+      return typeof response === "string"
+        ? response
+        : response?.data ?? response?.sql ?? response?.backup ?? "";
+    },
+    onSuccess: (backupContent) => {
+      if (!backupContent) {
+        enqueueSnackbar(
+          "Database Backup Created, but no SQL content was returned.",
+          {
+            variant: "warning",
+          },
+        );
+        return;
+      }
+
+      downloadSqlFile(backupContent, formatBackupFileName());
+      enqueueSnackbar("Database Backup Created Successfully!", {
+        variant: "success",
+      });
+    },
+    onError: (error: any) => {
+      const message = error?.data?.message || "Database Backup Creation Failed";
+      enqueueSnackbar(message, { variant: "error" });
+    },
+  });
+
   return (
     <Stack>
       <Box
@@ -507,7 +570,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                     alignItems: "center",
                   }}
                 >
-                  <ClassIcon fontSize="small" />
+                  <CategoryIcon fontSize="small" />
                   <Typography variant="body2" sx={{ ml: "0.3rem" }}>
                     Payment Categories
                   </Typography>
@@ -524,13 +587,30 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
                     alignItems: "center",
                   }}
                 >
-                  <ClassIcon fontSize="small" />
+                  <ColorLensIcon fontSize="small" />
                   <Typography variant="body2" sx={{ ml: "0.3rem" }}>
                     Grade Color Schema
                   </Typography>
                 </Box>
               }
               {...a11yProps(6)}
+            />
+            <Tab
+              label={
+                <Box
+                  sx={{
+                    color: "var(--pallet-blue)",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <CloudDownloadIcon fontSize="small" />
+                  <Typography variant="body2" sx={{ ml: "0.3rem" }}>
+                    Database Backup
+                  </Typography>
+                </Box>
+              }
+              {...a11yProps(7)}
             />
           </Tabs>
         </AppBar>
@@ -1365,7 +1445,35 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
             </TableContainer>
           </Stack>
         </TabPanel>
+        <TabPanel value={activeTab} index={7} dir={theme.direction}>
+          <Stack>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                flexDirection: isMobile ? "column" : "row",
+                gap: 2,
+                marginBottom: theme.spacing(2),
+              }}
+            >
+              <Button
+                variant="contained"
+                sx={{ backgroundColor: "var(--pallet-blue)" }}
+                size="medium"
+                startIcon={<Download />}
+                onClick={() => {
+                  createDatabaseBackupMutation();
+                }}
+                disabled={isDatabaseBackupCreating}
+              >
+                Backup Database
+              </Button>
+            </Box>
+          </Stack>
+        </TabPanel>
       </Box>
+
       {openAcademicGradeDialog && (
         <AddOrEditAcademicGrade
           open={openAcademicGradeDialog}
@@ -1522,7 +1630,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
         />
       )}
 
-      {
+      {openDeletePaymentCategoryDialog && (
         <DeleteConfirmationModal
           open={openDeletePaymentCategoryDialog}
           title="Remove Payment Category Confirmation"
@@ -1547,7 +1655,7 @@ function SchoolSettings({ schoolSettings }: { schoolSettings: Organization }) {
             setEditPaymentCategoryData(null);
           }}
         />
-      }
+      )}
     </Stack>
   );
 }

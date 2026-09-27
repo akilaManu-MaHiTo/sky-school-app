@@ -22,6 +22,7 @@ export interface ParentReportSection {
   overall?: {
     averageOfMarks?: number | string | null;
     position?: number | string | null;
+    totalMarks?: number | string | null;
   } | null;
   subjects: ParentReportSubjectRow[];
 }
@@ -47,6 +48,13 @@ const formatCellValue = (value: any): string => {
     return String(value);
   }
   return String(value);
+};
+
+const formatPercentValue = (value: number | string | null | undefined): string => {
+  if (value === null || value === undefined || value === "") {
+    return "-";
+  }
+  return `${typeof value === "number" ? value.toFixed(2) : String(value)}%`;
 };
 
 const sanitizeText = (value?: string | number | null) => {
@@ -96,10 +104,9 @@ export const generateParentReportPdf = ({
       : "N/A";
 
     const overallAverage =
-      typeof section.overall?.averageOfMarks === "number"
-        ? section.overall?.averageOfMarks.toFixed(2)
-        : section.overall?.averageOfMarks ?? "-";
+      formatPercentValue(section.overall?.averageOfMarks);
     const overallPosition = section.overall?.position ?? "-";
+    const overallTotalMarks = section.overall?.totalMarks ?? "-";
 
     const headRow: string[] = [
       "Subject",
@@ -114,11 +121,7 @@ export const generateParentReportPdf = ({
       formatCellValue(subject.subjectName),
       formatCellValue(subject.studentMark),
       formatCellValue(subject.studentGrade),
-      formatCellValue(
-        typeof subject.classAverageMark === "number"
-          ? subject.classAverageMark.toFixed(2)
-          : subject.classAverageMark,
-      ),
+      formatPercentValue(subject.classAverageMark),
       formatCellValue(subject.highestMark),
       formatCellValue(subject.highestGrade),
     ]);
@@ -172,6 +175,7 @@ export const generateParentReportPdf = ({
         rightLines.push(`Exam: ${examLabel}`);
         rightLines.push(`Overall Average: ${overallAverage}`);
         rightLines.push(`Position: ${overallPosition}`);
+        rightLines.push(`Total Marks: ${overallTotalMarks}`);
 
         leftLines.forEach((line, index) => {
           doc.text(line, 15, 56 + index * 5);

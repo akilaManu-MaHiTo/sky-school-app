@@ -11,6 +11,7 @@ export interface ClassReportRow {
   userName?: string | null;
   nameWithInitials?: string | null;
   email?: string | null;
+  totalMarks?: string | number | null;
   averageOfMarks?: number | string | null;
   position?: number | string | null;
   subjectMarks: Record<string, number | string | null>;
@@ -42,6 +43,31 @@ const formatCellValue = (value: any): string | number => {
   return value;
 };
 
+export const buildClassReportTitle = (
+  title?: string,
+  options?: ClassReportExcelOptions,
+) => {
+  const parts: string[] = [];
+  const baseTitle = (title || options?.title || "Overall Report").replace(
+    /^class\s+/i,
+    "",
+  );
+
+  if (options?.gradeLabel) {
+    parts.push(`Grade ${options.gradeLabel}`);
+  }
+
+  if (options?.classLabel) {
+    parts.push(`${options.classLabel} Class`);
+  }
+
+  parts.push(
+    options?.termLabel ? `${baseTitle} - Term ${options.termLabel}` : baseTitle,
+  );
+
+  return parts.join(" | ");
+};
+
 export const exportClassReportToExcel = ({
   title,
   subjects,
@@ -55,16 +81,14 @@ export const exportClassReportToExcel = ({
     return;
   }
 
-  const metaTitle = options?.title || title;
+  const metaTitle = buildClassReportTitle(title, options);
   const metaOrgName = options?.organizationName;
-  const metaGrade = options?.gradeLabel;
-  const metaClass = options?.classLabel;
   const metaYear = options?.yearLabel;
-  const metaTerm = options?.termLabel;
 
   const header = [
     "Admission Number",
     "Student",
+    "Total Marks",
     "Average",
     "Position",
     ...subjects.map((s) => s.subjectName),
@@ -74,6 +98,7 @@ export const exportClassReportToExcel = ({
     const base = [
       formatCellValue(row.admissionNumber),
       formatCellValue(row.nameWithInitials ?? row.userName),
+      formatCellValue(row.totalMarks),
       formatCellValue(
         typeof row.averageOfMarks === "number"
           ? row.averageOfMarks.toFixed(2)
