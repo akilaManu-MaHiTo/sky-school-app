@@ -16,7 +16,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { grey } from "@mui/material/colors";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
 import CustomButton from "../../components/CustomButton";
 import useIsMobile from "../../customHooks/useIsMobile";
@@ -30,6 +30,7 @@ import queryClient from "../../state/queryClient";
 import { genderOptions } from "../../constants/accidentConstants";
 import DatePickerComponent from "../../components/DatePickerComponent";
 import RichTextComponent from "../../components/RichTextComponent";
+import { getGradesData } from "../../api/OrganizationSettings/academicGradeApi";
 
 type DialogProps = {
   open: boolean;
@@ -75,6 +76,11 @@ export default function UpdateUserProfile({
     },
   });
 
+  const { data: gradeData } = useQuery({
+    queryKey: ["academic-grades"],
+    queryFn: getGradesData,
+  });
+
   useEffect(() => {
     if (defaultValues) {
       reset(defaultValues);
@@ -101,6 +107,7 @@ export default function UpdateUserProfile({
       employeeType: data.employeeType!,
       password: data.password,
       userName: data.userName,
+      registerGrade: data.registerGrade,
     });
   };
   return (
@@ -385,6 +392,39 @@ export default function UpdateUserProfile({
                       {errors.address.message}
                     </Box>
                   )}
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    mt: "0.5rem",
+                  }}
+                >
+                  <Controller
+                    control={control}
+                    name="registerGrade"
+                    render={({ field }) => (
+                      <Autocomplete
+                        options={
+                          gradeData
+                            ? gradeData.map((grade) => "Grade " + grade.grade)
+                            : []
+                        }
+                        size="small"
+                        sx={{ flex: 1, margin: "0.5rem" }}
+                        value={field.value || null}
+                        onChange={(_, value) => field.onChange(value)}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            error={!!errors.registerGrade}
+                            label="First Register Grade"
+                            name="registerGrade"
+                          />
+                        )}
+                      />
+                    )}
+                  />
                 </Box>
               </Box>
             </>

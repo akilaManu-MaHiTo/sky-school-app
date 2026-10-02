@@ -155,7 +155,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
         acc[year].push(profile);
         return acc;
       },
-      {} as Record<string, any>
+      {} as Record<string, any>,
     );
     const sortedEntries = Object.entries(grouped).sort((a, b) => {
       const yearA = Number(a[0]);
@@ -186,7 +186,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
         acc[year].push(profile);
         return acc;
       },
-      {}
+      {},
     );
 
     const sortedEntries = Object.entries(grouped).sort((a, b) => {
@@ -220,7 +220,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
           acc[year].push(profile);
           return acc;
         },
-        {}
+        {},
       );
 
       const sortedEntries = Object.entries(grouped).sort((a, b) => {
@@ -467,8 +467,8 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                 selectedUser?.employeeType === EmployeeType.TEACHER
                   ? "Staff ID"
                   : selectedUser?.employeeType === EmployeeType.STUDENT
-                  ? "Student ID"
-                  : "User ID"
+                    ? "Student ID"
+                    : "User ID"
               }
               value={selectedUser?.employeeNumber}
               sx={{ flex: 1 }}
@@ -530,6 +530,13 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
               value={selectedUser?.userType?.userType}
               sx={{ flex: 1 }}
             />
+            {selectedUser.employeeType === EmployeeType.STUDENT && (
+              <DrawerContentItem
+                label="First Register Grade"
+                value={selectedUser?.registerGrade}
+                sx={{ flex: 1 }}
+              />
+            )}
           </Stack>
         </Stack>
       </Stack>
@@ -692,7 +699,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                                         onClick={() => {
                                           setEditAcademicStudentDetails(p);
                                           setOpenAcademicStudentDetailsDialog(
-                                            true
+                                            true,
                                           );
                                         }}
                                         disabled={isAcademicDetailDeleting}
