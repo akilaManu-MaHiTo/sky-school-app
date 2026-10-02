@@ -30,7 +30,11 @@ import queryClient from "../../state/queryClient";
 import { genderOptions } from "../../constants/accidentConstants";
 import DatePickerComponent from "../../components/DatePickerComponent";
 import RichTextComponent from "../../components/RichTextComponent";
-import { getGradesData } from "../../api/OrganizationSettings/academicGradeApi";
+import {
+  getClassesAllData,
+  getClassesDataByGrade,
+  getGradesData,
+} from "../../api/OrganizationSettings/academicGradeApi";
 
 type DialogProps = {
   open: boolean;
@@ -81,6 +85,11 @@ export default function UpdateUserProfile({
     queryFn: getGradesData,
   });
 
+  const { data: classData } = useQuery({
+    queryKey: ["academic-classes"],
+    queryFn: () => getClassesAllData(),
+  });
+
   useEffect(() => {
     if (defaultValues) {
       reset(defaultValues);
@@ -108,6 +117,7 @@ export default function UpdateUserProfile({
       password: data.password,
       userName: data.userName,
       registerGrade: data.registerGrade,
+      registerClass: data.registerClass,
     });
   };
   return (
@@ -393,39 +403,79 @@ export default function UpdateUserProfile({
                     </Box>
                   )}
                 </Box>
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    mt: "0.5rem",
-                  }}
-                >
-                  <Controller
-                    control={control}
-                    name="registerGrade"
-                    render={({ field }) => (
-                      <Autocomplete
-                        options={
-                          gradeData
-                            ? gradeData.map((grade) => "Grade " + grade.grade)
-                            : []
-                        }
-                        size="small"
-                        sx={{ flex: 1, margin: "0.5rem" }}
-                        value={field.value || null}
-                        onChange={(_, value) => field.onChange(value)}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            error={!!errors.registerGrade}
-                            label="First Register Grade"
-                            name="registerGrade"
-                          />
-                        )}
-                      />
-                    )}
-                  />
-                </Box>
+                {defaultValues.employeeType === EmployeeType.STUDENT && (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      mt: "0.5rem",
+                    }}
+                  >
+                    <Controller
+                      control={control}
+                      name="registerGrade"
+                      render={({ field }) => (
+                        <Autocomplete
+                          options={
+                            gradeData
+                              ? gradeData.map((grade) => "Grade " + grade.grade)
+                              : []
+                          }
+                          size="small"
+                          sx={{ flex: 1, margin: "0.5rem" }}
+                          value={field.value || null}
+                          onChange={(_, value) => field.onChange(value)}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              error={!!errors.registerGrade}
+                              label="First Register Grade"
+                              name="registerGrade"
+                            />
+                          )}
+                        />
+                      )}
+                    />
+                  </Box>
+                )}
+
+                {defaultValues.employeeType === EmployeeType.STUDENT && (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      mt: "0.5rem",
+                    }}
+                  >
+                    <Controller
+                      control={control}
+                      name="registerClass"
+                      render={({ field }) => (
+                        <Autocomplete
+                          options={
+                            classData
+                              ? classData.map(
+                                  (classItem) => classItem.className,
+                                )
+                              : []
+                          }
+                          size="small"
+                          sx={{ flex: 1, margin: "0.5rem" }}
+                          value={field.value || null}
+                          onChange={(_, value) => field.onChange(value)}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              error={!!errors.registerGrade}
+                              label="First Register Class"
+                              name="registerClass"
+                            />
+                          )}
+                        />
+                      )}
+                    />
+                  </Box>
+                )}
               </Box>
             </>
           )}

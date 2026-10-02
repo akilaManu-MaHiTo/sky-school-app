@@ -85,6 +85,7 @@ export const userSchema = z.object({
   employeeType: z.nativeEnum(EmployeeType),
   address: z.string().optional(),
   registerGrade: z.string().optional(),
+  registerClass: z.string().optional(),
 
   nationalId: z.string().optional(),
   dateOfRegister: z.date().optional(),
@@ -286,6 +287,7 @@ export async function updateUserProfileDetails({
   nationalId,
   dateOfRegister,
   registerGrade,
+  registerClass,
 }: {
   id: number;
   name: string;
@@ -298,6 +300,7 @@ export async function updateUserProfileDetails({
   nationalId: string;
   dateOfRegister: Date;
   registerGrade: string;
+  registerClass: string;
 }) {
   const data = {
     name,
@@ -310,6 +313,7 @@ export async function updateUserProfileDetails({
     nationalId,
     dateOfRegister,
     registerGrade,
+    registerClass,
   };
 
   const res = await axios.post(`/api/user/${id}/profile-update`, data);
@@ -331,6 +335,7 @@ export async function updateUserProfileDetailsByAdmin({
   password,
   userName,
   registerGrade,
+  registerClass,
 }: {
   id: number;
   employeeNumber: string;
@@ -345,6 +350,7 @@ export async function updateUserProfileDetailsByAdmin({
   password: string;
   userName: string;
   registerGrade: string;
+  registerClass: string;
 }) {
   const data = {
     name,
@@ -359,6 +365,7 @@ export async function updateUserProfileDetailsByAdmin({
     password,
     userName,
     registerGrade,
+    registerClass,
   };
 
   const res = await axios.post(`/api/user/${id}/profile-update-by-admin`, data);

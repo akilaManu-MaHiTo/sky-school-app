@@ -652,6 +652,13 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                 sx={{ flex: 1 }}
               />
             )}
+            {selectedUser.employeeType === EmployeeType.STUDENT && (
+              <DrawerContentItem
+                label="First Register Class"
+                value={selectedUser?.registerClass}
+                sx={{ flex: 1 }}
+              />
+            )}
           </Stack>
         </Stack>
         {!isMobile && (

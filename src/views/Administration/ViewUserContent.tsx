@@ -532,8 +532,8 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
             />
             {selectedUser.employeeType === EmployeeType.STUDENT && (
               <DrawerContentItem
-                label="First Register Grade"
-                value={selectedUser?.registerGrade}
+                label="First Register Class"
+                value={selectedUser?.registerClass}
                 sx={{ flex: 1 }}
               />
             )}
