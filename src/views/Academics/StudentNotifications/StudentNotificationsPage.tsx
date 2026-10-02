@@ -43,8 +43,8 @@ import CustomButton from "../../../components/CustomButton";
 import { Controller, useForm } from "react-hook-form";
 import useIsMobile from "../../../customHooks/useIsMobile";
 import {
-  getClassesData,
-  getGradesData,
+  getClassesAllData,
+  getGradesAllData,
   AcademicClass,
   AcademicGrade,
 } from "../../../api/OrganizationSettings/academicGradeApi";
@@ -92,12 +92,12 @@ const StudentNotificationsPage = () => {
 
   const { data: gradeData, isFetching: isGradeDataFetching } = useQuery({
     queryKey: ["academic-grades"],
-    queryFn: getGradesData,
+    queryFn: getGradesAllData,
   });
 
   const { data: classData, isFetching: isClassDataFetching } = useQuery({
     queryKey: ["academic-classes"],
-    queryFn: getClassesData,
+    queryFn: getClassesAllData,
   });
 
   const gradeMap = useMemo(() => {
@@ -133,6 +133,7 @@ const StudentNotificationsPage = () => {
         selectedGrade?.id,
         selectedClass?.id,
       ),
+    
   });
 
   const rows = Array.isArray(notifications) ? notifications : [];

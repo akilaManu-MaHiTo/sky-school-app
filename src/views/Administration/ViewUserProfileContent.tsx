@@ -61,6 +61,7 @@ import {
   deleteOldStudentUniversity,
   deleteOldStudentOccupation,
 } from "../../api/oldStudentsApi";
+import StudentServiceChargesAccordion from "../../components/StudentServiceChargesAccordion";
 
 type BasketSubject = {
   id: number;
@@ -193,27 +194,19 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
   const [editChildDetails, setEditChildDetails] = useState(null);
   const [openDeleteChildDialog, setOpenDeleteChildDialog] = useState(false);
 
-  const [
-    openOldStudentUniversityDialog,
-    setOpenOldStudentUniversityDialog,
-  ] = useState(false);
-  const [
-    editOldStudentUniversity,
-    setEditOldStudentUniversity,
-  ] = useState<OldStudentUniversityEntry | null>(null);
+  const [openOldStudentUniversityDialog, setOpenOldStudentUniversityDialog] =
+    useState(false);
+  const [editOldStudentUniversity, setEditOldStudentUniversity] =
+    useState<OldStudentUniversityEntry | null>(null);
   const [
     openDeleteOldStudentUniversityDialog,
     setOpenDeleteOldStudentUniversityDialog,
   ] = useState(false);
 
-  const [
-    openOldStudentOccupationDialog,
-    setOpenOldStudentOccupationDialog,
-  ] = useState(false);
-  const [
-    editOldStudentOccupation,
-    setEditOldStudentOccupation,
-  ] = useState<OldStudentOccupationEntry | null>(null);
+  const [openOldStudentOccupationDialog, setOpenOldStudentOccupationDialog] =
+    useState(false);
+  const [editOldStudentOccupation, setEditOldStudentOccupation] =
+    useState<OldStudentOccupationEntry | null>(null);
   const [
     openDeleteOldStudentOccupationDialog,
     setOpenDeleteOldStudentOccupationDialog,
@@ -651,6 +644,22 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
               sx={{ flex: 1 }}
             />
           </Stack>
+          <Stack direction={isTablet ? "column" : "row"}>
+            {selectedUser.employeeType === EmployeeType.STUDENT && (
+              <DrawerContentItem
+                label="First Register Grade"
+                value={selectedUser?.registerGrade}
+                sx={{ flex: 1 }}
+              />
+            )}
+            {selectedUser.employeeType === EmployeeType.STUDENT && (
+              <DrawerContentItem
+                label="First Register Class"
+                value={selectedUser?.registerClass}
+                sx={{ flex: 1 }}
+              />
+            )}
+          </Stack>
         </Stack>
         {!isMobile && (
           <Stack
@@ -907,6 +916,9 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
               })}
             </AccordionDetails>
           </Accordion>
+        )}
+        {selectedUser.employeeType === EmployeeType.STUDENT && (
+          <StudentServiceChargesAccordion studentId={selectedUser.id} />
         )}
         {selectedUser.employeeType === EmployeeType.OLDSTUDENT && (
           <Accordion
@@ -1226,7 +1238,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                                 occ.dateOfRegistration
                                   ? format(
                                       new Date(occ.dateOfRegistration),
-                                      "yyyy.MM.dd"
+                                      "yyyy.MM.dd",
                                     )
                                   : "--"
                               }
@@ -1622,6 +1634,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
                         </Accordion>
                       );
                     })}
+                    <StudentServiceChargesAccordion studentId={child.id} />
                   </AccordionDetails>
                 </Accordion>
               ))}
@@ -1751,8 +1764,7 @@ function ViewUserContent({ selectedUser }: { selectedUser: User }) {
           title="Remove University/College Details Confirmation"
           content={
             <>
-              Are you sure you want to remove this university/college
-              details?
+              Are you sure you want to remove this university/college details?
               <Alert severity="warning" style={{ marginTop: "1rem" }}>
                 This action is not reversible.
               </Alert>

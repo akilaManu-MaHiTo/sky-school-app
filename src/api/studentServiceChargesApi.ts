@@ -60,6 +60,12 @@ export async function fetchStudentServiceCharges(id: number) {
   const res = await axios.get(`/api/student-service-charges/${id}/student`);
   return res.data;
 }
+
+export async function fetchStudentServiceChargesByStudent(studentId: number) {
+  const res = await axios.get(`/api/student-service-by-student/${studentId}`);
+  return res.data;
+}
+
 export async function fetchCheckingStudentServiceCharges(
   year: any,
   gradeId: any,

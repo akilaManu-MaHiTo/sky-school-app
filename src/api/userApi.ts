@@ -2,6 +2,7 @@ import axios from "axios";
 import { z } from "zod";
 import { PermissionKeysObjectSchema } from "../views/Administration/SectionList";
 import { StorageFileSchema } from "../utils/StorageFiles.util";
+import { register } from "module";
 
 export const userRoleSchema = z.object({
   id: z.number(),
@@ -83,6 +84,8 @@ export const userSchema = z.object({
   studentProfile: z.array(teacherProfileSchema),
   employeeType: z.nativeEnum(EmployeeType),
   address: z.string().optional(),
+  registerGrade: z.string().optional(),
+  registerClass: z.string().optional(),
 
   nationalId: z.string().optional(),
   dateOfRegister: z.date().optional(),
@@ -283,6 +286,8 @@ export async function updateUserProfileDetails({
   nameWithInitials,
   nationalId,
   dateOfRegister,
+  registerGrade,
+  registerClass,
 }: {
   id: number;
   name: string;
@@ -294,6 +299,8 @@ export async function updateUserProfileDetails({
   nameWithInitials: string;
   nationalId: string;
   dateOfRegister: Date;
+  registerGrade: string;
+  registerClass: string;
 }) {
   const data = {
     name,
@@ -305,6 +312,8 @@ export async function updateUserProfileDetails({
     nameWithInitials,
     nationalId,
     dateOfRegister,
+    registerGrade,
+    registerClass,
   };
 
   const res = await axios.post(`/api/user/${id}/profile-update`, data);
@@ -325,6 +334,8 @@ export async function updateUserProfileDetailsByAdmin({
   employeeType,
   password,
   userName,
+  registerGrade,
+  registerClass,
 }: {
   id: number;
   employeeNumber: string;
@@ -338,6 +349,8 @@ export async function updateUserProfileDetailsByAdmin({
   employeeType: string;
   password: string;
   userName: string;
+  registerGrade: string;
+  registerClass: string;
 }) {
   const data = {
     name,
@@ -351,6 +364,8 @@ export async function updateUserProfileDetailsByAdmin({
     employeeType,
     password,
     userName,
+    registerGrade,
+    registerClass,
   };
 
   const res = await axios.post(`/api/user/${id}/profile-update-by-admin`, data);
